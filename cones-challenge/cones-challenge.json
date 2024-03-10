@@ -44,7 +44,7 @@
           "stereo_subpixel": false,
           "stereo_left_right_check": true,
           "model": {
-            "blob": "cone/coneslayer_openvino_2022.1_6shave.blob"
+            "blob": "coneslayer_openvino_2022.1_6shave.blob"
           },
           "nn_config": {
             "output_format": "detection",
