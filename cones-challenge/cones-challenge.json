@@ -124,6 +124,12 @@
           "in": ["raw"],
           "out": ["raw"],
           "init": {"host": "192.168.0.2", "port": 6050, "timeout": 3.0, "bufsize": 100000}
+      },
+      "obstdet3d": {
+          "driver": "osgar.obstdet3d:ObstacleDetector3D",
+          "in": ["depth"],
+          "out": ["obstacle"],
+          "init": {}
       }
     },
     "links": [
@@ -136,7 +142,9 @@
       ["gps_serial.raw", "gps.raw"],
 
       ["vanjee_udp.raw", "vanjee.raw"],
-      ["vanjee.raw", "vanjee_udp.raw"]
+      ["vanjee.raw", "vanjee_udp.raw"],
+
+      ["oak.depth", "obstdet3d.depth"]
     ]
   }
 }
