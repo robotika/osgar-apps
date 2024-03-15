@@ -20,7 +20,7 @@ class ConesChallenge(Node):
     def on_pose2d(self, data):
         x, y, heading = data
         self.last_position = [x / 1000.0, y / 1000.0, math.radians(heading / 100.0)]
-        if self.last_obstacle < 1000:  # change to meters?
+        if self.last_obstacle < 1.0:  # meters
             speed, angular_speed = 0, 0
         else:
             speed, angular_speed = self.max_speed, 0
