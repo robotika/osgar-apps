@@ -3,7 +3,7 @@
   "robot": {
     "modules": {
       "app": {
-          "driver": "osgar.followpath:FollowPath",
+          "driver": "cones-challenge.main:ConesChallenge",
           "in": ["emergency_stop", "pose2d", "path"],
           "out": ["desired_speed"],
           "init": {

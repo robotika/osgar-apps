@@ -14,11 +14,16 @@ class ConesChallenge(Node):
         self.max_speed = config.get('max_speed', 0.2)
         self.verbose = False
         self.last_position = None  # not defined, probably should be 0, 0, 0
+        self.last_obstacle = 0
+        self.raise_exception_on_stop = False
 
     def on_pose2d(self, data):
         x, y, heading = data
         self.last_position = [x / 1000.0, y / 1000.0, math.radians(heading / 100.0)]
-        speed, angular_speed = self.control(self.last_position)
+        if self.last_obstacle < 1000:  # change to meters?
+            speed, angular_speed = 0, 0
+        else:
+            speed, angular_speed = self.max_speed, 0
         if self.verbose:
             print(speed, angular_speed)
         self.send_speed_cmd(speed, angular_speed)
@@ -32,5 +37,8 @@ class ConesChallenge(Node):
             'desired_speed',
             [round(speed*1000), round(math.degrees(angular_speed)*100)]
         )
+
+    def on_obstacle(self, data):
+        self.last_obstacle = data
 
 # vim: expandtab sw=4 ts=4
