@@ -8,8 +8,7 @@
           "out": ["desired_steering"],
           "init": {
             "max_speed": 0.1,
-            "path": [[0, 0], [1, 0], [1, 1]],
-            "timeout": 10
+            "stop_dist": 0.5
           }
       },
       "platform": {
@@ -144,7 +143,8 @@
       ["vanjee_udp.raw", "vanjee.raw"],
       ["vanjee.raw", "vanjee_udp.raw"],
 
-      ["oak.depth", "obstdet3d.depth"]
+      ["oak.depth", "obstdet3d.depth"],
+      ["obstdet3d.obstacle", "app.obstacle"]
     ]
   }
 }

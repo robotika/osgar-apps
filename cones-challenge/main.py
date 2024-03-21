@@ -12,6 +12,7 @@ class ConesChallenge(Node):
         super().__init__(config, bus)
         bus.register('desired_steering')
         self.max_speed = config.get('max_speed', 0.2)
+        self.stop_dist = config.get('stop_dist', 1.0)
         self.verbose = False
         self.last_position = None  # not defined, probably should be 0, 0, 0
         self.last_obstacle = 0
@@ -20,7 +21,7 @@ class ConesChallenge(Node):
     def on_pose2d(self, data):
         x, y, heading = data
         self.last_position = [x / 1000.0, y / 1000.0, math.radians(heading / 100.0)]
-        if self.last_obstacle < 1.0:  # meters
+        if self.last_obstacle < self.stop_dist:  # meters
             speed, angular_speed = 0, 0
         else:
             speed, angular_speed = self.max_speed, 0
