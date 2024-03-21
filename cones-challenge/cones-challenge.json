@@ -5,7 +5,7 @@
       "app": {
           "driver": "cones-challenge.main:ConesChallenge",
           "in": ["emergency_stop", "pose2d", "path"],
-          "out": ["desired_speed"],
+          "out": ["desired_steering"],
           "init": {
             "max_speed": 0.1,
             "path": [[0, 0], [1, 0], [1, 1]],
@@ -135,7 +135,7 @@
     "links": [
       ["can.can", "platform.can"],
       ["platform.can", "can.can"],
-      ["app.desired_speed", "platform.desired_steering"],
+      ["app.desired_steering", "platform.desired_steering"],
       ["platform.emergency_stop", "app.emergency_stop"],
       ["platform.pose2d", "app.pose2d"],
 

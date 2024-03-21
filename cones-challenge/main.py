@@ -34,7 +34,7 @@ class ConesChallenge(Node):
 
     def send_speed_cmd(self, speed, angular_speed):
         return self.bus.publish(
-            'desired_speed',
+            'desired_steering',
             [round(speed*1000), round(math.degrees(angular_speed)*100)]
         )
 
