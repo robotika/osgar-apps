@@ -16,30 +16,38 @@ class ConesChallenge(Node):
         self.verbose = False
         self.last_position = None  # not defined, probably should be 0, 0, 0
         self.last_obstacle = 0
+        self.last_detections = None
         self.raise_exception_on_stop = False
+        self.field_of_view = math.radians(45)  # TODO, should clipped camera image pass it?
 
     def on_pose2d(self, data):
         x, y, heading = data
         self.last_position = [x / 1000.0, y / 1000.0, math.radians(heading / 100.0)]
         if self.last_obstacle < self.stop_dist:  # meters
-            speed, angular_speed = 0, 0
+            speed, steering_angle = 0, 0
         else:
-            speed, angular_speed = self.max_speed, 0
+            speed, steering_angle = self.max_speed, 0
+            if self.last_detections is not None and len(self.last_detections) == 1:
+                x1, y1, x2, y2 = self.last_detections[0][2]
+                steering_angle = (self.field_of_view/2) * (0.5 - (x1 + x2)/2)  # steering left is positive
         if self.verbose:
-            print(speed, angular_speed)
-        self.send_speed_cmd(speed, angular_speed)
+            print(speed, steering_angle)
+        self.send_speed_cmd(speed, steering_angle)
 
     def on_emergency_stop(self, data):
         if self.raise_exception_on_stop and data:
             raise EmergencyStopException()
 
-    def send_speed_cmd(self, speed, angular_speed):
+    def send_speed_cmd(self, speed, steering_angle):
         return self.bus.publish(
             'desired_steering',
-            [round(speed*1000), round(math.degrees(angular_speed)*100)]
+            [round(speed*1000), round(math.degrees(steering_angle)*100)]
         )
 
     def on_obstacle(self, data):
         self.last_obstacle = data
+
+    def on_detections(self, data):
+        self.last_detections = data[:]
 
 # vim: expandtab sw=4 ts=4

@@ -144,7 +144,8 @@
       ["vanjee.raw", "vanjee_udp.raw"],
 
       ["oak.depth", "obstdet3d.depth"],
-      ["obstdet3d.obstacle", "app.obstacle"]
+      ["obstdet3d.obstacle", "app.obstacle"],
+      ["oak.detections", "app.detections"]
     ]
   }
 }
