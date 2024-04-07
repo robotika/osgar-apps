@@ -30,6 +30,8 @@ class ConesChallenge(Node):
             if self.last_detections is not None and len(self.last_detections) == 1:
                 x1, y1, x2, y2 = self.last_detections[0][2]
                 steering_angle = (self.field_of_view/2) * (0.5 - (x1 + x2)/2)  # steering left is positive
+            else:
+                speed, steering_angle = 0, 0
         if self.verbose:
             print(speed, steering_angle)
         self.send_speed_cmd(speed, steering_angle)
