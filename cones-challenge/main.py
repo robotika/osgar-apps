@@ -31,7 +31,7 @@ class ConesChallenge(Node):
         else:
             if self.turning_state:
                 speed, steering_angle = self.max_speed, -45  # steer max to the left (check signs!)
-                if self.turning_state_start_time - self.time > datetime.timedelta(seconds=20):
+                if self.time - self.turning_state_start_time > datetime.timedelta(seconds=20):
                     if self.last_detections is not None and len(self.last_detections) == 1:
                         self.turning_state = False
             else:
