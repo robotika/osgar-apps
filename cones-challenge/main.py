@@ -36,16 +36,24 @@ class ConesChallenge(Node):
             if self.turning_state:
                 speed, steering_angle = self.max_speed, math.radians(45)  # steer max to the left
                 if self.time - self.turning_state_start_time > datetime.timedelta(seconds=3):
-                    if self.last_detections is not None and len(self.last_detections) == 1:
+                    if self.last_detections is not None and len(self.last_detections) >= 1:
                         print(self.time, 'stop turning')
                         self.turning_state = False
             else:
                 speed, steering_angle = self.max_speed, 0
-                if self.last_detections is not None and len(self.last_detections) == 1:
-                    x1, y1, x2, y2 = self.last_detections[0][2]
+                if self.last_detections is not None and len(self.last_detections) >= 1:
+                    best = 0
+                    max_x = None
+                    for index, detection in enumerate(self.last_detections):
+                        x1, y1, x2, y2 = detection[2]
+                        if max_x is None or max_x < x1 + x2:
+                            max_x = x1 + x2
+                            best = index
+                    x1, y1, x2, y2 = self.last_detections[best][2]
+
                     steering_angle = (self.field_of_view/2) * (0.5 - (x1 + x2)/2)  # steering left is positive
-                    if (self.last_cones_distances is not None and len(self.last_cones_distances) == 1 and
-                        self.last_cones_distances[0] is not None and self.last_cones_distances[0] <= 2.0):
+                    if (self.last_cones_distances is not None and len(self.last_cones_distances) > best and
+                        self.last_cones_distances[best] is not None and self.last_cones_distances[best] <= 2.0):
                         print(self.time, 'start turning', self.last_cones_distances)
                         self.turning_state = True
                         self.turning_state_start_time = self.time
