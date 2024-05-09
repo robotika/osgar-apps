@@ -16,6 +16,7 @@ class ConesChallenge(Node):
         bus.register('desired_steering')
         self.max_speed = config.get('max_speed', 0.2)
         self.stop_dist = config.get('stop_dist', 1.0)
+        self.min_turn_time = datetime.timedelta(seconds=config.get('min_turn_time_sec', 3.0))
         self.verbose = False
         self.last_position = None  # not defined, probably should be 0, 0, 0
         self.last_obstacle = 0
@@ -35,7 +36,7 @@ class ConesChallenge(Node):
         else:
             if self.turning_state:
                 speed, steering_angle = self.max_speed, math.radians(45)  # steer max to the left
-                if self.time - self.turning_state_start_time > datetime.timedelta(seconds=3):
+                if self.time - self.turning_state_start_time > self.min_turn_time:
                     if self.last_detections is not None and len(self.last_detections) >= 1:
                         print(self.time, 'stop turning')
                         self.turning_state = False
