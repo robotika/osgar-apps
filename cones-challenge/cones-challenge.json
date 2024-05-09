@@ -7,7 +7,7 @@
           "in": ["emergency_stop", "pose2d", "path"],
           "out": ["desired_steering"],
           "init": {
-            "max_speed": 0.1,
+            "max_speed": 1.0,
             "stop_dist": 0.5
           }
       },
@@ -15,7 +15,9 @@
         "driver": "osgar.platforms.yuhesen:FR07",
         "in": ["can"],
         "out": ["can"],
-        "init": {}
+        "init": {
+            "max_speed": 1.0
+        }
       },
       "can": {
         "driver": "pcan",
@@ -28,6 +30,7 @@
         "init": {
           "fps": 10,
           "is_color": true,
+          "video_encoder": "h264",
           "is_depth": true,
           "laser_projector_current": 0,
           "flood_light_current": 500,
