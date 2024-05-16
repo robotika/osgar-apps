@@ -37,13 +37,27 @@ def create_map(logfile, stream_lidar, stream_odom, outfile,
                 assert 0, f'Not supported stream {stream_id}'
     assert len(scans) == len(poses), (len(poses), len(scans))
     np.savez_compressed(outfile, poses=poses, scans=scans)
-    return len(scans)
+    return poses, scans
+
+
+def draw(poses, scans):
+    import matplotlib.pyplot as plt
+    x = [p[0]/1000.0 for p in poses]
+    y = [p[1]/1000.0 for p in poses]
+    plt.plot(x, y, '-o', color='orange')
+    for scan in scans:
+        x = [math.cos(math.radians(180 - 360 * i/1800)) * dist / 1000.0 for i, dist in enumerate(scan)]
+        y = [math.sin(math.radians(180 - 360 * i/1800)) * dist / 1000.0 for i, dist in enumerate(scan)]
+        plt.scatter(x, y, color='blue')
+        break
+    plt.axes().set_aspect('equal', 'datalim')
+    plt.show()
 
 
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='Convert logfile to AVI video')
+    parser = argparse.ArgumentParser(description='Convert logfile to scans map')
     parser.add_argument('logfile', help='recorded log file')
     parser.add_argument('--stream', help='lidar scan stream name', default='vanjee.scan')
     parser.add_argument('--odom', help='odometry stream name', default='platform.pose2d')
@@ -53,12 +67,16 @@ def main():
     parser.add_argument('--end-time-sec', '-e', help='stop mapping at (sec)',
                         type=float, default=None)
     parser.add_argument('--step', help='distance in meters', type=float, default=1.0)
+    parser.add_argument('--draw', help='draw scans map', action='store_true')
     args = parser.parse_args()
 
-    num_scans = create_map(args.logfile, args.stream, args.odom, args.out,
-               start_time_sec=args.start_time_sec, end_time_sec=args.end_time_sec,
-               step_dist=args.step)
+    poses, scans = create_map(args.logfile, args.stream, args.odom, args.out,
+                              start_time_sec=args.start_time_sec, end_time_sec=args.end_time_sec,
+                              step_dist=args.step)
+    num_scans = len(scans)
     print(f'Num scans = {num_scans}')
+    if args.draw:
+        draw(poses, scans)
 
 
 if __name__ == "__main__":
