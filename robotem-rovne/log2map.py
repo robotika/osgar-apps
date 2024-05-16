@@ -3,6 +3,8 @@
 """
 import math
 
+import numpy as np
+
 from osgar.logger import LogReader, lookup_stream_id
 from osgar.lib.serialize import deserialize
 
@@ -11,8 +13,9 @@ def create_map(logfile, stream_lidar, stream_odom, outfile,
     lidar_stream_id = lookup_stream_id(logfile, stream_lidar)
     odom_stream_id = lookup_stream_id(logfile, stream_odom)
     scans = []
+    poses = []
     last_pose = None
-    save_scan = True
+    save_scan = False
     with LogReader(logfile, only_stream_id=[lidar_stream_id, odom_stream_id]) as log:
         for timestamp, stream_id, data in log:
             if timestamp.total_seconds() < start_time_sec:
@@ -22,19 +25,19 @@ def create_map(logfile, stream_lidar, stream_odom, outfile,
             buf = deserialize(data)
             if stream_id == odom_stream_id:
                 pose = buf[0]/1000.0, buf[1]/1000.0, math.radians(buf[2]/100.0)
-                if last_pose is None:
+                if last_pose is None or math.hypot(pose[0] - last_pose[0], pose[1] - last_pose[1]) > step_dist:
+                    save_scan = True
                     last_pose = pose
-                else:
-                    if math.hypot(pose[0] - last_pose[0], pose[1] - last_pose[1]) > step_dist:
-                        save_scan = True
-                        last_pose = pose
+                    poses.append(buf)
             elif stream_id == lidar_stream_id:
                 if save_scan:
                     save_scan = False
                     scans.append(buf)
             else:
                 assert 0, f'Not supported stream {stream_id}'
-    print(len(scans))
+    assert len(scans) == len(poses), (len(poses), len(scans))
+    np.savez_compressed(outfile, poses=poses, scans=scans)
+    return len(scans)
 
 
 def main():
@@ -52,9 +55,10 @@ def main():
     parser.add_argument('--step', help='distance in meters', type=float, default=1.0)
     args = parser.parse_args()
 
-    create_map(args.logfile, args.stream, args.odom, args.out,
+    num_scans = create_map(args.logfile, args.stream, args.odom, args.out,
                start_time_sec=args.start_time_sec, end_time_sec=args.end_time_sec,
                step_dist=args.step)
+    print(f'Num scans = {num_scans}')
 
 
 if __name__ == "__main__":
