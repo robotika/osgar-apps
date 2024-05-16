@@ -90,7 +90,8 @@
       ["oak.depth", "obstdet3d.depth"],
       ["oak.depth", "app.depth"],
       ["obstdet3d.obstacle", "app.obstacle"],
-      ["oak.detections", "app.detections"]
+      ["oak.detections", "app.detections"],
+      ["oak.orientation_list", "app.orientation_list"]
     ]
   }
 }

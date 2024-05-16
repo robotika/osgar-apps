@@ -8,6 +8,7 @@ import numpy as np
 
 from osgar.node import Node
 from osgar.followme import EmergencyStopException
+from osgar.lib import quaternion
 
 
 class RobotemRovne(Node):
@@ -50,5 +51,10 @@ class RobotemRovne(Node):
 
     def on_depth(self, data):
         pass
+
+    def on_orientation_list(self, data):
+        if self.verbose:
+            for quat in data:
+                print(self.last_position, quaternion.heading(quat[2:]))
 
 # vim: expandtab sw=4 ts=4
