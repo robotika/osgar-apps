@@ -45,11 +45,11 @@ def draw(poses, scans):
     x = [p[0]/1000.0 for p in poses]
     y = [p[1]/1000.0 for p in poses]
     plt.plot(x, y, '-o', color='orange')
-    for scan in scans:
-        x = [math.cos(math.radians(180 - 360 * i/1800)) * dist / 1000.0 for i, dist in enumerate(scan)]
-        y = [math.sin(math.radians(180 - 360 * i/1800)) * dist / 1000.0 for i, dist in enumerate(scan)]
+    for pose, scan in zip(poses, scans):
+        x0, y0, a0 = pose
+        x = [x0/1000.0 + math.cos(math.radians(a0/100 + 180 - 360 * i/1800)) * dist / 1000.0 for i, dist in enumerate(scan)]
+        y = [y0/1000.0 + math.sin(math.radians(a0/100 + 180 - 360 * i/1800)) * dist / 1000.0 for i, dist in enumerate(scan)]
         plt.scatter(x, y, color='blue')
-        break
     plt.axes().set_aspect('equal', 'datalim')
     plt.show()
 
