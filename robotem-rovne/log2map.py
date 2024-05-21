@@ -61,6 +61,8 @@ def draw(poses, scans):
     ax.plot(x, y, '-o', color='orange')
 
     x, y = get_xy_for_scan(poses[0], scans[0])
+    scan_xy_prev, = ax.plot(x, y, 'o', color='gray')
+    x, y = get_xy_for_scan(poses[1], scans[1])
     scan_xy, = ax.plot(x, y, 'o', color='blue')
 
     current, = ax.plot([poses[0][0]/1000.0], [poses[0][1]/1000.0], 'o', color='red')
@@ -83,6 +85,10 @@ def draw(poses, scans):
 
     def update(val):
         scan_i = int(freq_slider.val)
+        if scan_i > 0:
+            x, y = get_xy_for_scan(poses[scan_i - 1], scans[scan_i - 1])
+            scan_xy_prev.set_xdata(x)
+            scan_xy_prev.set_ydata(y)
         x, y = get_xy_for_scan(poses[scan_i], scans[scan_i])
         scan_xy.set_xdata(x)
         scan_xy.set_ydata(y)
