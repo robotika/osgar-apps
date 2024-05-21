@@ -7,16 +7,49 @@ import numpy as np
 
 from osgar.logger import LogReader, lookup_stream_id
 from osgar.lib.serialize import deserialize
+from osgar.lib import quaternion
+
+
+def correct_poses(poses, imu_heading):
+    new_poses = []
+    prev = None
+    prev_old = None
+    prev_heading = None
+    for buf, heading in zip(poses, imu_heading):
+        pose = buf[0]/1000.0, buf[1]/1000.0, math.radians(buf[2]/100.0)
+        if prev is None:
+            new_pose = pose
+        else:
+            dist = math.hypot(pose[0] - prev_old[0], pose[1] - prev_old[1])
+            angle = heading - prev_heading
+            new_pose = (prev[0] + dist * math.cos(prev[2] + angle),
+                        prev[1] + dist * math.sin(prev[2] + angle),
+                        prev[2] + angle)
+        prev = new_pose
+        prev_old = pose
+        prev_heading = heading
+        new_poses.append(new_pose)
+    return [(int(x*1000), int(y*1000), int(math.degrees(heading)*100)) for x, y, heading in new_poses]
+
 
 def create_map(logfile, stream_lidar, stream_odom, outfile,
-               start_time_sec=0, end_time_sec=None, step_dist=1.0):
+               start_time_sec=0, end_time_sec=None, step_dist=1.0,
+               stream_imu=None):
     lidar_stream_id = lookup_stream_id(logfile, stream_lidar)
     odom_stream_id = lookup_stream_id(logfile, stream_odom)
+    streams = [lidar_stream_id, odom_stream_id]
+    if stream_imu is not None:
+        imu_stream_id = lookup_stream_id(logfile, stream_imu)
+        streams.append(imu_stream_id)
+    else:
+        imu_stream_id = None
     scans = []
     poses = []
+    imu_heading = []
     last_pose = None
+    last_imu = None
     save_scan = False
-    with LogReader(logfile, only_stream_id=[lidar_stream_id, odom_stream_id]) as log:
+    with LogReader(logfile, only_stream_id=streams) as log:
         for timestamp, stream_id, data in log:
             if timestamp.total_seconds() < start_time_sec:
                 continue
@@ -29,13 +62,24 @@ def create_map(logfile, stream_lidar, stream_odom, outfile,
                     save_scan = True
                     last_pose = pose
                     poses.append(buf)
+                    if stream_imu is not None:
+                        imu_heading.append(last_imu)
             elif stream_id == lidar_stream_id:
                 if save_scan:
                     save_scan = False
                     scans.append(buf)
+            elif stream_id == imu_stream_id:
+                for quat in buf:
+                    last_imu = quaternion.heading(quat[2:])
             else:
                 assert 0, f'Not supported stream {stream_id}'
     assert len(scans) == len(poses), (len(poses), len(scans))
+    if stream_imu is not None:
+        assert len(poses) == len(imu_heading), (len(poses), len(imu_heading))
+        if len(imu_heading) > 1 and imu_heading[0] is None:
+            assert imu_heading[1] is not None  # otherwise bad luck with camera
+            imu_heading[0] = imu_heading[1]
+        poses = correct_poses(poses, imu_heading)
     np.savez_compressed(outfile, poses=poses, scans=scans)
     return poses, scans
 
@@ -106,6 +150,7 @@ def main():
     parser.add_argument('logfile', help='recorded log file')
     parser.add_argument('--stream', help='lidar scan stream name', default='vanjee.scan')
     parser.add_argument('--odom', help='odometry stream name', default='platform.pose2d')
+    parser.add_argument('--imu', help='optional imu stream name (oak.orientation_list)')
     parser.add_argument('--out', '-o', help='output map file', default='scan-map.npz')
     parser.add_argument('--start-time-sec', '-s', help='start time (sec)',
                         type=float, default=0.0)
@@ -117,7 +162,7 @@ def main():
 
     poses, scans = create_map(args.logfile, args.stream, args.odom, args.out,
                               start_time_sec=args.start_time_sec, end_time_sec=args.end_time_sec,
-                              step_dist=args.step)
+                              step_dist=args.step, stream_imu=args.imu)
     num_scans = len(scans)
     print(f'Num scans = {num_scans}')
     if args.draw:
