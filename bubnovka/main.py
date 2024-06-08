@@ -20,15 +20,14 @@ class Bubnovka(Node):
         self.verbose = False
         self.last_position = None  # not defined, probably should be 0, 0, 0
         self.last_obstacle = 0
+        self.lidar_dir = 0  # angle from lidar (0 = go straight)
         self.raise_exception_on_stop = False
 
     def on_pose2d(self, data):
         x, y, heading = data
         self.last_position = [x / 1000.0, y / 1000.0, math.radians(heading / 100.0)]
-        if self.last_obstacle < self.stop_dist:  # meters
-            speed, steering_angle = 0, 0
-        else:
-            speed, steering_angle = self.max_speed, 0
+        # note, ignored data from depth camera
+        speed, steering_angle = self.max_speed, self.lidar_dir
         if self.verbose:
             print(speed, steering_angle)
         self.send_speed_cmd(speed, steering_angle)
@@ -56,5 +55,18 @@ class Bubnovka(Node):
         if self.verbose:
             for quat in data:
                 print(self.last_position, quaternion.heading(quat[2:]))
+
+    def on_scan(self, data):
+        pass  # ignore for now, later
+
+    def on_scan10(self, data):
+        assert len(data) == 1800, len(data)
+        arr = np.array(data)
+        mask = np.logical_and(arr > 0, arr < 1000)
+        if mask.sum() > 0:
+            self.lidar_dir = math.radians((900 - np.median(np.where(mask)))/5.0)
+        else:
+            print('Missing dir!')
+
 
 # vim: expandtab sw=4 ts=4

@@ -87,6 +87,8 @@
 
       ["vanjee_udp.raw", "vanjee.raw"],
       ["vanjee.raw", "vanjee_udp.raw"],
+      ["vanjee.scan", "app.scan"],
+      ["vanjee.scan10", "app.scan10"],
 
       ["oak.depth", "obstdet3d.depth"],
       ["oak.depth", "app.depth"],
