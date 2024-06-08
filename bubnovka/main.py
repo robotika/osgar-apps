@@ -9,6 +9,7 @@ import numpy as np
 from osgar.node import Node
 from osgar.followme import EmergencyStopException
 from osgar.lib import quaternion
+from osgar.lib.mathex import normalizeAnglePIPI
 
 
 class Bubnovka(Node):
@@ -22,12 +23,14 @@ class Bubnovka(Node):
         self.last_obstacle = 0
         self.lidar_dir = 0  # angle from lidar (0 = go straight)
         self.raise_exception_on_stop = False
+        self.initial_heading = None
+        self.correction = 0.0
 
     def on_pose2d(self, data):
         x, y, heading = data
         self.last_position = [x / 1000.0, y / 1000.0, math.radians(heading / 100.0)]
         # note, ignored data from depth camera
-        speed, steering_angle = self.max_speed, self.lidar_dir
+        speed, steering_angle = self.max_speed, self.lidar_dir + self.correction
         if self.verbose:
             print(speed, steering_angle)
         self.send_speed_cmd(speed, steering_angle)
@@ -55,6 +58,19 @@ class Bubnovka(Node):
         if self.verbose:
             for quat in data:
                 print(self.last_position, quaternion.heading(quat[2:]))
+        last_imu = None
+        for quat in data:
+            last_imu = quaternion.heading(quat[2:])
+        if last_imu is not None:
+            if self.initial_heading is None:
+                self.initial_heading = last_imu
+#            print(normalizeAnglePIPI(last_imu - self.initial_heading), normalizeAnglePIPI(last_imu - self.initial_heading + self.lidar_dir))
+            mover_dir = normalizeAnglePIPI(last_imu - self.initial_heading + self.lidar_dir)
+            if abs(math.degrees(mover_dir)) < 3.0:
+                if mover_dir > 0:
+                    self.correction = math.radians(5)
+                else:
+                    self.correction = -math.radians(5)
 
     def on_scan(self, data):
         pass  # ignore for now, later
