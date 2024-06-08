@@ -68,9 +68,9 @@ class Bubnovka(Node):
             mover_dir = normalizeAnglePIPI(last_imu - self.initial_heading + self.lidar_dir)
             if abs(math.degrees(mover_dir)) < 3.0:
                 if mover_dir > 0:
-                    self.correction = math.radians(5)
-                else:
                     self.correction = -math.radians(5)
+                else:
+                    self.correction = math.radians(5)
 
     def on_scan(self, data):
         pass  # ignore for now, later
