@@ -1,5 +1,5 @@
 """
-  Robotem Rovne 2024
+  Experiments with mower
 """
 import datetime
 import math
@@ -11,7 +11,7 @@ from osgar.followme import EmergencyStopException
 from osgar.lib import quaternion
 
 
-class RobotemRovne(Node):
+class Bubnovka(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
         bus.register('desired_steering')
