@@ -8,6 +8,8 @@
           "out": ["desired_speed"],
           "init": {
             "max_speed": 0.2,
+            "max_dist_limit": 2.0,
+            "min_dist_limit": 1.0,
             "laser_pose2d": [0.13, 0.055, 0],
             "scan_size": 1800,
             "scan_fov_deg": -360
@@ -91,7 +93,6 @@
       ["vanjee.scan", "app.scan"],
 
       ["oak.depth", "obstdet3d.depth"],
-      ["obstdet3d.obstacle", "app.obstacle"],
       ["oak.detections", "app.detections"]
     ]
   }
