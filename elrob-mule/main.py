@@ -66,6 +66,9 @@ class Mule(Node):
         self.app.time = self.time
         self.app.on_emergency_stop(data)
 
+    def dummy_handler(self, data):
+        pass
+
     def run(self):
         self.app.verbose = self.verbose
         self.app.run()
@@ -78,6 +81,7 @@ class Mule(Node):
         self.app.publish = self.my_publish
         self.app.listen = self.my_listen
         self.app.update = self.my_update
+        self.app.on_scan = self.dummy_handler  # FollowPath does not have on_scan
         self.app.run()
 
 
