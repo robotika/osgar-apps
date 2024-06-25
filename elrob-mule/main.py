@@ -25,18 +25,25 @@ class Mule(Node):
         self.app = FollowMe(config, bus)
         self.app.publish = self.my_publish
         bus.register = save_register_fn
+        self.verbose = False
 
     def my_publish(self, name, data):
         self.publish(name, data)
 
     def on_pose2d(self, data):
+        self.app.time = self.time
         self.app.on_pose2d(data)
 
     def on_scan(self, data):
+        self.app.time = self.time
         self.app.on_scan(data)
 
     def on_emergency_stop(self, data):
+        self.app.time = self.time
         self.app.on_emergency_stop(data)
 
+    def run(self):
+        self.app.verbose = self.verbose
+        self.app.run()
 
 # vim: expandtab sw=4 ts=4
