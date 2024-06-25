@@ -10,7 +10,7 @@ import numpy as np
 
 from osgar.node import Node
 from osgar.followme import EmergencyStopException, FollowMe
-from osgar.followpath import FollowPath
+from osgar.followpath import FollowPath, Route
 
 from osgar.lib import quaternion
 
@@ -74,7 +74,7 @@ class Mule(Node):
         self.path.reverse()
         self.app2.last_position = self.app.last_position  # assign end of route
         self.app = self.app2
-        self.app.path = self.path
+        self.app.route = Route(pts=self.path)
         self.app.publish = self.my_publish
         self.app.listen = self.my_listen
         self.app.update = self.my_update
