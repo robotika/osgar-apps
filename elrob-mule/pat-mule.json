@@ -3,7 +3,7 @@
   "robot": {
     "modules": {
       "app": {
-          "driver": "osgar.followme:FollowMe",
+          "driver": "elrob-mule.main:Mule",
           "in": ["encoders", "scan", "emergency_stop", "pose2d"],
           "out": ["desired_speed"],
           "init": {
