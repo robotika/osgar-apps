@@ -55,8 +55,9 @@ class Mule(Node):
     def on_pose2d(self, data):
         self.app.time = self.time
         self.app.on_pose2d(data)
-        if len(self.path) == 0 or math.hypot(self.path[-1][0] - data[0], self.path[-1][1] - data[-1]):
-            self.path.append(data)
+        x, y = data[0]/1000.0, data[1]/1000.0
+        if len(self.path) == 0 or math.hypot(self.path[-1][0] - x, self.path[-1][1] - y):
+            self.path.append((x, y))
 
     def on_scan(self, data):
         self.app.time = self.time
@@ -82,6 +83,7 @@ class Mule(Node):
         self.app.listen = self.my_listen
         self.app.update = self.my_update
         self.app.on_scan = self.dummy_handler  # FollowPath does not have on_scan
+        self.app.verbose = self.verbose
         self.app.run()
 
 
