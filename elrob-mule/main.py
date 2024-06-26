@@ -102,16 +102,19 @@ class Mule(Node):
         self.app.run()
 
         # switch to follow path
-        self.path.reverse()
         self.app2.last_position = self.app.last_position  # assign end of route
         self.app = self.app2
-        self.app.route = Route(pts=self.path)
         self.app.publish = self.my_publish
         self.app.listen = self.my_listen
         self.app.update = self.my_update
         self.app.on_scan = self.dummy_handler  # FollowPath does not have on_scan
         self.app.verbose = self.verbose
-        self.app.run()
+        while True:
+            self.path.reverse()
+            self.app.route = Route(pts=self.path)
+            self.app.finished = False
+            print(f'FollowPath {self.app.route.pts[0]} -> {self.app.route.pts[-1]}')
+            self.app.run()
 
 
 
