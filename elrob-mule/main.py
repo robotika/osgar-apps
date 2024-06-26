@@ -74,8 +74,8 @@ class Mule(Node):
 
     def on_pose2d(self, data):
         self.app.time = self.time
-        data = self.correct_pose(data)
-        self.publish('pose2d', data)  # corrected pose by IMU
+#        data = self.correct_pose(data)
+#        self.publish('pose2d', data)  # corrected pose by IMU
         self.app.on_pose2d(data)
         x, y = data[0]/1000.0, data[1]/1000.0
         if len(self.path) == 0 or math.hypot(self.path[-1][0] - x, self.path[-1][1] - y):
