@@ -28,7 +28,7 @@ def dummy_register(name):
 class Mule(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('desired_speed')
+        bus.register('desired_speed', 'pose2d')
         self.min_step = config.get('min_step', 0.5)
         save_register_fn = bus.register
         bus.register = dummy_register
@@ -42,6 +42,10 @@ class Mule(Node):
         self.verbose = False
         self.mode = MuleModes.FOLLOWME
         self.path = []
+        self.last_imu_heading = None
+        self.prev_heading = None  # already processed heading
+        self.prev_pose = None
+        self.prev_old_pose = None
 
     def my_publish(self, name, data):
         self.publish(name, data)
@@ -52,8 +56,26 @@ class Mule(Node):
     def my_update(self):
         self.update()
 
+    def correct_pose(self, pose2d):
+        pose = pose2d[0]/1000.0, pose2d[1]/1000.0, math.radians(pose2d[2]/100.0)
+        if self.prev_pose is None or self.prev_heading is None:
+            new_pose = pose
+        else:
+            dist = math.hypot(pose[0] - self.prev_old_pose [0], pose[1] - self.prev_old_pose [1])
+            angle = self.last_imu_heading - self.prev_heading
+            new_pose = (self.prev_pose[0] + dist * math.cos(self.prev_pose[2] + angle),
+                        self.prev_pose[1] + dist * math.sin(self.prev_pose[2] + angle),
+                        self.prev_pose[2] + angle)
+        self.prev_pose = new_pose
+        self.prev_old_pose = pose
+        self.prev_heading = self.last_imu_heading
+        x, y, heading = new_pose
+        return int(x * 1000), int(y * 1000), int(math.degrees(heading) * 100)
+
     def on_pose2d(self, data):
         self.app.time = self.time
+        data = self.correct_pose(data)
+        self.publish('pose2d', data)  # corrected pose by IMU
         self.app.on_pose2d(data)
         x, y = data[0]/1000.0, data[1]/1000.0
         if len(self.path) == 0 or math.hypot(self.path[-1][0] - x, self.path[-1][1] - y):
@@ -66,6 +88,11 @@ class Mule(Node):
     def on_emergency_stop(self, data):
         self.app.time = self.time
         self.app.on_emergency_stop(data)
+
+    def on_orientation_list(self, data):
+        for quat in data:
+            last_imu = quaternion.heading(quat[2:])
+        self.last_imu_heading = last_imu
 
     def dummy_handler(self, data):
         pass

@@ -94,7 +94,8 @@
       ["vanjee.scan", "app.scan"],
 
       ["oak.depth", "obstdet3d.depth"],
-      ["oak.detections", "app.detections"]
+      ["oak.detections", "app.detections"],
+      ["oak.orientation_list", "app.orientation_list"]
     ]
   }
 }
