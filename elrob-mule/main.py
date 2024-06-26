@@ -109,13 +109,11 @@ class Mule(Node):
         self.app.update = self.my_update
         self.app.on_scan = self.dummy_handler  # FollowPath does not have on_scan
         self.app.verbose = self.verbose
-        while True:
-            self.path.reverse()
-            self.app.route = Route(pts=self.path)
-            self.app.finished = False
-            print(f'FollowPath {self.app.route.pts[0]} -> {self.app.route.pts[-1]}')
-            self.app.run()
-
+        self.path.reverse()
+        self.app.route = Route(pts=self.path)
+        self.app.finished = False
+        print(f'FollowPath {self.app.route.pts[0]} -> {self.app.route.pts[-1]}')
+        self.app.run()
 
 
 # vim: expandtab sw=4 ts=4
