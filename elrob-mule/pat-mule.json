@@ -19,7 +19,9 @@
         "driver": "osgar.platforms.yuhesen:FR07",
         "in": ["can"],
         "out": ["can"],
-        "init": {}
+        "init": {
+          "max_speed": 1.2
+        }
       },
       "can": {
         "driver": "pcan",
