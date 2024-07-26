@@ -3,11 +3,11 @@
   "robot": {
     "modules": {
       "app": {
-          "driver": "osgar.followme:FollowMe",
+          "driver": "elrob-mule.main:Mule",
           "in": ["encoders", "scan", "emergency_stop", "pose2d"],
           "out": ["desired_speed"],
           "init": {
-            "max_speed": 0.4,
+            "max_speed": 1.2,
             "max_dist_limit": 3.0,
             "min_dist_limit": 1.0,
             "laser_pose2d": [0.13, 0.055, 0],
@@ -19,7 +19,9 @@
         "driver": "osgar.platforms.yuhesen:FR07",
         "in": ["can"],
         "out": ["can"],
-        "init": {}
+        "init": {
+          "max_speed": 1.2
+        }
       },
       "can": {
         "driver": "pcan",
@@ -94,7 +96,8 @@
       ["vanjee.scan", "app.scan"],
 
       ["oak.depth", "obstdet3d.depth"],
-      ["oak.detections", "app.detections"]
+      ["oak.detections", "app.detections"],
+      ["oak.orientation_list", "app.orientation_list"]
     ]
   }
 }

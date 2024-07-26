@@ -3,16 +3,12 @@
   "robot": {
     "modules": {
       "app": {
-          "driver": "osgar.followme:FollowMe",
-          "in": ["encoders", "scan", "emergency_stop", "pose2d"],
-          "out": ["desired_speed"],
+          "driver": "bubnovka.main:Bubnovka",
+          "in": ["emergency_stop", "pose2d", "path"],
+          "out": ["desired_steering"],
           "init": {
-            "max_speed": 0.4,
-            "max_dist_limit": 3.0,
-            "min_dist_limit": 1.0,
-            "laser_pose2d": [0.13, 0.055, 0],
-            "scan_size": 1800,
-            "scan_fov_deg": -360
+            "max_speed": 1.0,
+            "stop_dist": 0.5
           }
       },
       "platform": {
@@ -38,7 +34,7 @@
           "flood_light_current": 500,
           "is_imu_enabled": true,
           "number_imu_records": 10,
-          "disable_magnetometer_fusion": false,
+          "disable_magnetometer_fusion": true,
           "mono_resolution": "THE_400_P",
           "color_resolution": "THE_1080_P",
           "color_manual_focus": 130,
@@ -83,7 +79,7 @@
     "links": [
       ["can.can", "platform.can"],
       ["platform.can", "can.can"],
-      ["app.desired_speed", "platform.desired_steering"],
+      ["app.desired_steering", "platform.desired_steering"],
       ["platform.emergency_stop", "app.emergency_stop"],
       ["platform.pose2d", "app.pose2d"],
 
@@ -92,9 +88,13 @@
       ["vanjee_udp.raw", "vanjee.raw"],
       ["vanjee.raw", "vanjee_udp.raw"],
       ["vanjee.scan", "app.scan"],
+      ["vanjee.scan10", "app.scan10"],
 
       ["oak.depth", "obstdet3d.depth"],
-      ["oak.detections", "app.detections"]
+      ["oak.depth", "app.depth"],
+      ["obstdet3d.obstacle", "app.obstacle"],
+      ["oak.detections", "app.detections"],
+      ["oak.orientation_list", "app.orientation_list"]
     ]
   }
 }
