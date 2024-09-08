@@ -10,6 +10,10 @@ from osgar.node import Node
 from osgar.followme import EmergencyStopException
 
 
+# maximal time to wait standing for any cone detection
+MAX_PATIENCE = datetime.timedelta(seconds=2)
+
+
 class ConesChallenge(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
@@ -26,6 +30,7 @@ class ConesChallenge(Node):
         self.field_of_view = math.radians(45)  # TODO, should clipped camera image pass it?
         self.turning_state = False
         self.turning_state_start_time = None
+        self.no_detections_start_time = None
         self.verbose = False
 
     def on_pose2d(self, data):
@@ -43,6 +48,7 @@ class ConesChallenge(Node):
             else:
                 speed, steering_angle = self.max_speed, 0
                 if self.last_detections is not None and len(self.last_detections) >= 1:
+                    self.no_detections_start_time = None  # clear, as there are some detections now
                     best = 0
                     max_x = None
                     for index, detection in enumerate(self.last_detections):
@@ -60,6 +66,14 @@ class ConesChallenge(Node):
                         self.turning_state_start_time = self.time
                 else:
                     speed, steering_angle = 0, 0
+                    if self.no_detections_start_time is None:
+                        self.no_detections_start_time = self.time
+                    if self.time - self.no_detections_start_time > MAX_PATIENCE:
+                        if self.turning_state_start_time is not None:
+                            print(self.time, "BLOCKED!", self.time - self.turning_state_start_time)
+                            self.turning_state = True
+                            # keep the same self.turning_state_start_time
+
         if self.verbose:
             print(speed, steering_angle)
         self.send_speed_cmd(speed, steering_angle)
