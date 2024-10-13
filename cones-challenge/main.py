@@ -109,7 +109,7 @@ class ConesChallenge(Node):
         self.last_cones_distances = []
         for detection in self.last_detections:
             # ['cone', 0.92236328125, [0.42129743099212646, -0.0010452494025230408, 0.4836755692958832, 0.1296510100364685]]
-            w, h = 720, 1280  #640, 400
+            w, h = 1280, 720  #640, 400
             a, b, c, d = frameNorm(h, h, detection[2]).tolist()
             name, x, y, width, height = detection[0], a + (w - h) // 2, b, c - a, d - b
 
