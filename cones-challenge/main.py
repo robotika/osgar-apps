@@ -40,7 +40,7 @@ class ConesChallenge(Node):
             speed, steering_angle = 0, 0
         else:
             if self.turning_state:
-                speed, steering_angle = self.max_speed/4, math.radians(45)  # steer slowly max to the left
+                speed, steering_angle = self.max_speed/2, math.radians(45)  # steer slowly max to the left
                 if self.time - self.turning_state_start_time > self.min_turn_time:
                     if self.last_detections is not None and len(self.last_detections) >= 1:
                         print(self.time, 'stop turning')
