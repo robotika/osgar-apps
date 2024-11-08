@@ -8,8 +8,9 @@
           "out": ["desired_speed"],
           "init": {
             "max_speed": 0.4,
-	    "action": "push",
+            "action": "push",
             "max_dist_limit": 3.0,
+            "desired_dist": 2.0,
             "min_dist_limit": 1.0,
             "laser_pose2d": [0.13, 0.055, 0],
             "scan_size": 1800,
@@ -33,8 +34,9 @@
         "init": {
           "fps": 10,
           "is_color": true,
-          "video_encoder": "h264",
+          "video_encoder": "mjpeg",
           "is_depth": true,
+          "is_stereo_images": true,
           "laser_projector_current": 0,
           "flood_light_current": 500,
           "is_imu_enabled": true,
