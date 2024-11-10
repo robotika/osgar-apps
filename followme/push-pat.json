@@ -7,7 +7,7 @@
           "in": ["encoders", "scan", "emergency_stop", "pose2d"],
           "out": ["desired_speed"],
           "init": {
-            "max_speed": 0.4,
+            "max_speed": 1.0,
             "action": "push",
             "max_dist_limit": 3.0,
             "desired_dist": 2.0,
@@ -21,7 +21,9 @@
         "driver": "osgar.platforms.yuhesen:FR07",
         "in": ["can"],
         "out": ["can"],
-        "init": {}
+        "init": {
+            "max_speed": 1.0
+        }
       },
       "can": {
         "driver": "pcan",
