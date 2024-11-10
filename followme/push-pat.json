@@ -36,7 +36,7 @@
           "is_color": true,
           "video_encoder": "mjpeg",
           "is_depth": true,
-          "is_stereo_images": true,
+          "is_stereo_images": false,
           "laser_projector_current": 0,
           "flood_light_current": 500,
           "is_imu_enabled": true,
