@@ -31,14 +31,29 @@
           "in": ["raw"],
           "out": ["raw"],
           "init": {"port": "/dev/ttyUSB0", "speed": 115200}
+      },
+      "estop": {
+          "driver": "estop:EStop",
+          "in": ["raw"],
+          "out": ["raw", "emergency_stop"],
+          "init": {}
+      },
+      "estop_serial": {
+          "driver": "serial",
+          "in": ["raw"],
+          "out": ["raw"],
+          "init": {"port": "/dev/estop", "speed": 9600}
       }
     },
     "links": [
-      ["app.desired_speed", "platform.desired_steering"],
+      ["app.desired_steering", "platform.desired_steering"],
       ["platform.pose2d", "app.pose2d"],
       ["serial.raw", "platform.esp_data"],
       ["platform.esp_data", "serial.raw"],
-      ["timer.tick", "platform.tick"]
+      ["timer.tick", "platform.tick"],
+      ["estop_serial.raw", "estop.raw"],
+      ["estop.raw", "estop_serial.raw"],
+      ["estop.emergency_stop", "app.emergency_stop"]
     ]
   }
 }
