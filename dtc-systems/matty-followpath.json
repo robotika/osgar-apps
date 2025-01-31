@@ -52,6 +52,12 @@
           "stereo_subpixel": false,
           "stereo_left_right_check": true
         }
+      },
+      "obstdet3d": {
+          "driver": "osgar.obstdet3d.ObstacleDetector3D",
+          "in": ["depth"],
+          "out": ["obstacle"],
+          "init": {}
       }
     },
     "links": [
@@ -59,7 +65,9 @@
       ["platform.pose2d", "app.pose2d"],
       ["serial.raw", "platform.esp_data"],
       ["platform.esp_data", "serial.raw"],
-      ["timer.tick", "platform.tick"]
+      ["timer.tick", "platform.tick"],
+      ["oak.depth", "obstdet3d.depth"],
+      ["obstdet3d.obstacle", "app.obstacle"]
     ]
   }
 }
