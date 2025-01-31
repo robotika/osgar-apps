@@ -54,7 +54,7 @@
         }
       },
       "obstdet3d": {
-          "driver": "osgar.obstdet3d.ObstacleDetector3D",
+          "driver": "osgar.obstdet3d:ObstacleDetector3D",
           "in": ["depth"],
           "out": ["obstacle"],
           "init": {}
