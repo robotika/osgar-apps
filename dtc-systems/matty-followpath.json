@@ -8,6 +8,7 @@
           "out": ["desired_speed"],
           "init": {
             "max_speed": 0.25,
+            "obstacle_stop_dist": 0.4,
             "path": [[0, 0], [1, 0], [1, 1], [2, 1]],
             "timeout": 20
           }
