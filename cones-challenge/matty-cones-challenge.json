@@ -12,16 +12,30 @@
           }
       },
       "platform": {
-        "driver": "osgar.platforms.yuhesen:FR07",
-        "in": ["can"],
-        "out": ["can"],
+        "driver": "osgar.platforms.matty:Matty",
+        "in": ["esp_data"],
+        "out": ["esp_data"],
         "init": {}
       },
-      "can": {
-        "driver": "pcan",
-        "in": ["can"],
-        "out": ["can"],
+      "gps": {
+        "driver": "gps",
+        "in": ["raw"],
+        "out": ["nmea_data"],
         "init": {}
+      },
+      "timer": {
+        "driver": "timer",
+        "in": [],
+        "out": ["tick"],
+        "init": {
+          "sleep": 0.1
+        }
+      },
+      "serial": {
+          "driver": "serial",
+          "in": ["raw"],
+          "out": ["raw"],
+          "init": {"port": "/dev/ttyUSB0", "speed": 115200}
       },
       "oak": {
         "driver": "osgar.drivers.oak_camera:OakCamera",
@@ -100,30 +114,6 @@
           }
         }
       },
-      "gps": {
-          "driver": "gps",
-          "in": ["raw"],
-          "out": ["position"],
-          "init": {}
-      },
-      "gps_serial": {
-          "driver": "serial",
-          "in": [],
-          "out": ["raw"],
-          "init": {"port": "/dev/ttyUSB0", "speed": 4800}
-      },
-      "vanjee": {
-          "driver": "vanjee",
-          "in": ["raw"],
-          "out": ["raw", "xyz"],
-          "init": {}
-      },
-      "vanjee_udp": {
-          "driver": "udp",
-          "in": ["raw"],
-          "out": ["raw"],
-          "init": {"host": "192.168.0.2", "port": 6050, "timeout": 3.0, "bufsize": 100000}
-      },
       "obstdet3d": {
           "driver": "osgar.obstdet3d:ObstacleDetector3D",
           "in": ["depth"],
@@ -132,16 +122,13 @@
       }
     },
     "links": [
-      ["can.can", "platform.can"],
-      ["platform.can", "can.can"],
       ["app.desired_steering", "platform.desired_steering"],
-      ["platform.emergency_stop", "app.emergency_stop"],
+      ["serial.raw", "platform.esp_data"],
+      ["platform.esp_data", "serial.raw"],
+      ["platform.gps_serial", "gps.raw"],
+      ["timer.tick", "platform.tick"],
+
       ["platform.pose2d", "app.pose2d"],
-
-      ["gps_serial.raw", "gps.raw"],
-
-      ["vanjee_udp.raw", "vanjee.raw"],
-      ["vanjee.raw", "vanjee_udp.raw"],
 
       ["oak.depth", "obstdet3d.depth"],
       ["oak.depth", "app.depth"],
