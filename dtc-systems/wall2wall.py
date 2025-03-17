@@ -12,6 +12,7 @@ class Wall2wall(Node):
         super().__init__(config, bus)
         bus.register('desired_steering')
         self.speed = config['max_speed']
+        self.step_angle = math.radians(config.get('step_deg', 0))  # get change of angle step
         self.verbose = False
         self.desired_steering_angle = 0
         self.desired_speed = self.speed
@@ -22,12 +23,14 @@ class Wall2wall(Node):
     def on_bumpers_front(self, data):
         if self.desired_speed > 0 and data:
             self.desired_speed = -self.speed
+            self.desired_steering_angle = -self.step_angle
             print('Go back!')
         self.send_speed_cmd(self.desired_speed, self.desired_steering_angle)
 
     def on_bumpers_rear(self, data):
         if self.desired_speed < 0 and data:
             self.desired_speed = self.speed
+            self.desired_steering_angle = self.step_angle
             print('Go forward!')
         self.send_speed_cmd(self.desired_speed, self.desired_steering_angle)
 
