@@ -10,12 +10,17 @@ from osgar.node import Node
 from osgar.followme import EmergencyStopException
 
 
+# maximal time to wait standing for any cone detection
+MAX_PATIENCE = datetime.timedelta(seconds=2)
+
+
 class ConesChallenge(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
         bus.register('desired_steering')
         self.max_speed = config.get('max_speed', 0.2)
         self.stop_dist = config.get('stop_dist', 1.0)
+        self.min_turn_time = datetime.timedelta(seconds=config.get('min_turn_time_sec', 3.0))
         self.verbose = False
         self.last_position = None  # not defined, probably should be 0, 0, 0
         self.last_obstacle = 0
@@ -25,6 +30,7 @@ class ConesChallenge(Node):
         self.field_of_view = math.radians(45)  # TODO, should clipped camera image pass it?
         self.turning_state = False
         self.turning_state_start_time = None
+        self.no_detections_start_time = None
         self.verbose = False
 
     def on_pose2d(self, data):
@@ -34,23 +40,40 @@ class ConesChallenge(Node):
             speed, steering_angle = 0, 0
         else:
             if self.turning_state:
-                speed, steering_angle = self.max_speed, math.radians(45)  # steer max to the left
-                if self.time - self.turning_state_start_time > datetime.timedelta(seconds=3):
-                    if self.last_detections is not None and len(self.last_detections) == 1:
+                speed, steering_angle = self.max_speed/2, math.radians(45)  # steer slowly max to the left
+                if self.time - self.turning_state_start_time > self.min_turn_time:
+                    if self.last_detections is not None and len(self.last_detections) >= 1:
                         print(self.time, 'stop turning')
                         self.turning_state = False
             else:
                 speed, steering_angle = self.max_speed, 0
-                if self.last_detections is not None and len(self.last_detections) == 1:
-                    x1, y1, x2, y2 = self.last_detections[0][2]
+                if self.last_detections is not None and len(self.last_detections) >= 1:
+                    self.no_detections_start_time = None  # clear, as there are some detections now
+                    best = 0
+                    max_x = None
+                    for index, detection in enumerate(self.last_detections):
+                        x1, y1, x2, y2 = detection[2]
+                        if max_x is None or max_x < x1 + x2:
+                            max_x = x1 + x2
+                            best = index
+                    x1, y1, x2, y2 = self.last_detections[best][2]
+
                     steering_angle = (self.field_of_view/2) * (0.5 - (x1 + x2)/2)  # steering left is positive
-                    if (self.last_cones_distances is not None and len(self.last_cones_distances) == 1 and
-                        self.last_cones_distances[0] is not None and self.last_cones_distances[0] <= 2.0):
+                    if (self.last_cones_distances is not None and len(self.last_cones_distances) > best and
+                        self.last_cones_distances[best] is not None and self.last_cones_distances[best] <= 2.0):
                         print(self.time, 'start turning', self.last_cones_distances)
                         self.turning_state = True
                         self.turning_state_start_time = self.time
                 else:
                     speed, steering_angle = 0, 0
+                    if self.no_detections_start_time is None:
+                        self.no_detections_start_time = self.time
+                    if self.time - self.no_detections_start_time > MAX_PATIENCE:
+                        if self.turning_state_start_time is not None:
+                            print(self.time, "BLOCKED!", self.time - self.turning_state_start_time)
+                            self.turning_state = True
+                            # keep the same self.turning_state_start_time
+
         if self.verbose:
             print(speed, steering_angle)
         self.send_speed_cmd(speed, steering_angle)
@@ -86,7 +109,7 @@ class ConesChallenge(Node):
         self.last_cones_distances = []
         for detection in self.last_detections:
             # ['cone', 0.92236328125, [0.42129743099212646, -0.0010452494025230408, 0.4836755692958832, 0.1296510100364685]]
-            w, h = 640, 400
+            w, h = 1280, 720  #640, 400
             a, b, c, d = frameNorm(h, h, detection[2]).tolist()
             name, x, y, width, height = detection[0], a + (w - h) // 2, b, c - a, d - b
 

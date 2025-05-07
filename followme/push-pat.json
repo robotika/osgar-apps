@@ -3,13 +3,18 @@
   "robot": {
     "modules": {
       "app": {
-          "driver": "cones-challenge.main:ConesChallenge",
-          "in": ["emergency_stop", "pose2d", "path"],
-          "out": ["desired_steering"],
+          "driver": "osgar.followme:FollowMe",
+          "in": ["encoders", "scan", "emergency_stop", "pose2d"],
+          "out": ["desired_speed"],
           "init": {
             "max_speed": 1.0,
-            "stop_dist": 0.5,
-            "min_turn_time_sec": 2.0
+            "action": "push",
+            "max_dist_limit": 3.0,
+            "desired_dist": 2.0,
+            "min_dist_limit": 1.0,
+            "laser_pose2d": [0.13, 0.055, 0],
+            "scan_size": 1800,
+            "scan_fov_deg": -360
           }
       },
       "platform": {
@@ -31,7 +36,7 @@
         "init": {
           "fps": 10,
           "is_color": true,
-          "video_encoder": "h264",
+          "video_encoder": "mjpeg",
           "is_depth": true,
           "is_stereo_images": false,
           "laser_projector_current": 0,
@@ -39,70 +44,14 @@
           "is_imu_enabled": true,
           "number_imu_records": 10,
           "disable_magnetometer_fusion": false,
-          "mono_resolution": [1280, 720],
+          "mono_resolution": "THE_400_P",
           "color_resolution": "THE_1080_P",
           "color_manual_focus": 130,
           "stereo_median_filter": "KERNEL_3x3",
           "stereo_mode": "HIGH_ACCURACY",
           "stereo_extended_disparity": false,
           "stereo_subpixel": false,
-          "stereo_left_right_check": true,
-          "model": {
-            "blob": "coneslayer_openvino_2022.1_6shave.blob"
-          },
-          "nn_config": {
-            "output_format": "detection",
-            "NN_family": "YOLO",
-            "input_size": "416x416",
-            "NN_specific_metadata": {
-              "classes": 1,
-              "coordinates": 4,
-              "anchors": [
-                2.896484375,
-                5.90234375,
-                4.6875,
-                9.09375,
-                7.75390625,
-                14.59375,
-                12.8359375,
-                22.84375,
-                28.59375,
-                48.25,
-                53.875,
-                109.6875,
-                109.5625,
-                155.375,
-                142.25,
-                243.75,
-                209.375,
-                383.0
-              ],
-              "anchor_masks": {
-                "side52": [
-                  0,
-                  1,
-                  2
-                ],
-                "side26": [
-                  3,
-                  4,
-                  5
-                ],
-                "side13": [
-                  6,
-                  7,
-                  8
-                ]
-              },
-              "iou_threshold": 0.5,
-              "confidence_threshold": 0.54
-            }
-          },
-          "mappings": {
-            "labels": [
-              "cone"
-            ]
-          }
+          "stereo_left_right_check": true
         }
       },
       "gps": {
@@ -139,7 +88,7 @@
     "links": [
       ["can.can", "platform.can"],
       ["platform.can", "can.can"],
-      ["app.desired_steering", "platform.desired_steering"],
+      ["app.desired_speed", "platform.desired_steering"],
       ["platform.emergency_stop", "app.emergency_stop"],
       ["platform.pose2d", "app.pose2d"],
 
@@ -147,10 +96,9 @@
 
       ["vanjee_udp.raw", "vanjee.raw"],
       ["vanjee.raw", "vanjee_udp.raw"],
+      ["vanjee.scan", "app.scan"],
 
       ["oak.depth", "obstdet3d.depth"],
-      ["oak.depth", "app.depth"],
-      ["obstdet3d.obstacle", "app.obstacle"],
       ["oak.detections", "app.detections"]
     ]
   }
