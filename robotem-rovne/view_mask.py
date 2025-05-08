@@ -12,16 +12,40 @@ from osgar.logger import LogReader, lookup_stream_id
 from osgar.lib.serialize import deserialize
 
 
+def read_h264_image(data):
+    assert data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 0930')), data[
+                                                                                                               :20].hex()
+    if data.startswith(bytes.fromhex('00000001 0950')):
+        # I - key frame
+        with open('tmp.h264', 'wb') as f:
+            f.write(data)
+    elif data.startswith(bytes.fromhex('00000001 0930')):
+        # P-frame}
+        with open('tmp.h264', 'ab') as f:
+            f.write(data)
+    else:
+        assert 0, f'Unexpected data {data[:20].hex()}'
+    cap = cv2.VideoCapture('tmp.h264')
+    image = None
+    ret = True
+    while ret:
+        ret, frame = cap.read()
+        if ret:
+            image = frame #pygame.image.frombuffer(frame.tobytes(), frame.shape[1::-1], "BGR")
+    cap.release()
+    return image
+
+
 def read_logfile(logfile):
     nn_mask_stream = lookup_stream_id(logfile, 'oak.nn_mask')
     img_stream = lookup_stream_id(logfile, 'oak.color')
     with LogReader(logfile, only_stream_id=[nn_mask_stream, img_stream]) as log:
+        img = np.zeros((480, 640, 3), dtype='uint8')
         for timestamp, stream_id, data in log:
             if stream_id == nn_mask_stream:
                 mask = deserialize(data)
                 #if timestamp > timedelta(seconds=6):
                     #return
-                img = np.zeros((480, 640, 3), dtype='uint8')
                 mask = cv2.resize(mask, (640, 480))
                 height, width = mask.shape
                 colored_mask = np.zeros((height, width, 3), dtype=np.uint8)
@@ -30,8 +54,13 @@ def read_logfile(logfile):
 
                 cv2.imshow("OAK-D Segmentation", overlay)
                 key = cv2.waitKey(100)
+                if key == 0x20:
+                    key = cv2.waitKey(0)
                 if key in [27, ord('q')]:
                     break
+
+            if stream_id == img_stream:
+                img = cv2.resize(read_h264_image(deserialize(data)), (640, 480))
 
 
 def main():
