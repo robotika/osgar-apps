@@ -52,6 +52,10 @@ class RobotemRovne(Node):
     def on_depth(self, data):
         pass
 
+    def on_nn_mask(self, data):
+        pass
+#        assert 0, data.shape
+
     def on_orientation_list(self, data):
         if self.verbose:
             for quat in data:

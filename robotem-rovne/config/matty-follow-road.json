@@ -67,7 +67,10 @@
       ["platform.pose2d", "app.pose2d"],
       ["serial.raw", "platform.esp_data"],
       ["platform.esp_data", "serial.raw"],
-      ["timer.tick", "platform.tick"]
+      ["timer.tick", "platform.tick"],
+
+      ["oak.nn_mask", "app.nn_mask"],
+      ["oak.orientation_list", "app.orientation_list"]
     ]
   }
 }
