@@ -20,12 +20,13 @@ class RobotemRovne(Node):
         self.verbose = False
         self.last_position = None  # not defined, probably should be 0, 0, 0
         self.last_obstacle = 0
+        self.last_nn_mask = None
         self.raise_exception_on_stop = False
 
     def on_pose2d(self, data):
         x, y, heading = data
         self.last_position = [x / 1000.0, y / 1000.0, math.radians(heading / 100.0)]
-        if self.last_obstacle < self.stop_dist:  # meters
+        if self.last_obstacle < self.stop_dist or self.last_nn_mask is None:  # meters
             speed, steering_angle = 0, 0
         else:
             speed, steering_angle = self.max_speed, 0
@@ -53,8 +54,7 @@ class RobotemRovne(Node):
         pass
 
     def on_nn_mask(self, data):
-        pass
-#        assert 0, data.shape
+        self.last_nn_mask = data
 
     def on_orientation_list(self, data):
         if self.verbose:
