@@ -66,11 +66,29 @@ def read_logfile(logfile):
                 colored_mask[mask == 1] = [0, 0, 255]
                 overlay = cv2.addWeighted(img, 1, colored_mask, 0.7, 0)
 
-                cross_length = 20
+                cross_length = 30
                 cv2.line(overlay, (center_x - cross_length, center_y), (center_x + cross_length, center_y), (0, 255, 0),
                          thickness=2)
                 cv2.line(overlay, (center_x, center_y - cross_length), (center_x, center_y + cross_length), (0, 255, 0),
                          thickness=2)
+
+                # arrow
+                dead = 20
+                if center_x > 320 + dead:
+                    cv2.line(overlay, (center_x - cross_length, center_y),
+                            (center_x - cross_length//2, center_y - cross_length//3), (0, 255, 0),
+                             thickness=2)
+                    cv2.line(overlay, (center_x - cross_length, center_y),
+                            (center_x - cross_length//2, center_y + cross_length//3), (0, 255, 0),
+                             thickness=2)
+                elif center_x < 320 - dead:
+                    cv2.line(overlay, (center_x + cross_length, center_y),
+                            (center_x + cross_length//2, center_y - cross_length//3), (0, 255, 0),
+                             thickness=2)
+                    cv2.line(overlay, (center_x + cross_length, center_y),
+                            (center_x + cross_length//2, center_y + cross_length//3), (0, 255, 0),
+                             thickness=2)
+
 
                 cv2.imshow("OAK-D Segmentation", overlay)
                 key = cv2.waitKey(100)
