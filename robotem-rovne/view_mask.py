@@ -36,6 +36,16 @@ def read_h264_image(data):
     return image
 
 
+def mask_center(mask):
+    if mask.max() == 0:
+        return mask.shape[0]//2, mask.shape[1]//2
+    assert mask.max() == 1, mask.max()
+    indices = np.argwhere(mask == 1)  # shape (num_points, 2)
+
+    # Compute the center of mass as the mean of these indices
+    return tuple(int(x) for x in indices.mean(axis=0))
+
+
 def read_logfile(logfile):
     nn_mask_stream = lookup_stream_id(logfile, 'oak.nn_mask')
     img_stream = lookup_stream_id(logfile, 'oak.color')
@@ -44,6 +54,10 @@ def read_logfile(logfile):
         for timestamp, stream_id, data in log:
             if stream_id == nn_mask_stream:
                 mask = deserialize(data)
+                center_y, center_x = mask_center(mask)
+                scale = 4  # 160 -> 640
+                center_x *= scale
+                center_y *= scale
                 #if timestamp > timedelta(seconds=6):
                     #return
                 mask = cv2.resize(mask, (640, 480))
@@ -51,6 +65,12 @@ def read_logfile(logfile):
                 colored_mask = np.zeros((height, width, 3), dtype=np.uint8)
                 colored_mask[mask == 1] = [0, 0, 255]
                 overlay = cv2.addWeighted(img, 1, colored_mask, 0.7, 0)
+
+                cross_length = 20
+                cv2.line(overlay, (center_x - cross_length, center_y), (center_x + cross_length, center_y), (0, 255, 0),
+                         thickness=2)
+                cv2.line(overlay, (center_x, center_y - cross_length), (center_x, center_y + cross_length), (0, 255, 0),
+                         thickness=2)
 
                 cv2.imshow("OAK-D Segmentation", overlay)
                 key = cv2.waitKey(100)
