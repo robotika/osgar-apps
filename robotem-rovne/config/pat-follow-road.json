@@ -12,24 +12,16 @@
           }
       },
       "platform": {
-        "driver": "osgar.platforms.matty:Matty",
-        "in": ["esp_data"],
-        "out": ["esp_data"],
+        "driver": "osgar.platforms.yuhesen:FR07",
+        "in": ["can"],
+        "out": ["can"],
         "init": {}
       },
-      "timer": {
-        "driver": "timer",
-        "in": [],
-        "out": ["tick"],
-        "init": {
-          "sleep": 0.1
-        }
-      },
-      "serial": {
-          "driver": "serial",
-          "in": ["raw"],
-          "out": ["raw"],
-          "init": {"port": "/dev/ttyUSB0", "speed": 115200}
+      "can": {
+        "driver": "pcan",
+        "in": ["can"],
+        "out": ["can"],
+        "init": {}
       },
       "oak": {
         "driver": "osgar.drivers.oak_camera:OakCamera",
@@ -62,14 +54,43 @@
             "input_size": "160x120"
           }
         }
+      },
+      "gps": {
+          "driver": "gps",
+          "in": ["raw"],
+          "out": ["position"],
+          "init": {}
+      },
+      "gps_serial": {
+          "driver": "serial",
+          "in": [],
+          "out": ["raw"],
+          "init": {"port": "/dev/ttyUSB0", "speed": 4800}
+      },
+      "vanjee": {
+          "driver": "vanjee",
+          "in": ["raw"],
+          "out": ["raw", "xyz"],
+          "init": {}
+      },
+      "vanjee_udp": {
+          "driver": "udp",
+          "in": ["raw"],
+          "out": ["raw"],
+          "init": {"host": "192.168.0.2", "port": 6050, "timeout": 3.0, "bufsize": 100000}
       }
     },
     "links": [
+      ["can.can", "platform.can"],
+      ["platform.can", "can.can"],
       ["app.desired_steering", "platform.desired_steering"],
+      ["platform.emergency_stop", "app.emergency_stop"],
       ["platform.pose2d", "app.pose2d"],
-      ["serial.raw", "platform.esp_data"],
-      ["platform.esp_data", "serial.raw"],
-      ["timer.tick", "platform.tick"],
+
+      ["gps_serial.raw", "gps.raw"],
+
+      ["vanjee_udp.raw", "vanjee.raw"],
+      ["vanjee.raw", "vanjee_udp.raw"],
 
       ["oak.nn_mask", "app.nn_mask"],
       ["oak.orientation_list", "app.orientation_list"]
