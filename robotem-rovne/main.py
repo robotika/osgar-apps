@@ -11,6 +11,16 @@ from osgar.followme import EmergencyStopException
 from osgar.lib import quaternion
 
 
+def mask_center(mask):
+    if mask.max() == 0:
+        return mask.shape[0]//2, mask.shape[1]//2
+    assert mask.max() == 1, mask.max()
+    indices = np.argwhere(mask == 1)  # shape (num_points, 2)
+
+    # Compute the center of mass as the mean of these indices
+    return tuple(int(x) for x in indices.mean(axis=0))
+
+
 class RobotemRovne(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
@@ -21,6 +31,7 @@ class RobotemRovne(Node):
         self.last_position = None  # not defined, probably should be 0, 0, 0
         self.last_obstacle = 0
         self.last_nn_mask = None
+        self.last_dir = 0  # straight
         self.raise_exception_on_stop = False
 
     def on_pose2d(self, data):
@@ -29,7 +40,7 @@ class RobotemRovne(Node):
         if self.last_obstacle < self.stop_dist or self.last_nn_mask is None:  # meters
             speed, steering_angle = 0, 0
         else:
-            speed, steering_angle = self.max_speed, 0
+            speed, steering_angle = self.max_speed, self.last_dir
         if self.verbose:
             print(speed, steering_angle)
         self.send_speed_cmd(speed, steering_angle)
@@ -55,6 +66,15 @@ class RobotemRovne(Node):
 
     def on_nn_mask(self, data):
         self.last_nn_mask = data
+        center_y, center_x = mask_center(data)
+        dead = 10
+        turn_angle = math.radians(20)
+        if center_x > 80 + dead:
+            self.last_dir = -turn_angle
+        elif center_x < 80 - dead:
+            self.last_dir = turn_angle
+        else:
+            self.last_dir = 0  # straight
 
     def on_orientation_list(self, data):
         if self.verbose:

@@ -11,6 +11,8 @@ import numpy as np
 from osgar.logger import LogReader, lookup_stream_id
 from osgar.lib.serialize import deserialize
 
+from main import mask_center
+
 
 def read_h264_image(data):
     assert data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 0930')), data[
@@ -34,16 +36,6 @@ def read_h264_image(data):
             image = frame #pygame.image.frombuffer(frame.tobytes(), frame.shape[1::-1], "BGR")
     cap.release()
     return image
-
-
-def mask_center(mask):
-    if mask.max() == 0:
-        return mask.shape[0]//2, mask.shape[1]//2
-    assert mask.max() == 1, mask.max()
-    indices = np.argwhere(mask == 1)  # shape (num_points, 2)
-
-    # Compute the center of mass as the mean of these indices
-    return tuple(int(x) for x in indices.mean(axis=0))
 
 
 def read_logfile(logfile):
