@@ -32,7 +32,7 @@ class RobotemRovne(Node):
         self.last_obstacle = 0
         self.last_nn_mask = None
         self.last_dir = 0  # straight
-        self.raise_exception_on_stop = False
+        self.raise_exception_on_stop = config.get('terminate_on_stop', False)
 
     def on_pose2d(self, data):
         x, y, heading = data

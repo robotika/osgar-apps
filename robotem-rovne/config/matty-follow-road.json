@@ -8,7 +8,8 @@
           "out": ["desired_steering"],
           "init": {
             "max_speed": 0.2,
-            "stop_dist": -1
+            "stop_dist": -1,
+            "terminate_on_stop": true
           }
       },
       "platform": {
@@ -67,6 +68,7 @@
     "links": [
       ["app.desired_steering", "platform.desired_steering"],
       ["platform.pose2d", "app.pose2d"],
+      ["platform.emergency_stop", "app.emergency_stop"],
       ["serial.raw", "platform.esp_data"],
       ["platform.esp_data", "serial.raw"],
       ["timer.tick", "platform.tick"],
