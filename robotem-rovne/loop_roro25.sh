@@ -7,5 +7,5 @@ while true; do
   echo
   echo "Waiting for RORO25 termination"
   sleep 1
-  python -m osgar.record --duration 10 config/matty-follow-road.json
+  python -m osgar.record config/matty-follow-road.json
 done
