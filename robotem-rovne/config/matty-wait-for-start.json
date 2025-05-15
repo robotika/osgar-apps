@@ -33,7 +33,7 @@
       ["timer.tick", "platform.tick"],
       ["platform.esp_data", "serial.raw"],
       ["serial.raw", "platform.esp_data"],
-      ["platform.emergency_stop", "app.emergency_stop"]
+      ["platform.emergency_stop", "app.terminate_if_false"]
     ]
   }
 }

@@ -10,8 +10,12 @@ class Terminator(Node):
         super().__init__(config, bus)
         self.raise_exception_on_stop = True
 
-    def on_emergency_stop(self, data):
+    def on_terminate_if_true(self, data):
         if self.raise_exception_on_stop and data:
+            raise EmergencyStopException()
+
+    def on_terminate_if_false(self, data):
+        if self.raise_exception_on_stop and not data:
             raise EmergencyStopException()
 
 # vim: expandtab sw=4 ts=4
