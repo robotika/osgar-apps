@@ -65,8 +65,11 @@ class RobotemRovne(Node):
         pass
 
     def on_nn_mask(self, data):
-        self.last_nn_mask = data
-        center_y, center_x = mask_center(data)
+        self.last_nn_mask = data.copy()  # make sure you modify only own copy
+        assert self.last_nn_mask.shape == (120, 160), self.last_nn_mask.shape
+        self.last_nn_mask[:60, :] = 0  # remove sky detections
+
+        center_y, center_x = mask_center(self.last_nn_mask)
         dead = 10
         turn_angle = math.radians(20)
         if center_x > 80 + dead:

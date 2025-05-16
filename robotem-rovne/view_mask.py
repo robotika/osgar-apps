@@ -56,6 +56,8 @@ def read_logfile(logfile, video_filename=None):
         for timestamp, stream_id, data in log:
             if stream_id == nn_mask_stream:
                 mask = deserialize(data)
+                assert mask.shape == (120, 160), mask.shape
+                mask[:60, :] = 0  # remove sky detections
                 center_y, center_x = mask_center(mask)
                 scale = 12  # 160 -> 640 -> 1920
                 center_x *= scale
