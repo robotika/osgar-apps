@@ -38,16 +38,17 @@ def read_h264_image(data):
     return image
 
 
-def read_logfile(logfile):
+def read_logfile(logfile, video_filename=None):
     nn_mask_stream = lookup_stream_id(logfile, 'oak.nn_mask')
     img_stream = lookup_stream_id(logfile, 'oak.color')
-    outfile = 'marathon.mp4'
+    outfile = video_filename
     fps = 20
     width, height = 1920, 1080
-    writer = cv2.VideoWriter(outfile,
-                             cv2.VideoWriter_fourcc(*"mp4v"),
-                             fps,
-                             (width, height))
+    if outfile is not None:
+        writer = cv2.VideoWriter(outfile,
+                                 cv2.VideoWriter_fourcc(*"mp4v"),
+                                 fps,
+                                 (width, height))
 
     with LogReader(logfile, only_stream_id=[nn_mask_stream, img_stream]) as log:
 #        img = np.zeros((480, 640, 3), dtype='uint8')
@@ -94,7 +95,8 @@ def read_logfile(logfile):
 
 
                 cv2.imshow("OAK-D Segmentation", overlay)
-                writer.write(overlay)
+                if outfile is not None:
+                    writer.write(overlay)
 
                 key = cv2.waitKey(1)
                 if key == 0x20:
@@ -107,7 +109,8 @@ def read_logfile(logfile):
             if stream_id == img_stream:
 #                img = cv2.resize(read_h264_image(deserialize(data)), (640, 480))
                 img = read_h264_image(deserialize(data))
-    writer.release()
+    if outfile is not None:
+        writer.release()
 
 
 def main():
@@ -115,9 +118,10 @@ def main():
 
     parser = argparse.ArgumentParser(description='Extract data from logfile')
     parser.add_argument('logfile', help='recorded log file')
+    parser.add_argument('--create-video', help='filename of output video')
     args = parser.parse_args()
 
-    read_logfile(args.logfile)
+    read_logfile(args.logfile, video_filename=args.create_video)
 
 
 if __name__ == "__main__":
