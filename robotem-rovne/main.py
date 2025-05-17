@@ -6,6 +6,7 @@ import math
 
 import numpy as np
 
+from osgar.lib.route import Convertor
 from osgar.node import Node
 from osgar.followme import EmergencyStopException
 from osgar.lib import quaternion
@@ -27,11 +28,13 @@ class RobotemRovne(Node):
         bus.register('desired_steering')
         self.max_speed = config.get('max_speed', 0.2)
         self.stop_dist = config.get('stop_dist', 1.0)
+        self.limit_dist = config.get('dist_dist', 320)  # None) # TODO RoRo
         self.verbose = False
         self.last_position = None  # not defined, probably should be 0, 0, 0
         self.last_obstacle = 0
         self.last_nn_mask = None
         self.last_dir = 0  # straight
+        self.start_lon_lat = None
         self.raise_exception_on_stop = config.get('terminate_on_stop', False)
 
     def on_pose2d(self, data):
@@ -65,7 +68,15 @@ class RobotemRovne(Node):
         pass
 
     def on_nmea_data(self, data):
-        pass
+        if 'lat' in data and 'lon' in data:
+            lat, lon = data['lat'], data['lon']
+            if self.start_lon_lat is None:
+                self.start_lon_lat = (lon, lat)
+            conv = Convertor(refPoint=self.start_lon_lat)
+            dist = math.hypot(*conv.geo2planar((lon, lat)))
+            if self.limit_dist is not None and dist > self.limit_dist:
+                print('reached', dist)
+                raise EmergencyStopException()
 
     def on_nn_mask(self, data):
         self.last_nn_mask = data.copy()  # make sure you modify only own copy
