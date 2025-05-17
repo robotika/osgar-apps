@@ -26,6 +26,13 @@
           "sleep": 0.1
         }
       },
+      "gps": {
+        "driver": "gps",
+        "in": ["raw"],
+        "out": ["nmea_data"],
+        "init": {
+        }
+      },
       "serial": {
           "driver": "serial",
           "in": ["raw"],
@@ -71,7 +78,10 @@
       ["platform.emergency_stop", "app.emergency_stop"],
       ["serial.raw", "platform.esp_data"],
       ["platform.esp_data", "serial.raw"],
+      ["platform.gps_serial", "gps.raw"],
       ["timer.tick", "platform.tick"],
+
+      ["gps.nmea_data", "app.nmea_data"],
 
       ["oak.nn_mask", "app.nn_mask"],
       ["oak.orientation_list", "app.orientation_list"]

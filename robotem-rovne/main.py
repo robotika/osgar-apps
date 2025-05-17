@@ -64,6 +64,9 @@ class RobotemRovne(Node):
     def on_depth(self, data):
         pass
 
+    def on_nmea_data(self, data):
+        pass
+
     def on_nn_mask(self, data):
         self.last_nn_mask = data.copy()  # make sure you modify only own copy
         assert self.last_nn_mask.shape == (120, 160), self.last_nn_mask.shape
