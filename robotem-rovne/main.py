@@ -28,7 +28,7 @@ class RobotemRovne(Node):
         bus.register('desired_steering')
         self.max_speed = config.get('max_speed', 0.2)
         self.stop_dist = config.get('stop_dist', 1.0)
-        self.limit_dist = config.get('dist_dist', 320)  # None) # TODO RoRo
+        self.limit_dist = config.get('dist_dist', None)
         self.verbose = False
         self.last_position = None  # not defined, probably should be 0, 0, 0
         self.last_obstacle = 0

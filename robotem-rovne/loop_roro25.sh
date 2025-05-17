@@ -7,5 +7,15 @@ while true; do
   echo
   echo "Waiting for RORO25 termination"
   sleep 1
+  python -m osgar.record config/matty-follow-road.json --param dist_limit=3.20
+
+  echo "Turn 180deg"
+  sleep 1
+  python -m osgar.record ~/git/osgar/config/matty-go.json --param app.steering_deg=45 app.timeout=6.5
+
+  echo
+  echo "Waiting for RORO25-back termination"
+  sleep 1
   python -m osgar.record config/matty-follow-road.json
+
 done
