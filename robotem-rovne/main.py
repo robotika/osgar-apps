@@ -68,7 +68,7 @@ class RobotemRovne(Node):
         pass
 
     def on_nmea_data(self, data):
-        if 'lat' in data and 'lon' in data:
+        if ('lat' in data and 'lon' in data) and (data['lat'] is not None and data['lon'] is not None):
             lat, lon = data['lat'], data['lon']
             if self.start_lon_lat is None:
                 self.start_lon_lat = (lon, lat)
