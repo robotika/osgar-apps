@@ -14,7 +14,7 @@ from osgar.lib.serialize import deserialize
 from main import mask_center
 
 
-def read_h264_image(data):
+def read_h264_image(data, i_frame_only=True):
     assert data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 0930')), data[
                                                                                                                :20].hex()
     if data.startswith(bytes.fromhex('00000001 0950')):
@@ -23,6 +23,8 @@ def read_h264_image(data):
             f.write(data)
     elif data.startswith(bytes.fromhex('00000001 0930')):
         # P-frame}
+        if i_frame_only:
+            return None
         with open('tmp.h264', 'ab') as f:
             f.write(data)
     else:
@@ -55,6 +57,8 @@ def read_logfile(logfile, video_filename=None):
         img = np.zeros((1080, 1920, 3), dtype='uint8')
         for timestamp, stream_id, data in log:
             if stream_id == nn_mask_stream:
+                if img is None:
+                    continue
                 mask = deserialize(data)
                 assert mask.shape == (120, 160), mask.shape
                 mask[:60, :] = 0  # remove sky detections
