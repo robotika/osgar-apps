@@ -2,6 +2,7 @@
 """
   Demo example how to read log file
 """
+import datetime
 import pathlib
 from datetime import timedelta
 
@@ -12,6 +13,7 @@ from osgar.logger import LogReader, lookup_stream_id
 from osgar.lib.serialize import deserialize
 
 from main import mask_center
+from log_info import get_time_and_dist
 
 
 def read_h264_image(data, i_frame_only=True):
@@ -43,6 +45,7 @@ def read_h264_image(data, i_frame_only=True):
 def read_logfile(logfile, video_filename=None):
     nn_mask_stream = lookup_stream_id(logfile, 'oak.nn_mask')
     img_stream = lookup_stream_id(logfile, 'oak.color')
+    total_duration, dist = get_time_and_dist(logfile, 'platform.pose2d')
     outfile = video_filename
     fps = 20
     width, height = 1920, 1080
@@ -56,6 +59,7 @@ def read_logfile(logfile, video_filename=None):
 #        img = np.zeros((480, 640, 3), dtype='uint8')
         img = np.zeros((1080, 1920, 3), dtype='uint8')
         for timestamp, stream_id, data in log:
+            mear_the_end = timestamp > total_duration - datetime.timedelta(seconds=10)
             if stream_id == nn_mask_stream:
                 if img is None:
                     continue
@@ -114,7 +118,7 @@ def read_logfile(logfile, video_filename=None):
 
             if stream_id == img_stream:
 #                img = cv2.resize(read_h264_image(deserialize(data)), (640, 480))
-                img = read_h264_image(deserialize(data))
+                img = read_h264_image(deserialize(data), i_frame_only=not mear_the_end)
     if outfile is not None:
         writer.release()
 
