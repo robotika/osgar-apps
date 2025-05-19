@@ -75,7 +75,7 @@ class RobotemRovne(Node):
             conv = Convertor(refPoint=self.start_lon_lat)
             dist = math.hypot(*conv.geo2planar((lon, lat)))
             if self.limit_dist is not None and dist > self.limit_dist:
-                print('reached', dist)
+                print(self.time, 'reached', dist)
                 raise EmergencyStopException()
 
     def on_nn_mask(self, data):
