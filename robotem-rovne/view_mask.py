@@ -4,6 +4,7 @@
 """
 import datetime
 import pathlib
+import math
 from datetime import timedelta
 
 import cv2
@@ -42,10 +43,11 @@ def read_h264_image(data, i_frame_only=True):
     return image
 
 
-def read_logfile(logfile, video_filename=None):
+def read_logfile(logfile, video_filename=None, add_time=True):
     nn_mask_stream = lookup_stream_id(logfile, 'oak.nn_mask')
     img_stream = lookup_stream_id(logfile, 'oak.color')
-    total_duration, dist = get_time_and_dist(logfile, 'platform.pose2d')
+    pose2d_stream = lookup_stream_id(logfile, 'platform.pose2d')
+    total_duration, total_dist = get_time_and_dist(logfile, 'platform.pose2d')
     outfile = video_filename
     fps = 20
     width, height = 1920, 1080
@@ -55,9 +57,11 @@ def read_logfile(logfile, video_filename=None):
                                  fps,
                                  (width, height))
 
-    with LogReader(logfile, only_stream_id=[nn_mask_stream, img_stream]) as log:
+    with LogReader(logfile, only_stream_id=[nn_mask_stream, img_stream, pose2d_stream]) as log:
 #        img = np.zeros((480, 640, 3), dtype='uint8')
         img = np.zeros((1080, 1920, 3), dtype='uint8')
+        dist = 0
+        prev = [0, 0, 0]
         for timestamp, stream_id, data in log:
             mear_the_end = timestamp > total_duration - datetime.timedelta(seconds=10)
             if stream_id == nn_mask_stream:
@@ -103,6 +107,14 @@ def read_logfile(logfile, video_filename=None):
                             (center_x - cross_length//2, center_y + cross_length//3), (0, 255, 0),
                              thickness=thickness)
 
+                if add_time:
+                    x, y = 600, 100
+                    thickness = 5
+                    size = 5.0
+                    # clip microseconds to miliseconds
+                    s = str(timestamp)[:-3] + f' ({dist:.1f}m)'
+                    cv2.putText(overlay, s, (x, y), cv2.FONT_HERSHEY_PLAIN,
+                                size, (255, 0, 0), thickness=thickness)
 
                 cv2.imshow("OAK-D Segmentation", overlay)
                 if outfile is not None:
@@ -116,9 +128,16 @@ def read_logfile(logfile, video_filename=None):
                 if key in [27, ord('q')]:
                     break
 
-            if stream_id == img_stream:
+            elif stream_id == img_stream:
 #                img = cv2.resize(read_h264_image(deserialize(data)), (640, 480))
                 img = read_h264_image(deserialize(data), i_frame_only=not mear_the_end)
+            elif stream_id == pose2d_stream:
+                pose2d = deserialize(data)
+                dist += math.hypot((pose2d[0] - prev[0]) / 1000.0, (pose2d[1] - prev[1]) / 1000.0)
+                prev = pose2d
+            else:
+                assert 0, stream_id  # unexpected stream
+
     if outfile is not None:
         writer.release()
 
