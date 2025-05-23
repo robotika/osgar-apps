@@ -7,7 +7,7 @@
           "in": ["emergency_stop", "pose2d", "nn_mask", "nmea_data", "orientation_list"],
           "out": ["desired_steering"],
           "init": {
-            "max_speed": 0.2,
+            "max_speed": 1.0,
             "stop_dist": -1
           }
       },
@@ -15,7 +15,9 @@
         "driver": "osgar.platforms.yuhesen:FR07",
         "in": ["can"],
         "out": ["can"],
-        "init": {}
+        "init": {
+           "max_speed": 1.0
+        }
       },
       "can": {
         "driver": "pcan",
