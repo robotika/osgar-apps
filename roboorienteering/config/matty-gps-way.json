@@ -3,13 +3,19 @@
   "robot": {
     "modules": {
       "app": {
-          "driver": "robotem-rovne.main:RobotemRovne",
+          "driver": "roboorienteering.ro:RoboOrienteering",
           "in": ["emergency_stop", "pose2d", "nn_mask", "nmea_data", "orientation_list"],
           "out": ["desired_steering"],
           "init": {
             "max_speed": 0.5,
             "stop_dist": -1,
-            "terminate_on_stop": true
+            "terminate_on_stop": true,
+            "waypoints": [[49.949526, 12.697371],
+              [49.950105, 12.696098],
+              [49.950455, 12.696915],
+              [49.949334, 12.698294],
+              [49.948960, 12.698260],
+              [49.948932, 12.698031]]
           }
       },
       "platform": {

@@ -1,5 +1,5 @@
 """
-  RoboOrienteering 2018 - experiments with osgar.logger and robot container
+  RoboOrienteering - navigate in terrain on GPS points with cones
 """
 
 import argparse
@@ -11,6 +11,7 @@ from datetime import timedelta
 from osgar.lib.config import config_load
 from osgar.lib.mathex import normalizeAnglePIPI
 from osgar.record import record
+from osgar.node import Node
 
 from osgar.drivers.gps import INVALID_COORDINATES
 
@@ -52,12 +53,12 @@ class EmergencyStopMonitor:
         self.robot.unregister(self.callback)
 
 
-class RoboOrienteering2018:
+class RoboOrienteering(Node):
     EMERGENCY_STOP = 0x0001
 
     def __init__(self, config, bus):
         self.bus = bus
-        self.maxspeed = config['maxspeed']
+        self.max_speed = config.get('max_speed', 0.2)
         self.goals = [latlon2xy(lat, lon) for lat, lon in config['waypoints']]
         self.time = None
         self.last_position = None  # (lon, lat) in milliseconds
@@ -190,7 +191,7 @@ class RoboOrienteering2018:
                 spider_heading = normalizeAnglePIPI(math.radians(180 - self.last_imu_yaw - 35.5))
                 desired_wheel_heading = normalizeAnglePIPI(desired_heading-spider_heading)
 
-            self.set_speed(self.maxspeed, desired_wheel_heading)
+            self.set_speed(self.max_speed, desired_wheel_heading)
 
             prev_time = self.time
             self.update()
