@@ -29,11 +29,6 @@
             "output_format": "LayerFp16",
             "NN_family": "resnet",
             "input_size": "160x120"
-          },
-          "mappings": {
-            "labels": [
-              "cone"
-            ]
           }
         }
       }
