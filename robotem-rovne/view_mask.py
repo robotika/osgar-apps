@@ -43,19 +43,11 @@ def read_h264_image(data, i_frame_only=True):
     return image
 
 
-def read_logfile(logfile, video_filename=None, add_time=True):
+def read_logfile(logfile, writer=None, add_time=True):
     nn_mask_stream = lookup_stream_id(logfile, 'oak.nn_mask')
     img_stream = lookup_stream_id(logfile, 'oak.color')
     pose2d_stream = lookup_stream_id(logfile, 'platform.pose2d')
     total_duration, total_dist = get_time_and_dist(logfile, 'platform.pose2d')
-    outfile = video_filename
-    fps = 20
-    width, height = 1920, 1080
-    if outfile is not None:
-        writer = cv2.VideoWriter(outfile,
-                                 cv2.VideoWriter_fourcc(*"mp4v"),
-                                 fps,
-                                 (width, height))
 
     with LogReader(logfile, only_stream_id=[nn_mask_stream, img_stream, pose2d_stream]) as log:
 #        img = np.zeros((480, 640, 3), dtype='uint8')
@@ -117,7 +109,7 @@ def read_logfile(logfile, video_filename=None, add_time=True):
                                 size, (255, 0, 0), thickness=thickness)
 
                 cv2.imshow("OAK-D Segmentation", overlay)
-                if outfile is not None:
+                if writer is not None:
                     writer.write(overlay)
 
                 key = cv2.waitKey(1)
@@ -137,20 +129,34 @@ def read_logfile(logfile, video_filename=None, add_time=True):
                 prev = pose2d
             else:
                 assert 0, stream_id  # unexpected stream
-
-    if outfile is not None:
-        writer.release()
+    if writer is not None:
+        for i in range(20):
+            writer.write(overlay)
 
 
 def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Extract data from logfile')
-    parser.add_argument('logfile', help='recorded log file')
+    parser.add_argument('logfile', nargs='+', help='recorded log file(s)')
     parser.add_argument('--create-video', help='filename of output video')
     args = parser.parse_args()
 
-    read_logfile(args.logfile, video_filename=args.create_video)
+    if args.create_video is not None:
+        fps = 20
+        width, height = 1920, 1080
+        writer = cv2.VideoWriter(args.create_video,
+                                 cv2.VideoWriter_fourcc(*"mp4v"),
+                                 fps,
+                                 (width, height))
+    else:
+        writer = None  # no video writer
+
+    for logfile in args.logfile:
+        read_logfile(logfile, writer=writer)
+
+    if writer is not None:
+        writer.release()
 
 
 if __name__ == "__main__":
