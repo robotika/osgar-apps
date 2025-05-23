@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """
-  Demo example how to read log file
+  View road NN detection mask with the original color image
 """
 import datetime
 import pathlib
@@ -50,7 +50,6 @@ def read_logfile(logfile, writer=None, add_time=True):
     total_duration, total_dist = get_time_and_dist(logfile, 'platform.pose2d')
 
     with LogReader(logfile, only_stream_id=[nn_mask_stream, img_stream, pose2d_stream]) as log:
-#        img = np.zeros((480, 640, 3), dtype='uint8')
         img = np.zeros((1080, 1920, 3), dtype='uint8')
         dist = 0
         prev = [0, 0, 0]
@@ -66,9 +65,6 @@ def read_logfile(logfile, writer=None, add_time=True):
                 scale = 12  # 160 -> 640 -> 1920
                 center_x *= scale
                 center_y *= 9  # scale
-                #if timestamp > timedelta(seconds=6):
-                    #return
-#                mask = cv2.resize(mask, (640, 480))
                 mask = cv2.resize(mask, (1920, 1080))
                 height, width = mask.shape
                 colored_mask = np.zeros((height, width, 3), dtype=np.uint8)
@@ -121,7 +117,6 @@ def read_logfile(logfile, writer=None, add_time=True):
                     break
 
             elif stream_id == img_stream:
-#                img = cv2.resize(read_h264_image(deserialize(data)), (640, 480))
                 img = read_h264_image(deserialize(data), i_frame_only=not mear_the_end)
             elif stream_id == pose2d_stream:
                 pose2d = deserialize(data)
@@ -137,7 +132,7 @@ def read_logfile(logfile, writer=None, add_time=True):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='Extract data from logfile')
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('logfile', nargs='+', help='recorded log file(s)')
     parser.add_argument('--create-video', help='filename of output video')
     args = parser.parse_args()
@@ -163,4 +158,3 @@ if __name__ == "__main__":
     main()
 
 # vim: expandtab sw=4 ts=4 
-
