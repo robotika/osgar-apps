@@ -132,7 +132,11 @@ class WebPageSwitch(Node):
 
     def run(self):
         while self.is_bus_alive():
-            switch_status = data_queue.get()  # blocks until a value is available
+            try:
+                switch_status = data_queue.get(timeout=1.0)  # blocks until a value is available
+            except queue.Empty:
+                continue
+
             print(f"Received value from HTTP handler: {switch_status}")
             self.publish('status', switch_status)
             if switch_status:
