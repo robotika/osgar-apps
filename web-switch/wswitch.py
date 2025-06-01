@@ -6,6 +6,7 @@ import queue
 import threading
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import parse_qs
+from ast import literal_eval
 
 from osgar.node import Node
 
@@ -125,7 +126,9 @@ class WebPageSwitch(Node):
         bus.register('status', 'cmd')
         self.on_cmd = config.get('on_cmd')
         self.off_cmd = config.get('off_cmd')
-
+        if config.get('use_eval', False):
+            self.on_cmd = literal_eval(self.on_cmd) if self.on_cmd is not None else None
+            self.off_cmd = literal_eval(self.off_cmd) if self.off_cmd is not None else None
         self.server_thread = threading.Thread(target=run_server, daemon=True)
         self.server_thread.controller = self
         self.server_thread.start()

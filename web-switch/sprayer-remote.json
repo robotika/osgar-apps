@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "robot": {
+    "modules": {
+      "switch": {
+          "driver": "wswitch:WebPageSwitch",
+          "in": [],
+          "out": ["status", "cmd"],
+          "init": {
+            "on_cmd": "b'*B1OS1H\\r'",
+            "off_cmd": "b'*B1OS1L\\r'",
+            "use_eval": true
+          }
+      },
+      "serial": {
+          "driver": "serial",
+          "in": ["raw"],
+          "out": ["raw"],
+          "init": {"port": "/dev/sprayer", "speed": 115200}
+      }
+    },
+    "links": [
+      ["switch.cmd", "serial.raw"]
+    ]
+  }
+}
