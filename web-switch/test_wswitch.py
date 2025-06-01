@@ -16,8 +16,42 @@ class WebPageSwitchTest(unittest.TestCase):
         bus.is_alive = MagicMock(side_effect=[True, False])  # process 1 message from the queue
         switch.run()
 
-        bus.publish.assert_called()
+        self.assertEqual(len(bus.method_calls), 4)
         self.assertEqual(bus.method_calls[-1], call.is_alive())
         self.assertEqual(bus.method_calls[-2], call.publish('status', False))
+
+    def test_on_command(self):
+        bus = MagicMock()
+        config = {
+            'on_cmd': [200, 0],
+            'off_cmd': [0, 0]
+        }
+        switch = WebPageSwitch(config=config, bus=bus)
+
+        data_queue.put(True)
+        bus.is_alive = MagicMock(side_effect=[True, False])  # process 1 message from the queue
+        switch.run()
+
+        self.assertEqual(len(bus.method_calls), 5)
+        self.assertEqual(bus.method_calls[-1], call.is_alive())
+        self.assertEqual(bus.method_calls[-2], call.publish('cmd', [200, 0]))
+        self.assertEqual(bus.method_calls[-3], call.publish('status', True))
+
+    def test_off_command(self):
+        bus = MagicMock()
+        config = {
+            'on_cmd': [200, 0],
+            'off_cmd': [0, 0]
+        }
+        switch = WebPageSwitch(config=config, bus=bus)
+
+        data_queue.put(False)
+        bus.is_alive = MagicMock(side_effect=[True, False])  # process 1 message from the queue
+        switch.run()
+
+        self.assertEqual(len(bus.method_calls), 5)
+        self.assertEqual(bus.method_calls[-1], call.is_alive())
+        self.assertEqual(bus.method_calls[-2], call.publish('cmd', [0, 0]))
+        self.assertEqual(bus.method_calls[-3], call.publish('status', False))
 
 # vim: expandtab sw=4 ts=4

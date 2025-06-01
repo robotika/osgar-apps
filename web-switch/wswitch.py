@@ -122,7 +122,9 @@ def run_server():
 class WebPageSwitch(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('status')
+        bus.register('status', 'cmd')
+        self.on_cmd = config.get('on_cmd')
+        self.off_cmd = config.get('off_cmd')
 
         self.server_thread = threading.Thread(target=run_server, daemon=True)
         self.server_thread.controller = self
@@ -133,3 +135,9 @@ class WebPageSwitch(Node):
             switch_status = data_queue.get()  # blocks until a value is available
             print(f"Received value from HTTP handler: {switch_status}")
             self.publish('status', switch_status)
+            if switch_status:
+                if self.on_cmd is not None:
+                    self.publish('cmd', self.on_cmd)
+            else:
+                if self.off_cmd is not None:
+                    self.publish('cmd', self.off_cmd)
