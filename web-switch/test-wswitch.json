@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "robot": {
+    "modules": {
+      "wswitch": {
+          "driver": "wswitch:WebPageSwitch",
+          "in": [],
+          "out": ["status"],
+          "init": {
+
+          }
+      }
+    },
+    "links": []
+  }
+}
