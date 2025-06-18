@@ -76,7 +76,7 @@ class RoboOrienteering(Node):
         assert 'lon' in data, data
         lat, lon = data['lat'], data['lon']
         if lat is not None and lon is not None:
-            assert 0, data
+            print(data)
 
     def on_detections(self, data):
         pass
