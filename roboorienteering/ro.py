@@ -38,6 +38,7 @@ def latlon2xy(lat, lon):
 class RoboOrienteering(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
+        bus.register('desired_steering')
         self.max_speed = config.get('max_speed', 0.2)
         self.goals = [latlon2xy(lat, lon) for lat, lon in config['waypoints']]
         self.last_position = None  # (lon, lat) in milliseconds
@@ -51,14 +52,30 @@ class RoboOrienteering(Node):
         self.last_position_angle = None  # for angle computation from dGPS
         """
 
+    def send_speed_cmd(self, speed, steering_angle):
+        return self.bus.publish(
+            'desired_steering',
+            [round(speed * 1000), round(math.degrees(steering_angle) * 100)]
+        )
+
     def on_emergency_stop(self, data):
         pass
 
     def on_pose2d(self, data):
-        pass
+        if math.hypot(data[0]/1000.0, data[1]/1000.0) >= 3.0:
+            speed, steering_angle = 0, 0
+        else:
+            speed, steering_angle = self.max_speed, 0
+        if self.verbose:
+            print(speed, steering_angle)
+        self.send_speed_cmd(speed, steering_angle)
 
     def on_nmea_data(self, data):
-        pass
+        assert 'lat' in data, data
+        assert 'lon' in data, data
+        lat, lon = data['lat'], data['lon']
+        if lat is not None and lon is not None:
+            assert 0, data
 
     def on_detections(self, data):
         pass
