@@ -7,7 +7,7 @@
           "in": ["emergency_stop", "pose2d", "nn_mask", "nmea_data", "orientation_list"],
           "out": ["desired_steering"],
           "init": {
-            "max_speed": 0.5,
+            "max_speed": 0.2,
             "stop_dist": -1,
             "terminate_on_stop": true,
             "waypoints": [[49.949526, 12.697371],
