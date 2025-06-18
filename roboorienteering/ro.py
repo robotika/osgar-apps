@@ -42,6 +42,7 @@ class RoboOrienteering(Node):
         self.max_speed = config.get('max_speed', 0.2)
         self.goals = [latlon2xy(lat, lon) for lat, lon in config['waypoints']]
         self.last_position = None  # (lon, lat) in milliseconds
+        self.verbose = False
 
         """
         self.last_imu_yaw = None  # magnetic north in degrees
