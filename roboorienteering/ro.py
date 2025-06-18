@@ -33,43 +33,44 @@ def geo_angle(pos1, pos2):
 def latlon2xy(lat, lon):
     return int(round(lon*3600000)), int(round(lat*3600000))
 
-class EmergencyStopException(Exception):
-    pass
-
-class EmergencyStopMonitor:
-    def __init__(self, robot):
-        self.robot = robot
-
-    def update(self, robot):
-        if (robot.status & RoboOrienteering2018.EMERGENCY_STOP) == 0:
-            raise EmergencyStopException()
-
-    # context manager functions
-    def __enter__(self):
-        self.callback = self.robot.register(self.update)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.robot.unregister(self.callback)
 
 
 class RoboOrienteering(Node):
-    EMERGENCY_STOP = 0x0001
-
     def __init__(self, config, bus):
-        self.bus = bus
+        super().__init__(config, bus)
         self.max_speed = config.get('max_speed', 0.2)
         self.goals = [latlon2xy(lat, lon) for lat, lon in config['waypoints']]
-        self.time = None
         self.last_position = None  # (lon, lat) in milliseconds
+
+        """
         self.last_imu_yaw = None  # magnetic north in degrees
         self.status = None
         self.wheel_heading = None
         self.cmd = [0, 0]
         self.monitors = []
         self.last_position_angle = None  # for angle computation from dGPS
+        """
 
-    def update(self):
+    def on_emergency_stop(self, data):
+        pass
+
+    def on_pose2d(self, data):
+        pass
+
+    def on_nmea_data(self, data):
+        pass
+
+    def on_detections(self, data):
+        pass
+
+    def on_depth(self, data):
+        pass
+
+    def on_orientation_list(self, data):
+        pass
+
+
+    def Xupdate(self):
         packet = self.bus.listen()
         if packet is not None:
 #            print('RO', packet)
@@ -90,7 +91,7 @@ class RoboOrienteering(Node):
             for monitor_update in self.monitors:
                 monitor_update(self)
 
-    def set_speed(self, desired_speed, desired_wheel_heading):
+    def Xset_speed(self, desired_speed, desired_wheel_heading):
         # TODO split this for Car and Spider mode
         speed = int(round(desired_speed))
         desired_steering = int(-512 * math.degrees(desired_wheel_heading) / 360.0)
@@ -105,41 +106,12 @@ class RoboOrienteering(Node):
 
         self.cmd = [speed, desired_steering]
 
-    def start(self):
+    def Xstart(self):
         self.thread = threading.Thread(target=self.play)
         self.thread.start()
 
-    def request_stop(self):
-        self.bus.shutdown()
 
-    def join(self, timeout=None):
-        self.thread.join(timeout)
-
-    def register(self, callback):
-        self.monitors.append(callback)
-        return callback
-
-    def unregister(self, callback):
-        assert callback in self.monitors
-        self.monitors.remove(callback)
-
-    def wait(self, dt):
-        if self.time is None:
-            self.update()
-        start_time = self.time
-        while self.time - start_time < dt:
-            self.update()
-
-    def play0(self):
-        self.wait(timedelta(seconds=1))
-        self.set_speed(1, math.radians(50))
-        self.wait(timedelta(seconds=5))
-        self.set_speed(10, 0)
-        self.wait(timedelta(seconds=5))
-        self.set_speed(0, 0)
-        self.wait(timedelta(seconds=1))
-
-    def play(self):
+    def Xplay(self):
         print("Waiting for valid GPS position...")
         while self.last_position is None or self.last_position == INVALID_COORDINATES:
             self.update()
@@ -205,32 +177,5 @@ class RoboOrienteering(Node):
         while self.time - start_time < timedelta(seconds=3):
             self.set_speed(0, 0)
             self.update()
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='RoboOrienteering 2018')
-    subparsers = parser.add_subparsers(help='sub-command help', dest='command')
-    subparsers.required = True
-    parser_run = subparsers.add_parser('run', help='run on real HW')
-    parser_run.add_argument('config', nargs='+', help='configuration file')
-    parser_run.add_argument('--note', help='add description')
-
-    parser_replay = subparsers.add_parser('replay', help='replay from logfile')
-    parser_replay.add_argument('logfile', help='recorded log file')
-    parser_replay.add_argument('--force', '-F', dest='force', action='store_true', help='force replay even for failing output asserts')
-    parser_replay.add_argument('--config', nargs='+', help='force alternative configuration file')
-    args = parser.parse_args()
-
-    if args.command == 'replay':
-        from osgar.replay import replay
-        args.module = 'app'
-        app = replay(args, application=RoboOrienteering2018)
-        app.play()
-
-    elif args.command == 'run':
-        cfg = config_load(*args.config, application=RoboOrienteering2018)
-        record(cfg, 'ro2018-')
-    else:
-        assert False, args.command  # unsupported command
 
 # vim: expandtab sw=4 ts=4
