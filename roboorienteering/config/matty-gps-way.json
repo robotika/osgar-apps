@@ -59,7 +59,7 @@
           "is_imu_enabled": true,
           "number_imu_records": 10,
           "disable_magnetometer_fusion": false,
-          "mono_resolution": [1280, 720],
+          "mono_resolution": [640, 400],
           "color_resolution": "THE_1080_P",
           "color_manual_focus": 130,
           "stereo_median_filter": "KERNEL_3x3",
