@@ -5,8 +5,9 @@
 import argparse
 import math
 import threading
-
 from datetime import timedelta
+
+import numpy as np
 
 from osgar.lib.config import config_load
 from osgar.lib.mathex import normalizeAnglePIPI
@@ -38,11 +39,12 @@ def latlon2xy(lat, lon):
 class RoboOrienteering(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('desired_steering')
+        bus.register('desired_steering', 'scan')
         self.max_speed = config.get('max_speed', 0.2)
         self.goals = [latlon2xy(lat, lon) for lat, lon in config['waypoints']]
         self.last_position = None  # (lon, lat) in milliseconds
         self.verbose = False
+        self.scan = None
 
         """
         self.last_imu_yaw = None  # magnetic north in degrees
@@ -82,7 +84,19 @@ class RoboOrienteering(Node):
         pass
 
     def on_depth(self, data):
-        pass
+        line = 400//2
+        line_end = 400//2 + 30
+        box_width = 160
+        arr = []
+        for index in range(0 , 641 - box_width, 20):
+            mask = data[line:line_end, index:box_width + index] != 0
+            if mask.max():
+                dist = int(np.percentile( data[line:line_end, index:box_width + index][mask], 5))
+            else:
+                dist = 0
+            arr.append(dist)
+        self.publish('scan', arr)
+        self.scan = arr
 
     def on_orientation_list(self, data):
         pass
