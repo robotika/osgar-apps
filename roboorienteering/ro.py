@@ -41,6 +41,7 @@ class RoboOrienteering(Node):
         super().__init__(config, bus)
         bus.register('desired_steering', 'scan')
         self.max_speed = config.get('max_speed', 0.2)
+        self.turn_angle = config.get('turn_angle', 20)
         self.goals = [latlon2xy(lat, lon) for lat, lon in config['waypoints']]
         self.last_position = None  # (lon, lat) in milliseconds
         self.verbose = False
@@ -64,11 +65,55 @@ class RoboOrienteering(Node):
     def on_emergency_stop(self, data):
         pass
 
+    def get_direction(self, arr):
+        # based on FRE2025 code
+        center = len(arr) // 2
+        direction = 0  # default, if you cannot decide, go straight
+        if arr[center] > 1000:
+            # no close obstalce -> go straight
+            direction = 0
+            left = 0
+            for i in range(0, center):
+                if arr[center - i] > 1000:
+                    left = i
+                else:
+                    break
+            right = 0
+            for i in range(0, center):
+                if arr[center + i] > 1000:
+                    right = i
+                else:
+                    break
+            if self.verbose:
+                print(self.time, left, right)
+            if left <= 2 or right <= 2:
+                if left >= 5:
+                    # right is too close
+                    direction = self.turn_angle // 2
+                if right >= 5:
+                    ## left is too close
+                    direction = -self.turn_angle // 2
+        else:
+            # cannot go straight
+            for i in range(1, center):
+                if arr[center - i] > 1000 and arr[center + i] <= 1000:
+                    # free space on the left
+                    direction = self.turn_angle
+                    break
+                elif arr[center - i] <= 1000 and arr[center + i] > 1000:
+                    # free space on the right
+                    direction = -self.turn_angle
+                    break
+        return direction
+
     def on_pose2d(self, data):
         if math.hypot(data[0]/1000.0, data[1]/1000.0) >= 3.0:
             speed, steering_angle = 0, 0
+        elif self.scan is None:
+            # no depth data yet
+            speed, steering_angle = 0, 0
         else:
-            speed, steering_angle = self.max_speed, 0
+            speed, steering_angle = self.max_speed, self.get_direction(self.scan)
         if self.verbose:
             print(speed, steering_angle)
         self.send_speed_cmd(speed, steering_angle)
@@ -101,84 +146,7 @@ class RoboOrienteering(Node):
     def on_orientation_list(self, data):
         pass
 
-
-    def Xupdate(self):
-        packet = self.bus.listen()
-        if packet is not None:
-#            print('RO', packet)
-            timestamp, channel, data = packet
-            self.time = timestamp
-            if channel == 'position':
-                self.last_position = data
-            elif channel == 'orientation':
-                (yaw, pitch, roll), (magx, y, z), (accx, y, z), (gyrox, y, z) = data
-                self.last_imu_yaw = yaw
-            elif channel == 'status':  # i.e. I can drive only spider??
-                self.status, steering_status = data
-                if steering_status is None:
-                    self.wheel_heading = None
-                else:
-                    self.wheel_heading = math.radians(-360 * steering_status[0] / 512)
-                self.bus.publish('move', self.cmd)
-            for monitor_update in self.monitors:
-                monitor_update(self)
-
-    def Xset_speed(self, desired_speed, desired_wheel_heading):
-        # TODO split this for Car and Spider mode
-        speed = int(round(desired_speed))
-        desired_steering = int(-512 * math.degrees(desired_wheel_heading) / 360.0)
-
-        if speed != 0:
-            if self.wheel_heading is None:
-                speed = 1  # in in place
-            else:
-                 d = math.degrees(normalizeAnglePIPI(self.wheel_heading - desired_wheel_heading))
-                 if abs(d) > 20.0:
-                     speed = 1  # turn in place (II.)
-
-        self.cmd = [speed, desired_steering]
-
-    def Xstart(self):
-        self.thread = threading.Thread(target=self.play)
-        self.thread.start()
-
-
-    def Xplay(self):
-        print("Waiting for valid GPS position...")
-        while self.last_position is None or self.last_position == INVALID_COORDINATES:
-            self.update()
-        print(self.last_position)
-
-        print("Wait for valid IMU...")
-        while self.last_imu_yaw is None:
-            self.update()
-        print(self.last_imu_yaw)
-
-        print("Wait for steering info...")
-        while self.wheel_heading is None:
-            self.update()
-        print(math.degrees(self.wheel_heading))
-
-        print("Ready", self.goals)
-        try:
-            with EmergencyStopMonitor(self):
-                for goal in self.goals:
-                    print("Goal at %.2fm" % geo_length(self.last_position, goal))
-                    angle = geo_angle(self.last_position, goal)
-                    if angle is not None:
-                        print("Heading %.1fdeg, imu" % math.degrees(angle), self.last_imu_yaw)
-                    else:
-                        print("Heading None, imu", self.last_imu_yaw)
-                    self.navigate_to_goal(goal, timedelta(seconds=200))
-        except EmergencyStopException:
-            print("EMERGENCY STOP (wait 3s)")
-            self.set_speed(0, 0)
-            start_time = self.time
-            while self.time - start_time < timedelta(seconds=3):
-                self.set_speed(0, 0)
-                self.update()
-
-    def navigate_to_goal(self, goal, timeout):
+    def Xnavigate_to_goal(self, goal, timeout):
         start_time = self.time
         self.last_position_angle = self.last_position
         gps_angle = None
