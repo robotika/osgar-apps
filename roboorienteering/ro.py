@@ -48,6 +48,9 @@ class RoboOrienteering(Node):
         self.verbose = False
         self.scan = None
 
+        self.last_detections = None
+        self.last_cones_distances = None  # not available
+
         """
         self.last_imu_yaw = None  # magnetic north in degrees
         self.status = None
@@ -127,7 +130,7 @@ class RoboOrienteering(Node):
             print(data)
 
     def on_detections(self, data):
-        pass
+        self.last_detections = data[:]
 
     def on_depth(self, data):
         line = 400//2
@@ -143,6 +146,34 @@ class RoboOrienteering(Node):
             arr.append(dist)
         self.publish('scan', arr)
         self.scan = arr
+
+        if self.last_detections is None:
+            return
+
+        def frameNorm(w, h, bbox):
+            normVals = np.full(len(bbox), w)
+            normVals[::2] = h
+            return (np.clip(np.array(bbox), 0, 1) * normVals).astype(int)
+
+        self.last_cones_distances = []
+        for detection in self.last_detections:
+            # ['cone', 0.92236328125, [0.42129743099212646, -0.0010452494025230408, 0.4836755692958832, 0.1296510100364685]]
+            w, h = 640, 400
+            a, b, c, d = frameNorm(h, h, detection[2]).tolist()
+            name, x, y, width, height = detection[0], a + (w - h) // 2, b, c - a, d - b
+
+            assert name == 'cone', name
+            cone_depth = data[y:y+height, x:x+width]
+            mask = cone_depth > 0
+            if mask.max() == True:
+                dist = cone_depth[mask].min() / 1000
+            else:
+                dist = None
+            self.last_cones_distances.append(dist)
+
+        if self.verbose:
+            print(f'{self.time} cone at {self.last_cones_distances}')
+
 
     def on_orientation_list(self, data):
         pass
