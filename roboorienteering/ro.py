@@ -51,6 +51,8 @@ class RoboOrienteering(Node):
 
         self.last_detections = None
         self.last_cones_distances = None  # not available
+        self.no_detections_start_time = None
+        self.field_of_view = math.radians(45)  # TODO, should clipped camera image pass it?
 
         """
         self.last_imu_yaw = None  # magnetic north in degrees
@@ -135,6 +137,20 @@ class RoboOrienteering(Node):
             speed, steering_angle = 0, 0
         else:
             speed, steering_angle = self.max_speed, self.get_direction(self.scan)
+#            if self.last_cones_distances is not None and len(self.last_cones_distances) > 0:
+#                assert 0, self.last_cones_distances
+            if self.last_detections is not None and len(self.last_detections) >= 1 and steering_angle == 0:
+                self.no_detections_start_time = None  # clear, as there are some detections now
+                best = 0
+                max_x = None
+                for index, detection in enumerate(self.last_detections):
+                    x1, y1, x2, y2 = detection[2]
+                    if max_x is None or max_x < x1 + x2:
+                        max_x = x1 + x2
+                        best = index
+                x1, y1, x2, y2 = self.last_detections[best][2]
+                steering_angle = (self.field_of_view / 2) * (0.5 - (x1 + x2) / 2)  # steering left is positive
+
         if self.verbose:
             print(speed, steering_angle)
         self.send_speed_cmd(speed, steering_angle)
