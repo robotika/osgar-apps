@@ -48,6 +48,7 @@ class RoboOrienteering(Node):
         self.verbose = False
         self.scan = None
         self.backup_start_time = None
+        self.report_start_time = None
 
         self.last_detections = None
         self.last_cones_distances = None  # not available
@@ -130,6 +131,16 @@ class RoboOrienteering(Node):
             else:
                 self.backup_start_time = None  # end of collision
 
+        if self.report_start_time is not None:
+            # report via stop 3s
+            if self.time - self.report_start_time < timedelta(seconds=3):
+                self.send_speed_cmd(0, 0)
+                return  # terminate without other driving
+            elif self.time - self.report_start_time < timedelta(seconds=10):
+                pass  # ignore detections for a moment (10s)
+            else:
+                self.report_start_time = None  # end of report
+
         if math.hypot(data[0]/1000.0, data[1]/1000.0) >= self.max_dist:
             speed, steering_angle = 0, 0
         elif self.scan is None:
@@ -137,8 +148,6 @@ class RoboOrienteering(Node):
             speed, steering_angle = 0, 0
         else:
             speed, steering_angle = self.max_speed, self.get_direction(self.scan)
-#            if self.last_cones_distances is not None and len(self.last_cones_distances) > 0:
-#                assert 0, self.last_cones_distances
             if self.last_detections is not None and len(self.last_detections) >= 1 and steering_angle == 0:
                 self.no_detections_start_time = None  # clear, as there are some detections now
                 best = 0
@@ -150,6 +159,10 @@ class RoboOrienteering(Node):
                         best = index
                 x1, y1, x2, y2 = self.last_detections[best][2]
                 steering_angle = (self.field_of_view / 2) * (0.5 - (x1 + x2) / 2)  # steering left is positive
+                if self.last_cones_distances is not None and len(self.last_cones_distances) > best:
+#                    print(self.time, self.last_cones_distances[best])
+                    if self.last_cones_distances[best] < 1.0 and self.report_start_time is None:
+                        self.report_start_time = self.time
 
         if self.verbose:
             print(speed, steering_angle)
