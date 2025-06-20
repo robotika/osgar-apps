@@ -7,8 +7,9 @@
           "in": ["emergency_stop", "pose2d", "nn_mask", "nmea_data", "orientation_list"],
           "out": ["desired_steering"],
           "init": {
-            "max_speed": 0.2,
-            "max_dist": 10.0,
+            "max_speed": 0.5,
+            "turn_angle": 40,
+            "max_dist": 1000.0,
             "stop_dist": -1,
             "terminate_on_stop": true,
             "waypoints": [[49.949526, 12.697371],
@@ -135,6 +136,9 @@
       ["platform.esp_data", "serial.raw"],
       ["platform.gps_serial", "gps.raw"],
       ["timer.tick", "platform.tick"],
+
+      ["platform.bumpers_front", "app.bumpers_front"],
+      ["platform.bumpers_rear", "app.bumpers_rear"],
 
       ["gps.nmea_data", "app.nmea_data"],
 

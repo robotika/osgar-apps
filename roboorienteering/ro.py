@@ -47,6 +47,7 @@ class RoboOrienteering(Node):
         self.last_position = None  # (lon, lat) in milliseconds
         self.verbose = False
         self.scan = None
+        self.backup_start_time = None
 
         self.last_detections = None
         self.last_cones_distances = None  # not available
@@ -67,6 +68,14 @@ class RoboOrienteering(Node):
         )
 
     def on_emergency_stop(self, data):
+        pass
+
+    def on_bumpers_front(self, data):
+        if data:
+            # collision
+            self.backup_start_time = self.time
+
+    def on_bumpers_rear(self, data):
         pass
 
     def get_direction(self, arr):
@@ -111,6 +120,13 @@ class RoboOrienteering(Node):
         return direction
 
     def on_pose2d(self, data):
+        if self.backup_start_time is not None:
+            # front collision, backup for 5s
+            if self.time - self.backup_start_time < timedelta(seconds=5):
+                self.send_speed_cmd(-0.2, 0)
+            else:
+                self.backup_start_time = None  # end of collision
+
         if math.hypot(data[0]/1000.0, data[1]/1000.0) >= self.max_dist:
             speed, steering_angle = 0, 0
         elif self.scan is None:
