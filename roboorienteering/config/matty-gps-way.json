@@ -8,6 +8,7 @@
           "out": ["desired_steering"],
           "init": {
             "max_speed": 0.2,
+            "max_dist": 10.0,
             "stop_dist": -1,
             "terminate_on_stop": true,
             "waypoints": [[49.949526, 12.697371],

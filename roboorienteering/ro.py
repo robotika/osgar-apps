@@ -42,6 +42,7 @@ class RoboOrienteering(Node):
         bus.register('desired_steering', 'scan')
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
+        self.max_dist = config.get('max_dist', 3.0)
         self.goals = [latlon2xy(lat, lon) for lat, lon in config['waypoints']]
         self.last_position = None  # (lon, lat) in milliseconds
         self.verbose = False
@@ -107,7 +108,7 @@ class RoboOrienteering(Node):
         return direction
 
     def on_pose2d(self, data):
-        if math.hypot(data[0]/1000.0, data[1]/1000.0) >= 3.0:
+        if math.hypot(data[0]/1000.0, data[1]/1000.0) >= self.max_dist:
             speed, steering_angle = 0, 0
         elif self.scan is None:
             # no depth data yet
