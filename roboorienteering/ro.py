@@ -159,7 +159,7 @@ class RoboOrienteering(Node):
                         best = index
                 x1, y1, x2, y2 = self.last_detections[best][2]
                 steering_angle = (self.field_of_view / 2) * (0.5 - (x1 + x2) / 2)  # steering left is positive
-                if self.last_cones_distances is not None and len(self.last_cones_distances) > best:
+                if self.last_cones_distances is not None and len(self.last_cones_distances) > best and self.last_cones_distances[best] is not None:
 #                    print(self.time, self.last_cones_distances[best])
                     if self.last_cones_distances[best] < 1.0 and self.report_start_time is None:
                         self.report_start_time = self.time
