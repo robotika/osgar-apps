@@ -43,7 +43,7 @@ class RoboOrienteering(Node):
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
         self.max_dist = config.get('max_dist', 3.0)
-        self.waypoints = config.get('waypoints', [])
+        self.waypoints = config.get('waypoints', [])[1:]  # remove start
         self.goals = [latlon2xy(lat, lon) for lat, lon in config['waypoints']]
         self.last_position = None  # (lon, lat) in milliseconds
         self.verbose = False
@@ -143,7 +143,12 @@ class RoboOrienteering(Node):
                 self.send_speed_cmd(0, 0)
                 return  # terminate without other driving
             elif self.time - self.report_start_time < timedelta(seconds=10):
-                pass  # ignore detections for a moment (10s)
+                # ignore detections for a moment (10s)
+                if self.closest_waypoint_dist is not None and self.closest_waypoint_dist < 10:
+                    print(f'{self.time} REMOVING {self.closest_waypoint} dist={self.closest_waypoint_dist}')
+                    self.waypoints = self.waypoints[:self.closest_waypoint] + self.waypoints[self.closest_waypoint + 1:]
+                    self.closest_waypoint_dist = None
+                    self.closest_waypoint = None
             else:
                 self.report_start_time = None  # end of report
 
@@ -176,7 +181,8 @@ class RoboOrienteering(Node):
                     to_waypoint = geo_angle(latlon2xy(*self.last_position), latlon2xy(*self.waypoints[self.closest_waypoint]))
                     diff_angle = normalizeAnglePIPI(to_waypoint - self.gps_heading)
                     if steering_angle == 0:
-                        steering_angle = diff_angle
+                        steering_angle = math.copysign(math.radians(10), diff_angle)
+#                        print(self.time, self.closest_waypoint_dist, diff_angle)
 
         if self.verbose:
             print(speed, steering_angle)
@@ -188,7 +194,7 @@ class RoboOrienteering(Node):
         lat, lon = data['lat'], data['lon']
         if lat is not None and lon is not None:
             if int(self.time.total_seconds()) % 10 == 0:
-                print(self.time, data['lat'], data['lon'])
+                print(self.time, 'GPS', data['lat'], data['lon'])
             p = data['lat'], data['lon']
             best_i, best_dist  = None, None
             for i, waypoint in enumerate(self.waypoints):
