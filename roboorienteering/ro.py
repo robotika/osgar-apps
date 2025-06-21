@@ -205,6 +205,10 @@ class RoboOrienteering(Node):
 #                print(waypoint, dist)
             if self.closest_waypoint != best_i:
                 print(f'{self.time} ----- Switching to {best_i} at {best_dist} -----')
+                for i, waypoint in enumerate(self.waypoints):
+                    dist = geo_length(latlon2xy(*p), latlon2xy(*waypoint))
+                    print(i, waypoint, dist)
+                print(f'{self.time} ----------------------')
             angle = None
             if self.last_position is not None:
                 tmp = geo_angle(latlon2xy(*self.last_position), latlon2xy(*p))
