@@ -43,6 +43,7 @@ class RoboOrienteering(Node):
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
         self.max_dist = config.get('max_dist', 3.0)
+        self.waypoints = config.get('waypoints', [])
         self.goals = [latlon2xy(lat, lon) for lat, lon in config['waypoints']]
         self.last_position = None  # (lon, lat) in milliseconds
         self.verbose = False
@@ -55,6 +56,10 @@ class RoboOrienteering(Node):
         self.no_detections_start_time = None
         self.field_of_view = math.radians(45)  # TODO, should clipped camera image pass it?
         self.report_dist = config.get('report_dist', 1.2)
+
+        self.closest_waypoint = None
+        self.closest_waypoint_dist = None
+        self.gps_heading = None
 
         """
         self.last_imu_yaw = None  # magnetic north in degrees
@@ -165,6 +170,14 @@ class RoboOrienteering(Node):
                     if self.last_cones_distances[best] < self.report_dist and self.report_start_time is None:
                         self.report_start_time = self.time
 
+            # GPS hacking
+            if self.last_position is not None and self.gps_heading is not None and self.closest_waypoint_dist is not None:
+                if self.closest_waypoint_dist > 20:
+                    to_waypoint = geo_angle(latlon2xy(*self.last_position), latlon2xy(*self.waypoints[self.closest_waypoint]))
+                    diff_angle = normalizeAnglePIPI(to_waypoint - self.gps_heading)
+                    if steering_angle == 0:
+                        steering_angle = diff_angle
+
         if self.verbose:
             print(speed, steering_angle)
         self.send_speed_cmd(speed, steering_angle)
@@ -174,7 +187,30 @@ class RoboOrienteering(Node):
         assert 'lon' in data, data
         lat, lon = data['lat'], data['lon']
         if lat is not None and lon is not None:
-            print(self.time, data['lat'], data['lon'])
+            if int(self.time.total_seconds()) % 10 == 0:
+                print(self.time, data['lat'], data['lon'])
+            p = data['lat'], data['lon']
+            best_i, best_dist  = None, None
+            for i, waypoint in enumerate(self.waypoints):
+                dist = geo_length(latlon2xy(*p), latlon2xy(*waypoint))
+                if best_dist is None or best_dist > dist:
+                    best_i = i
+                    best_dist = dist
+#                print(waypoint, dist)
+            if self.closest_waypoint != best_i:
+                print(f'{self.time} ----- Switching to {best_i} at {best_dist} -----')
+            angle = None
+            if self.last_position is not None:
+                tmp = geo_angle(latlon2xy(*self.last_position), latlon2xy(*p))
+                if tmp is not None:
+                    angle = math.degrees(tmp)
+                    self.last_position = p
+                    self.gps_heading = tmp
+            else:
+                self.last_position = p
+#            print(best_dist, math.degrees(geo_angle(latlon2xy(*p), latlon2xy(*self.waypoints[best_i]))), angle)
+            self.closest_waypoint = best_i
+            self.closest_waypoint_dist = best_dist
 
     def on_detections(self, data):
         self.last_detections = data[:]
