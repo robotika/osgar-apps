@@ -126,7 +126,7 @@ class RoboOrienteering(Node):
         if self.backup_start_time is not None:
             # front collision, backup for 5s
             if self.time - self.backup_start_time < timedelta(seconds=5):
-                self.send_speed_cmd(-0.2, 0)
+                self.send_speed_cmd(-0.2, math.radians(10))  # try a small arc
                 return  # terminate with reverse motion
             else:
                 self.backup_start_time = None  # end of collision
