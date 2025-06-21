@@ -54,6 +54,7 @@ class RoboOrienteering(Node):
         self.last_cones_distances = None  # not available
         self.no_detections_start_time = None
         self.field_of_view = math.radians(45)  # TODO, should clipped camera image pass it?
+        self.report_dist = config.get('report_dist', 1.2)
 
         """
         self.last_imu_yaw = None  # magnetic north in degrees
@@ -161,7 +162,7 @@ class RoboOrienteering(Node):
                 steering_angle = (self.field_of_view / 2) * (0.5 - (x1 + x2) / 2)  # steering left is positive
                 if self.last_cones_distances is not None and len(self.last_cones_distances) > best and self.last_cones_distances[best] is not None:
 #                    print(self.time, self.last_cones_distances[best])
-                    if self.last_cones_distances[best] < 1.0 and self.report_start_time is None:
+                    if self.last_cones_distances[best] < self.report_dist and self.report_start_time is None:
                         self.report_start_time = self.time
 
         if self.verbose:
@@ -212,7 +213,7 @@ class RoboOrienteering(Node):
             cone_depth = data[y:y+height, x:x+width]
             mask = cone_depth > 0
             if mask.max() == True:
-                dist = cone_depth[mask].min() / 1000
+                dist = np.percentile(cone_depth[mask], 50) / 1000
             else:
                 dist = None
             self.last_cones_distances.append(dist)
