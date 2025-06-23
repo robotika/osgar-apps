@@ -9,9 +9,6 @@
           "init": {
             "max_speed": 0.5,
             "turn_angle": 40,
-            "max_dist": 1000.0,
-            "stop_dist": -1,
-            "terminate_on_stop": true,
             "waypoints": [
               [49.954046, 12.709531],
               [49.9539450, 12.708882],

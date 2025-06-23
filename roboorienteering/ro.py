@@ -2,19 +2,13 @@
   RoboOrienteering - navigate in terrain on GPS points with cones
 """
 
-import argparse
 import math
-import threading
 from datetime import timedelta
 
 import numpy as np
 
-from osgar.lib.config import config_load
-from osgar.lib.mathex import normalizeAnglePIPI
-from osgar.record import record
 from osgar.node import Node
-
-from osgar.drivers.gps import INVALID_COORDINATES
+from osgar.lib.mathex import normalizeAnglePIPI
 
 
 def geo_length(pos1, pos2):
@@ -42,10 +36,8 @@ class RoboOrienteering(Node):
         bus.register('desired_steering', 'scan')
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
-        self.max_dist = config.get('max_dist', 3.0)
         self.waypoints = config.get('waypoints', [])[1:]  # remove start
-        self.goals = [latlon2xy(lat, lon) for lat, lon in config['waypoints']]
-        self.last_position = None  # (lon, lat) in milliseconds
+        self.last_position = None
         self.verbose = False
         self.scan = None
         self.backup_start_time = None
@@ -53,22 +45,12 @@ class RoboOrienteering(Node):
 
         self.last_detections = None
         self.last_cones_distances = None  # not available
-        self.no_detections_start_time = None
         self.field_of_view = math.radians(45)  # TODO, should clipped camera image pass it?
         self.report_dist = config.get('report_dist', 1.2)
 
         self.closest_waypoint = None
         self.closest_waypoint_dist = None
         self.gps_heading = None
-
-        """
-        self.last_imu_yaw = None  # magnetic north in degrees
-        self.status = None
-        self.wheel_heading = None
-        self.cmd = [0, 0]
-        self.monitors = []
-        self.last_position_angle = None  # for angle computation from dGPS
-        """
 
     def send_speed_cmd(self, speed, steering_angle):
         return self.bus.publish(
@@ -152,15 +134,12 @@ class RoboOrienteering(Node):
             else:
                 self.report_start_time = None  # end of report
 
-        if math.hypot(data[0]/1000.0, data[1]/1000.0) >= self.max_dist:
-            speed, steering_angle = 0, 0
-        elif self.scan is None:
+        if self.scan is None:
             # no depth data yet
             speed, steering_angle = 0, 0
         else:
             speed, steering_angle = self.max_speed, self.get_direction(self.scan)
             if self.last_detections is not None and len(self.last_detections) >= 1 and steering_angle == 0:
-                self.no_detections_start_time = None  # clear, as there are some detections now
                 best = 0
                 max_x = None
                 for index, detection in enumerate(self.last_detections):
@@ -171,7 +150,6 @@ class RoboOrienteering(Node):
                 x1, y1, x2, y2 = self.last_detections[best][2]
                 steering_angle = (self.field_of_view / 2) * (0.5 - (x1 + x2) / 2)  # steering left is positive
                 if self.last_cones_distances is not None and len(self.last_cones_distances) > best and self.last_cones_distances[best] is not None:
-#                    print(self.time, self.last_cones_distances[best])
                     if self.last_cones_distances[best] < self.report_dist and self.report_start_time is None:
                         self.report_start_time = self.time
 
@@ -182,7 +160,6 @@ class RoboOrienteering(Node):
                     diff_angle = normalizeAnglePIPI(to_waypoint - self.gps_heading)
                     if steering_angle == 0:
                         steering_angle = math.copysign(math.radians(10), diff_angle)
-#                        print(self.time, self.closest_waypoint_dist, diff_angle)
 
         if self.verbose:
             print(speed, steering_angle)
@@ -202,23 +179,19 @@ class RoboOrienteering(Node):
                 if best_dist is None or best_dist > dist:
                     best_i = i
                     best_dist = dist
-#                print(waypoint, dist)
             if self.closest_waypoint != best_i:
                 print(f'{self.time} ----- Switching to {best_i} at {best_dist} -----')
                 for i, waypoint in enumerate(self.waypoints):
                     dist = geo_length(latlon2xy(*p), latlon2xy(*waypoint))
                     print(i, waypoint, dist)
                 print(f'{self.time} ----------------------')
-            angle = None
             if self.last_position is not None:
                 tmp = geo_angle(latlon2xy(*self.last_position), latlon2xy(*p))
                 if tmp is not None:
-                    angle = math.degrees(tmp)
                     self.last_position = p
                     self.gps_heading = tmp
             else:
                 self.last_position = p
-#            print(best_dist, math.degrees(geo_angle(latlon2xy(*p), latlon2xy(*self.waypoints[best_i]))), angle)
             self.closest_waypoint = best_i
             self.closest_waypoint_dist = best_dist
 
@@ -258,7 +231,7 @@ class RoboOrienteering(Node):
             assert name == 'cone', name
             cone_depth = data[y:y+height, x:x+width]
             mask = cone_depth > 0
-            if mask.max() == True:
+            if mask.max():
                 dist = np.percentile(cone_depth[mask], 50) / 1000
             else:
                 dist = None
@@ -270,37 +243,5 @@ class RoboOrienteering(Node):
 
     def on_orientation_list(self, data):
         pass
-
-    def Xnavigate_to_goal(self, goal, timeout):
-        start_time = self.time
-        self.last_position_angle = self.last_position
-        gps_angle = None
-        while geo_length(self.last_position, goal) > 1.0 and self.time - start_time < timeout:
-            desired_heading = normalizeAnglePIPI(geo_angle(self.last_position, goal))
-            step = geo_length(self.last_position, self.last_position_angle)
-            if step > 1.0:
-                gps_angle = normalizeAnglePIPI(geo_angle(self.last_position_angle, self.last_position))
-                print('step', step, math.degrees(gps_angle))
-                self.last_position_angle = self.last_position
-                desired_wheel_heading = normalizeAnglePIPI(desired_heading - gps_angle + self.wheel_heading)
-
-            if gps_angle is None or self.wheel_heading is None:
-                spider_heading = normalizeAnglePIPI(math.radians(180 - self.last_imu_yaw - 35.5))
-                desired_wheel_heading = normalizeAnglePIPI(desired_heading-spider_heading)
-
-            self.set_speed(self.max_speed, desired_wheel_heading)
-
-            prev_time = self.time
-            self.update()
-
-            if int(prev_time.total_seconds()) != int(self.time.total_seconds()):
-                print(self.time, geo_length(self.last_position, goal), self.last_imu_yaw, self.wheel_heading)
-
-        print("STOP (3s)")
-        self.set_speed(0, 0)
-        start_time = self.time
-        while self.time - start_time < timedelta(seconds=3):
-            self.set_speed(0, 0)
-            self.update()
 
 # vim: expandtab sw=4 ts=4
