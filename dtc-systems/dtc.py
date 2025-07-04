@@ -232,14 +232,14 @@ class DARPATriageChallenge(Node):
             a, b, c, d = frameNorm(h, h, detection[2]).tolist()
             name, x, y, width, height = detection[0], a + (w - h) // 2, b, c - a, d - b
 
-            assert name == 'cone', name
-            cone_depth = data[y:y+height, x:x+width]
-            mask = cone_depth > 0
-            if mask.max():
-                dist = np.percentile(cone_depth[mask], 50) / 1000
-            else:
-                dist = None
-            self.last_cones_distances.append(dist)
+            if name == 'person':
+                cone_depth = data[y:y+height, x:x+width]
+                mask = cone_depth > 0
+                if mask.max():
+                    dist = np.percentile(cone_depth[mask], 50) / 1000
+                else:
+                    dist = None
+                self.last_cones_distances.append(dist)
 
         if self.verbose:
             print(f'{self.time} cone at {self.last_cones_distances}')
