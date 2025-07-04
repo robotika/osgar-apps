@@ -3,7 +3,7 @@
   "robot": {
     "modules": {
       "app": {
-          "driver": "dtc.DARPATriageChallenge",
+          "driver": "dtc:DARPATriageChallenge",
           "in": ["emergency_stop", "pose2d", "nn_mask", "nmea_data", "orientation_list"],
           "out": ["desired_steering"],
           "init": {
