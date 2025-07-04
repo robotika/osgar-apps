@@ -53,7 +53,9 @@
         "driver": "osgar.drivers.oak_camera:OakCamera",
         "init": {
           "fps": 10,
-          "is_color": false,
+          "is_color": true,
+          "color_isp": true,
+          "color_isp_scale": [2,3],
           "video_encoder": "h265",
           "h264_bitrate": 2000,
           "is_depth": true,
