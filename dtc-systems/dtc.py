@@ -76,8 +76,9 @@ class DARPATriageChallenge(Node):
         center = len(arr) // 2
         direction = 0  # default, if you cannot decide, go straight
         if arr[center] > 1000:
-            # no close obstalce -> go straight
+            # no close obstacle -> go straight
             direction = 0
+            # check left and right limits for free space
             left = 0
             for i in range(0, center):
                 if arr[center - i] > 1000:
@@ -110,6 +111,8 @@ class DARPATriageChallenge(Node):
                     # free space on the right
                     direction = -self.turn_angle
                     break
+            else:
+                print(self.time, "NO FREE SPACE", direction)
         return direction
 
     def on_pose2d(self, data):
