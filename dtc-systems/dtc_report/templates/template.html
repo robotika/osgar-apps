@@ -43,31 +43,59 @@
             <img src="{{ report.image }}" alt="Image for Report {{ report.id }}">
         {% endif %}
 
-        <h2>Report #{{ report.id }} - Team: {{ report.team }}</h2>
-        <p><b>System:</b> {{ report.system }}</p>
-        <p><b>Location:</b> {{ report.location.latitude }}, {{ report.location.longitude }}</p>
+        <h2>Report #{{ report.id }} - Team: {{ report.team | default('N/A') }}</h2>
+        <p><b>System:</b> {{ report.system | default('N/A') }}</p>
+        <p><b>Location:</b> {{ (report.location | default({})).latitude | default('N/A') }}, {{ (report.location | default({})).longitude | default('N/A') }}</p>
         
         <div class="vitals">
-            <div class="detail-item"><b>Heart Rate:</b> {{ report.hr.value }} bpm</div>
-            <div class="detail-item"><b>Respiratory Rate:</b> {{ report.rr.value }}/min</div>
-            <div class="detail-item"><b>Temperature:</b> {{ report.temp.value }}°F</div>
+            <div class="detail-item"><b>Heart Rate:</b> {{ (report.hr | default({})).value | default('N/A') }} bpm</div>
+            <div class="detail-item"><b>Respiratory Rate:</b> {{ (report.rr | default({})).value | default('N/A') }}/min</div>
+            <div class="detail-item"><b>Temperature:</b> {{ (report.temp | default({})).value | default('N/A') }}°F</div>
         </div>
 
         <h3>Condition</h3>
         <div class="details">
-            <div class="detail-item"><b>Severe Hemorrhage:</b> {{ 'Yes' if report.severe_hemorrhage.value else 'No' }}</div>
-            <div class="detail-item"><b>Respiratory Distress:</b> {{ 'Yes' if report.respiratory_distress.value else 'No' }}</div>
-            <div class="detail-item"><b>Ocular Alertness:</b> {{ report.alertness_ocular.value }}</div>
-            <div class="detail-item"><b>Verbal Alertness:</b> {{ report.alertness_verbal.value }}</div>
-            <div class="detail-item"><b>Motor Alertness:</b> {{ report.alertness_motor.value }}</div>
+            <div class="detail-item"><b>Severe Hemorrhage:</b> {{ 'Yes' if (report.severe_hemorrhage | default({})).value else 'No' }}</div>
+            <div class="detail-item"><b>Respiratory Distress:</b> {{ 'Yes' if (report.respiratory_distress | default({})).value else 'No' }}</div>
+            <div class="detail-item"><b>Ocular Alertness:</b> {{ (report.alertness_ocular | default({})).value | default('N/A') }}</div>
+            <div class="detail-item"><b>Verbal Alertness:</b> {{ (report.alertness_verbal | default({})).value | default('N/A') }}</div>
+            <div class="detail-item"><b>Motor Alertness:</b> {{ (report.alertness_motor | default({})).value | default('N/A') }}</div>
         </div>
 
         <h3>Trauma</h3>
         <div class="details">
-            <div class="detail-item"><b>Head:</b> {{ 'Yes' if report.trauma_head else 'No' }}</div>
-            <div class="detail-item"><b>Torso:</b> {{ 'Yes' if report.trauma_torso else 'No' }}</div>
-            <div class="detail-item"><b>Lower Extremity:</b> {{ 'Yes' if report.trauma_lower_ext else 'No' }}</div>
-            <div class="detail-item"><b>Upper Extremity:</b> {{ 'Yes' if report.trauma_upper_ext else 'No' }}</div>
+            <div class="detail-item">
+                <b>Head:</b>
+                {% if report.trauma_head is defined %}
+                    {{ 'Yes' if report.trauma_head else 'No' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="detail-item">
+                <b>Torso:</b>
+                {% if report.trauma_torso is defined %}
+                    {{ 'Yes' if report.trauma_torso else 'No' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="detail-item">
+                <b>Lower Extremity:</b>
+                {% if report.trauma_lower_ext is defined %}
+                    {{ 'Yes' if report.trauma_lower_ext else 'No' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="detail-item">
+                <b>Upper Extremity:</b>
+                {% if report.trauma_upper_ext is defined %}
+                    {{ 'Yes' if report.trauma_upper_ext else 'No' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
         </div>
     </div>
     {% endfor %}
