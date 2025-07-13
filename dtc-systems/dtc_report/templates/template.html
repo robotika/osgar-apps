@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="10">
+    <title>Casualty Reports</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+        h1 { color: #333; }
+        .report { 
+            background-color: #fff; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            padding: 20px; 
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .report h2 { margin-top: 0; color: #0056b3; }
+        .report img { 
+            max-width: 300px; 
+            float: right; 
+            margin-left: 20px; 
+            border-radius: 4px;
+        }
+        .details, .vitals {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .detail-item { padding: 5px; background: #efefef; border-radius: 4px; }
+        .detail-item b { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Casualty Reports</h1>
+
+    {% for report in reports %}
+    <div class="report">
+        {% if report.image %}
+            <img src="{{ report.image }}" alt="Image for Report {{ report.id }}">
+        {% endif %}
+
+        <h2>Report #{{ report.id }} - Team: {{ report.team | default('N/A') }}</h2>
+        <p><b>System:</b> {{ report.system | default('N/A') }}</p>
+        <p><b>Location:</b> {{ (report.location | default({})).latitude | default('N/A') }}, {{ (report.location | default({})).longitude | default('N/A') }}</p>
+        
+        <div class="vitals">
+            <div class="detail-item"><b>Heart Rate:</b> {{ (report.hr | default({})).value | default('N/A') }} bpm</div>
+            <div class="detail-item"><b>Respiratory Rate:</b> {{ (report.rr | default({})).value | default('N/A') }}/min</div>
+            <div class="detail-item"><b>Temperature:</b> {{ (report.temp | default({})).value | default('N/A') }}°F</div>
+        </div>
+
+        <h3>Condition</h3>
+        <div class="details">
+            <div class="detail-item"><b>Severe Hemorrhage:</b> {{ 'Yes' if (report.severe_hemorrhage | default({})).value else 'No' }}</div>
+            <div class="detail-item"><b>Respiratory Distress:</b> {{ 'Yes' if (report.respiratory_distress | default({})).value else 'No' }}</div>
+            <div class="detail-item"><b>Ocular Alertness:</b> {{ (report.alertness_ocular | default({})).value | default('N/A') }}</div>
+            <div class="detail-item"><b>Verbal Alertness:</b> {{ (report.alertness_verbal | default({})).value | default('N/A') }}</div>
+            <div class="detail-item"><b>Motor Alertness:</b> {{ (report.alertness_motor | default({})).value | default('N/A') }}</div>
+        </div>
+
+        <h3>Trauma</h3>
+        <div class="details">
+            <div class="detail-item">
+                <b>Head:</b>
+                {% if report.trauma_head is defined %}
+                    {{ 'Yes' if report.trauma_head else 'No' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="detail-item">
+                <b>Torso:</b>
+                {% if report.trauma_torso is defined %}
+                    {{ 'Yes' if report.trauma_torso else 'No' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="detail-item">
+                <b>Lower Extremity:</b>
+                {% if report.trauma_lower_ext is defined %}
+                    {{ 'Yes' if report.trauma_lower_ext else 'No' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="detail-item">
+                <b>Upper Extremity:</b>
+                {% if report.trauma_upper_ext is defined %}
+                    {{ 'Yes' if report.trauma_upper_ext else 'No' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</body>
+</html>
