@@ -9,6 +9,29 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     
     <style>
+        /* CSS for the custom map markers */
+        .custom-div-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        .blue-icon {
+            background-color: #0078A8; /* A standard blue */
+        }
+
+        .red-icon {
+            background-color: #D32F2F; /* A strong red */
+        }
+
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
         h1 { color: #333; }
         
@@ -45,23 +68,79 @@
 
     {% for report in reports %}
     <div class="report">
+        {% if report.image %}
+            <img src="{{ report.image }}" alt="Image for Report {{ report.id }}">
+        {% endif %}
+
+        <h2>Report #{{ report.id }} - Team: {{ report.team | default('N/A') }}</h2>
+        <p><b>System:</b> {{ report.system | default('N/A') }}</p>
+        <p><b>Location:</b> {{ (report.location | default({})).latitude | default('N/A') }}, {{ (report.location | default({})).longitude | default('N/A') }}</p>
+
+        <div class="vitals">
+            <div class="detail-item"><b>Heart Rate:</b> {{ (report.hr | default({})).value | default('N/A') }} bpm</div>
+            <div class="detail-item"><b>Respiratory Rate:</b> {{ (report.rr | default({})).value | default('N/A') }}/min</div>
+            <div class="detail-item"><b>Temperature:</b> {{ (report.temp | default({})).value | default('N/A') }}Â°F</div>
         </div>
+
+        <h3>Condition</h3>
+        <div class="details">
+            <div class="detail-item"><b>Severe Hemorrhage:</b> {{ 'Yes' if (report.severe_hemorrhage | default({})).value else 'No' }}</div>
+            <div class="detail-item"><b>Respiratory Distress:</b> {{ 'Yes' if (report.respiratory_distress | default({})).value else 'No' }}</div>
+            <div class="detail-item"><b>Ocular Alertness:</b> {{ (report.alertness_ocular | default({})).value | default('N/A') }}</div>
+            <div class="detail-item"><b>Verbal Alertness:</b> {{ (report.alertness_verbal | default({})).value | default('N/A') }}</div>
+            <div class="detail-item"><b>Motor Alertness:</b> {{ (report.alertness_motor | default({})).value | default('N/A') }}</div>
+        </div>
+
+        <h3>Trauma</h3>
+        <div class="details">
+            <div class="detail-item">
+                <b>Head:</b>
+                {% if report.trauma_head is defined %}
+                    {{ 'Yes' if report.trauma_head else 'No' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="detail-item">
+                <b>Torso:</b>
+                {% if report.trauma_torso is defined %}
+                    {{ 'Yes' if report.trauma_torso else 'No' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="detail-item">
+                <b>Lower Extremity:</b>
+                {% if report.trauma_lower_ext is defined %}
+                    {{ 'Yes' if report.trauma_lower_ext else 'No' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="detail-item">
+                <b>Upper Extremity:</b>
+                {% if report.trauma_upper_ext is defined %}
+                    {{ 'Yes' if report.trauma_upper_ext else 'No' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+        </div>
+    </div>
     {% endfor %}
 
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script>
-        // 1. Get the data from the template
-        // The |safe filter is crucial to prevent Jinja from escaping quotes
+        // 1. Get the data directly as a JavaScript object
         const reportsData = {{ reports_json | safe }};
 
         // 2. Initialize the map
-        // Center it on the first report's location, or a default if no locations exist
         const firstLocatedReport = reportsData.find(r => r.location && r.location.latitude);
-        const initialCoords = firstLocatedReport 
+        const initialCoords = firstLocatedReport
             ? [firstLocatedReport.location.latitude, firstLocatedReport.location.longitude]
-            : [49.8, 15.4]; // Default to center of Czechia if no location found
+            : [32.50434376, -83.75090537];
 
         const map = L.map('map').setView(initialCoords, 18);
 
@@ -70,20 +149,37 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // 4. Loop through the data and add markers
+        // 4. Loop through the data and add custom markers
         reportsData.forEach(report => {
-            // Check if the report has valid location data
             if (report.location && report.location.latitude && report.location.longitude) {
                 const lat = report.location.latitude;
                 const lon = report.location.longitude;
-                
-                // Create a marker
-                const marker = L.marker([lat, lon]).addTo(map);
-                
-                // Add a popup to the marker
+
+                // --- START OF CHANGES ---
+
+                // Determine the icon color based on hemorrhage status
+                let iconClass = 'custom-div-icon blue-icon'; // Default to blue
+                if (report.severe_hemorrhage && report.severe_hemorrhage.value === 1) {
+                    iconClass = 'custom-div-icon red-icon'; // Change to red if hemorrhage is severe
+                }
+
+                // Create a custom HTML-based icon (L.divIcon)
+                const customMarkerIcon = L.divIcon({
+                    html: report.id, // Display the report ID inside the icon
+                    className: iconClass,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14] // Center the icon on the coordinate
+                });
+
+                // Create a marker using the new custom icon
+                const marker = L.marker([lat, lon], { icon: customMarkerIcon }).addTo(map);
+
+                // --- END OF CHANGES ---
+
+                // The popup remains the same
                 marker.bindPopup(`<b>Report #${report.id}</b><br>Team: ${report.team || 'N/A'}`);
             }
         });
-    </script>
-</body>
+      </script>
+    </body>
 </html>
