@@ -32,7 +32,7 @@ def get_reports_data(reports_path, images_path):
                         break
                 report_data['image'] = image_found
                 reports.append(report_data)
-    return reports 
+    return reports
 
 
 def main():
@@ -48,9 +48,7 @@ def main():
     
     # Convert the reports data to a JSON string for JavaScript
     reports_json = json.dumps(reports_data)
-    with open('tmp.json', 'wb') as f:
-        f.write(bytes(reports_json, 'ascii'))
-    
+
     # Pass both the list and the JSON string to the template
     output_html = template.render(reports=reports_data, reports_json=reports_json)
     
