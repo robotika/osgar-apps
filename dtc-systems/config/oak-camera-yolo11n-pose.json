@@ -1,0 +1,57 @@
+{
+  "version": 2,
+  "robot": {
+    "modules": {
+      "oak": {
+        "driver": "osgar.drivers.oak_camera:OakCamera",
+        "init": {
+          "fps": 10,
+          "is_color": true,
+          "video_encoder": "h265",
+          "h264_bitrate": 2000,
+          "is_depth": false,
+          "is_stereo_images": false,
+          "laser_projector_current": 0,
+          "flood_light_current": 500,
+          "is_imu_enabled": true,
+          "number_imu_records": 10,
+          "disable_magnetometer_fusion": false,
+          "mono_resolution": [
+            640,
+            400
+          ],
+          "color_resolution": "THE_1080_P",
+          "color_manual_focus": 130,
+          "stereo_median_filter": "KERNEL_3x3",
+          "stereo_mode": "HIGH_ACCURACY",
+          "stereo_extended_disparity": false,
+          "stereo_subpixel": false,
+          "stereo_left_right_check": true,
+          "model": {
+            "blob": "models/yolo11n-pose.blob"
+          },
+          "nn_config": {
+            "output_format": "detection",
+            "NN_family": "YOLO",
+            "input_size": "640x640",
+            "NN_specific_metadata": {
+              "classes": 1,
+              "coordinates": 17,
+              "anchors": [],
+              "anchor_masks": {},
+              "iou_threshold": 0.5,
+              "confidence_threshold": 0.5
+            }
+          },
+          "mappings": {
+            "labels": [
+              "person"
+            ]
+          }
+        }
+      }
+    },
+    "links": [
+    ]
+  }
+}
