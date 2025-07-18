@@ -5,18 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="10">
     <title>Casualty Reports</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
     <style>
+        /* CSS for the custom map markers */
+        .custom-div-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        .blue-icon {
+            background-color: #0078A8; /* A standard blue */
+        }
+
+        .red-icon {
+            background-color: #D32F2F; /* A strong red */
+        }
+
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
         h1 { color: #333; }
-        .report { 
-            background-color: #fff; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            margin-bottom: 20px; 
-            padding: 20px; 
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        
+        /* Style for the map container */
+        #map { 
+            height: 400px; 
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 8px;
         }
+
         .report h2 { margin-top: 0; color: #0056b3; }
         .report img { 
             max-width: 300px; 
@@ -35,7 +61,10 @@
     </style>
 </head>
 <body>
+
     <h1>Casualty Reports</h1>
+
+    <div id="map"></div>
 
     {% for report in reports %}
     <div class="report">
@@ -46,11 +75,11 @@
         <h2>Report #{{ report.id }} - Team: {{ report.team | default('N/A') }}</h2>
         <p><b>System:</b> {{ report.system | default('N/A') }}</p>
         <p><b>Location:</b> {{ (report.location | default({})).latitude | default('N/A') }}, {{ (report.location | default({})).longitude | default('N/A') }}</p>
-        
+
         <div class="vitals">
             <div class="detail-item"><b>Heart Rate:</b> {{ (report.hr | default({})).value | default('N/A') }} bpm</div>
             <div class="detail-item"><b>Respiratory Rate:</b> {{ (report.rr | default({})).value | default('N/A') }}/min</div>
-            <div class="detail-item"><b>Temperature:</b> {{ (report.temp | default({})).value | default('N/A') }}°F</div>
+            <div class="detail-item"><b>Temperature:</b> {{ (report.temp | default({})).value | default('N/A') }}Â°F</div>
         </div>
 
         <h3>Condition</h3>
@@ -99,5 +128,58 @@
         </div>
     </div>
     {% endfor %}
-</body>
+
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        // 1. Get the data directly as a JavaScript object
+        const reportsData = {{ reports_json | safe }};
+
+        // 2. Initialize the map
+        const firstLocatedReport = reportsData.find(r => r.location && r.location.latitude);
+        const initialCoords = firstLocatedReport
+            ? [firstLocatedReport.location.latitude, firstLocatedReport.location.longitude]
+            : [32.50434376, -83.75090537];
+
+        const map = L.map('map').setView(initialCoords, 18);
+
+        // 3. Add the tile layer (the map background)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // 4. Loop through the data and add custom markers
+        reportsData.forEach(report => {
+            if (report.location && report.location.latitude && report.location.longitude) {
+                const lat = report.location.latitude;
+                const lon = report.location.longitude;
+
+                // --- START OF CHANGES ---
+
+                // Determine the icon color based on hemorrhage status
+                let iconClass = 'custom-div-icon blue-icon'; // Default to blue
+                if (report.severe_hemorrhage && report.severe_hemorrhage.value === 1) {
+                    iconClass = 'custom-div-icon red-icon'; // Change to red if hemorrhage is severe
+                }
+
+                // Create a custom HTML-based icon (L.divIcon)
+                const customMarkerIcon = L.divIcon({
+                    html: report.id, // Display the report ID inside the icon
+                    className: iconClass,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14] // Center the icon on the coordinate
+                });
+
+                // Create a marker using the new custom icon
+                const marker = L.marker([lat, lon], { icon: customMarkerIcon }).addTo(map);
+
+                // --- END OF CHANGES ---
+
+                // The popup remains the same
+                marker.bindPopup(`<b>Report #${report.id}</b><br>Team: ${report.team || 'N/A'}`);
+            }
+        });
+      </script>
+    </body>
 </html>
