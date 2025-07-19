@@ -47,7 +47,7 @@ class DARPATriageChallenge(Node):
         self.last_detections = None
         self.last_cones_distances = None  # not available
         self.field_of_view = math.radians(45)  # TODO, should clipped camera image pass it?
-        self.report_dist = config.get('report_dist', 1.2)
+        self.report_dist = config.get('report_dist', 2.0)
 
         self.closest_waypoint = None
         self.closest_waypoint_dist = None
