@@ -9,6 +9,7 @@ import numpy as np
 
 from osgar.node import Node
 from osgar.lib.mathex import normalizeAnglePIPI
+from osgar.followme import EmergencyStopException  # hard to believe! :(
 
 
 def geo_length(pos1, pos2):
@@ -38,6 +39,8 @@ class DARPATriageChallenge(Node):
         self.turn_angle = config.get('turn_angle', 20)
         self.waypoints = config.get('waypoints', [])[1:]  # remove start
         self.debug_all_waypoints = config.get('waypoints', [])[:]
+        self.raise_exception_on_stop = config.get('terminate_on_stop', True)
+
         self.last_position = None
         self.verbose = False
         self.scan = None
@@ -61,7 +64,8 @@ class DARPATriageChallenge(Node):
         )
 
     def on_emergency_stop(self, data):
-        pass
+        if self.raise_exception_on_stop and data:
+            raise EmergencyStopException()
 
     def on_bumpers_front(self, data):
         if data:
