@@ -121,6 +121,8 @@ class DARPATriageChallenge(Node):
             else:
                 direction = None
                 print(self.time, "NO FREE SPACE", direction)
+        if direction is not None and direction != 0:
+            direction = math.radians(direction)  # fix agresive steering but leave 0 as default action
         return direction
 
     def on_pose2d(self, data):
