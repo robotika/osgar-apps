@@ -269,7 +269,7 @@ class DARPATriageChallenge(Node):
         :return: big scan
         """
         print('--------- ACTION LOOK AROUND ---------')
-        MDEG_STEP = 100
+        MDEG_STEP = 200
         big_scan = []
         for start, end, step in [(0, 4500, MDEG_STEP), (4500, -4500, -MDEG_STEP), (-4500, 0, MDEG_STEP)]:
             for angle in range(start, end, step):
