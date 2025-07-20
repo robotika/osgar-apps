@@ -117,8 +117,8 @@
 
       ["gps.nmea_data", "app.nmea_data"],
 
-      ["app.report", "reporter:report"],
-      ["oak.color", "reporter:image"],
+      ["app.report", "reporter.report"],
+      ["oak.color", "reporter.image"],
 
       ["oak.depth", "app.depth"],
       ["oak.detections", "app.detections"],
