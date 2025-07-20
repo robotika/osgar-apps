@@ -58,7 +58,7 @@ class DARPATriageChallenge(Node):
         self.gps_heading = None
         self.debug_arr = []
 
-        self.look_around = True  # in case of blocked path look left and right and pick direction
+        self.look_around = False  # in case of blocked path look left and right and pick direction
 
     def send_speed_cmd(self, speed, steering_angle):
         return self.bus.publish(
@@ -119,7 +119,7 @@ class DARPATriageChallenge(Node):
                     direction = -self.turn_angle
                     break
             else:
-#hack                direction = None
+                direction = None
                 print(self.time, "NO FREE SPACE", direction)
         return direction
 
@@ -268,13 +268,20 @@ class DARPATriageChallenge(Node):
         turn in place 45 deg left then 45 deg right and accumulate scan
         :return: big scan
         """
-        for start, end, step in [(0, 4500, 100), (4500, -4500, -100), (-4500, 0, 100)]:
+        print('--------- ACTION LOOK AROUND ---------')
+        MDEG_STEP = 100
+        big_scan = []
+        for start, end, step in [(0, 4500, MDEG_STEP), (4500, -4500, -MDEG_STEP), (-4500, 0, MDEG_STEP)]:
             for angle in range(start, end, step):
                 # node dependency on pose2d update rate
                 while self.update() != 'pose2d':
                     pass
                 steering_angle_rad = math.radians(angle/100)
                 self.send_speed_cmd(0, steering_angle_rad)
+            big_scan.extend(self.scan)
+        print('left, right, mid scan:', big_scan)
+        print('--------- END OF LOOK AROUND ---------')
+        return big_scan
 
     def run(self):
         """
