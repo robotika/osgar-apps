@@ -288,6 +288,14 @@ class DARPATriageChallenge(Node):
         print('--------- END OF LOOK AROUND ---------')
         return big_scan
 
+    def action_go(self, speed, steering_angle, duration):
+        print(f'--------- ACTION GO {speed}, {steering_angle}, {duration} ---------')
+        start_time = self.time
+        while start_time + duration > self.time:
+            if self.update() == 'pose2d':
+                self.send_speed_cmd(speed, steering_angle)
+        print('--------- END OF GO ---------')
+
     def run(self):
         """
         override default Node.run()
@@ -296,7 +304,11 @@ class DARPATriageChallenge(Node):
         try:
             while True:
                 if self.look_around:
-                    self.action_look_around()
+                    big_scan = self.action_look_around()
+                    steering_angle = self.get_direction(big_scan)
+                    if steering_angle is not None:
+                        self.action_go(speed=self.max_speed/2, steering_angle=steering_angle,
+                                       duration=timedelta(seconds=1.0))
                     self.look_around = False
                 else:
                     self.update()
