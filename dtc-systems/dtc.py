@@ -8,6 +8,7 @@ from datetime import timedelta
 import numpy as np
 
 from osgar.node import Node
+from osgar.bus import BusShutdownException
 from osgar.lib.mathex import normalizeAnglePIPI
 from osgar.followme import EmergencyStopException  # hard to believe! :(
 
@@ -56,6 +57,8 @@ class DARPATriageChallenge(Node):
         self.closest_waypoint_dist = None
         self.gps_heading = None
         self.debug_arr = []
+
+        self.look_around = True  # in case of blocked path look left and right and pick direction
 
     def send_speed_cmd(self, speed, steering_angle):
         return self.bus.publish(
@@ -116,6 +119,7 @@ class DARPATriageChallenge(Node):
                     direction = -self.turn_angle
                     break
             else:
+#hack                direction = None
                 print(self.time, "NO FREE SPACE", direction)
         return direction
 
@@ -170,6 +174,10 @@ class DARPATriageChallenge(Node):
                     if steering_angle == 0:
                         steering_angle = math.copysign(math.radians(10), diff_angle)
 
+        if steering_angle is None:
+            # no way to go! -> STOP and look around
+            speed, steering_angle = 0, 0
+            self.look_around = True
         if self.verbose:
             print(speed, steering_angle)
         self.send_speed_cmd(speed, steering_angle)
@@ -254,6 +262,33 @@ class DARPATriageChallenge(Node):
 
     def on_orientation_list(self, data):
         pass
+
+    def action_look_around(self):
+        """
+        turn in place 45 deg left then 45 deg right and accumulate scan
+        :return: big scan
+        """
+        for angle in range(0, 4500, 100):
+            # node dependency on pose2d update rate
+            while self.update() != 'pose2d':
+                pass
+            steering_angle_rad = math.radians(angle/100)
+            self.send_speed_cmd(0, steering_angle_rad)
+
+    def run(self):
+        """
+        override default Node.run()
+        :return:
+        """
+        try:
+            while True:
+                if self.look_around:
+                    self.action_look_around()
+                    self.look_around = False
+                else:
+                    self.update()
+        except BusShutdownException:
+            pass
 
     def draw(self):
         from matplotlib.patches import Circle
