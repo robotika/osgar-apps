@@ -9,17 +9,7 @@
           "init": {
             "max_speed": 0.5,
             "turn_angle": 40,
-            "waypoints": [
-              [49.954046, 12.709531],
-              [49.9539450, 12.708882],
-              [49.9537240, 12.709185],
-              [49.9539130, 12.709649],
-              [49.9541606, 12.709484],
-              [49.9543109, 12.709360],
-              [49.9542960, 12.708717],
-              [49.9546010, 12.708368],
-              [49.9536645, 12.708831],
-              [49.953423, 12.709187]]
+            "waypoints": []
           }
       },
       "platform": {
@@ -40,6 +30,13 @@
         "driver": "gps",
         "in": ["raw"],
         "out": ["nmea_data"],
+        "init": {
+        }
+      },
+      "reporter": {
+        "driver": "reporter:Reporter",
+        "in": ["report", "image"],
+        "out": [],
         "init": {
         }
       },
@@ -117,6 +114,9 @@
       ["platform.bumpers_rear", "app.bumpers_rear"],
 
       ["gps.nmea_data", "app.nmea_data"],
+
+      ["app.report", "reporter:report"],
+      ["oak.left_im", "reporter:image"],
 
       ["oak.depth", "app.depth"],
       ["oak.detections", "app.detections"],
