@@ -1,5 +1,5 @@
 import os
-import json
+import json # Make sure json is imported
 from jinja2 import Environment, FileSystemLoader
 
 
@@ -37,22 +37,21 @@ def get_reports_data(reports_path, images_path):
 
 def main():
     """ Main function to generate the webpage """
-    # Setup paths
     reports_path = 'reports'
     images_path = 'images'
     templates_path = 'templates'
-
-    # Load the Jinja2 template
+    
     env = Environment(loader=FileSystemLoader(templates_path))
     template = env.get_template('template.html')
-
-    # Get the data
+    
     reports_data = get_reports_data(reports_path, images_path)
+    
+    # Convert the reports data to a JSON string for JavaScript
+    reports_json = json.dumps(reports_data)
 
-    # Render the HTML
-    output_html = template.render(reports=reports_data)
-
-    # Write the output file
+    # Pass both the list and the JSON string to the template
+    output_html = template.render(reports=reports_data, reports_json=reports_json)
+    
     with open('output.html', 'w') as f:
         f.write(output_html)
     print("Successfully generated output.html")
