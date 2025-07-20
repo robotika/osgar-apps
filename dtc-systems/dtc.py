@@ -268,12 +268,13 @@ class DARPATriageChallenge(Node):
         turn in place 45 deg left then 45 deg right and accumulate scan
         :return: big scan
         """
-        for angle in range(0, 4500, 100):
-            # node dependency on pose2d update rate
-            while self.update() != 'pose2d':
-                pass
-            steering_angle_rad = math.radians(angle/100)
-            self.send_speed_cmd(0, steering_angle_rad)
+        for start, end, step in [(0, 4500, 100), (4500, -4500, -100), (-4500, 0, 100)]:
+            for angle in range(start, end, step):
+                # node dependency on pose2d update rate
+                while self.update() != 'pose2d':
+                    pass
+                steering_angle_rad = math.radians(angle/100)
+                self.send_speed_cmd(0, steering_angle_rad)
 
     def run(self):
         """
