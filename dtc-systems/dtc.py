@@ -35,7 +35,7 @@ def latlon2xy(lat, lon):
 class DARPATriageChallenge(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('desired_steering', 'scan')
+        bus.register('desired_steering', 'scan', 'report')
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
         self.waypoints = config.get('waypoints', [])[1:]  # remove start
@@ -165,6 +165,11 @@ class DARPATriageChallenge(Node):
                 if self.last_cones_distances is not None and len(self.last_cones_distances) > best and self.last_cones_distances[best] is not None:
                     if self.last_cones_distances[best] < self.report_dist and self.report_start_time is None:
                         self.report_start_time = self.time
+                        report = {
+                            'lat' : self.last_position[0] if self.last_position is not None else None,
+                            'lon': self.last_position[1] if self.last_position is not None else None,
+                        }
+                        self.publish('report', report)
 
             # GPS hacking
             if self.last_position is not None and self.gps_heading is not None and self.closest_waypoint_dist is not None:
@@ -271,7 +276,7 @@ class DARPATriageChallenge(Node):
         print('--------- ACTION LOOK AROUND ---------')
         MDEG_STEP = 200
         big_scan = []
-        for start, end, step in [(0, 4500, MDEG_STEP), (4500, -4500, -MDEG_STEP), (-4500, 0, MDEG_STEP)]:
+        for start, end, step in [(0, 4500, MDEG_STEP), (4500, -4500, -MDEG_STEP)]:
             for angle in range(start, end, step):
                 # node dependency on pose2d update rate
                 while self.update() != 'pose2d':
@@ -279,7 +284,7 @@ class DARPATriageChallenge(Node):
                 steering_angle_rad = math.radians(angle/100)
                 self.send_speed_cmd(0, steering_angle_rad)
             big_scan.extend(self.scan)
-        print('left, right, mid scan:', big_scan)
+        print('left, right:', big_scan)
         print('--------- END OF LOOK AROUND ---------')
         return big_scan
 
