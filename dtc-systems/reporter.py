@@ -6,6 +6,7 @@
 import time
 import math
 import json
+from pathlib import Path
 
 import requests
 import cv2
@@ -136,10 +137,65 @@ class Reporter(Node):
         super().__init__(config, bus)
         self.grab_image = False
         self.report_index = 0
+        Path('dtc_report/reports').mkdir(parents=True, exist_ok=True)
+        Path('dtc_report/images').mkdir(parents=True, exist_ok=True)
 
     def on_report(self, data):
         self.report_index += 1
+
+        report_cmd = {
+"casualty_id": self.report_index,
+"team": "Robotika",
+"system": "Matty M01",
+"location":
+{
+"latitude": data['lat'],
+"longitude": data['lon'],
+"time_ago": 0
+},
+"severe_hemorrhage": {
+"value": 1,
+"time_ago": 0
+},
+"respiratory_distress": {
+"value": 0,
+"time_ago": 0
+},
+"hr": {
+"value": 120,
+"time_ago": 0
+},
+"rr": {
+"value": 30,
+"time_ago": 0
+},
+"temp": {
+"value": 100,
+"time_ago": 0
+}
+,
+"trauma_head": 0,
+"trauma_torso": 0,
+"trauma_lower_ext": 1,
+"trauma_upper_ext": 0,
+"alertness_ocular": {
+"value": 1,
+"time_ago": 0
+},
+"alertness_verbal": {
+"value": 2,
+"time_ago": 0
+},
+"alertness_motor": {
+"value": 2,
+"time_ago": 0
+}
+}
+
         print(self.time, f'REPORT {self.report_index}:', data)
+        filename = f'report{self.report_index}.json'
+        with open(Path('dtc_report/reports') / filename, 'w') as fd:
+            json.dump(report_cmd, fd)
         self.grab_image = True
 
     def on_image(self, data):
@@ -149,7 +205,7 @@ class Reporter(Node):
             if image is not None:
                 filename = f'report{self.report_index}.jpg'
                 print(self.time, f'Saving {filename} ...')
-                cv2.imwrite(filename, image)
+                cv2.imwrite(str(Path('dtc_report/images') / filename), image)
                 self.grab_image = False
 
 
