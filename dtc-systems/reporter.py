@@ -203,7 +203,7 @@ class Reporter(Node):
             # search for I-frame
             image = get_keyframe_image(data)
             if image is not None:
-                filename = f'report{self.report_index}.jpg'
+                filename = f'image{self.report_index}.jpg'
                 print(self.time, f'Saving {filename} ...')
                 cv2.imwrite(str(Path('dtc_report/images') / filename), image)
                 self.grab_image = False
