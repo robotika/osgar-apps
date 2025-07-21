@@ -3,10 +3,12 @@
          reused for Pittsburgh August 2019
      and reused again in Elma/Olympia February 2020
 """
-import requests
 import time
 import math
 import json
+
+import requests
+import cv2
 
 from osgar.node import Node
 
@@ -109,12 +111,47 @@ def score(artf_type, x, y, z):
     return before['score'] < after['score']
 
 
+def get_keyframe_image(data):
+    # try H264 via OpenCV
+    is_h264 = data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 0930'))
+    is_h265 = data.startswith(bytes.fromhex('00000001 460150')) or data.startswith(bytes.fromhex('00000001 460130'))
+    assert is_h264 or is_h265, data[:20].hex()
+    tmp_filename = 'tmp-reporter.h26x'
+    if data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 460150')):
+        # I - key frame
+        with open(tmp_filename, 'wb') as f:
+            f.write(data)
+    else:
+        return None
+    cap = cv2.VideoCapture(tmp_filename)
+    ret, frame = cap.read()
+#        if ret:
+#            image = pygame.image.frombuffer(frame.tobytes(), frame.shape[1::-1], "BGR")
+    cap.release()
+    return frame
+
+
 class Reporter(Node):
+    def __init__(self, config, bus):
+        super().__init__(config, bus)
+        self.grab_image = False
+        self.report_index = 0
+
     def on_report(self, data):
-        pass
+        self.report_index += 1
+        print(self.time, f'REPORT {self.report_index}:', data)
+        self.grab_image = True
 
     def on_image(self, data):
-        pass
+        if self.grab_image:
+            # search for I-frame
+            image = get_keyframe_image(data)
+            if image is not None:
+                filename = f'report{self.report_index}.jpg'
+                print(self.time, f'Saving {filename} ...')
+                cv2.imwrite(filename, image)
+                self.grab_image = False
+
 
 
 if __name__ == '__main__':
