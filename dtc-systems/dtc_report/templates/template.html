@@ -142,7 +142,7 @@
             ? [firstLocatedReport.location.latitude, firstLocatedReport.location.longitude]
             : [32.50434376, -83.75090537];
 
-        const map = L.map('map').setView(initialCoords, 20);
+        const map = L.map('map').setView(initialCoords, 19);
 
         // 3. Add the tile layer (the map background)
         L.tileLayer('tiles/{z}/{x}/{y}.jpeg', { // <-- Make sure the extension is .jpeg
