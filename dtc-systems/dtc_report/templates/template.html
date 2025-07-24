@@ -142,11 +142,14 @@
             ? [firstLocatedReport.location.latitude, firstLocatedReport.location.longitude]
             : [32.50434376, -83.75090537];
 
-        const map = L.map('map').setView(initialCoords, 18);
+        const map = L.map('map').setView(initialCoords, 19);
 
         // 3. Add the tile layer (the map background)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        L.tileLayer('tiles/{z}/{x}/{y}.jpeg', { // <-- Make sure the extension is .jpeg
+            attribution: 'Map data &copy; OpenStreetMap contributors',
+            // You can set min/max zoom based on the tiles you have
+            minZoom: 18,
+            maxZoom: 20
         }).addTo(map);
 
         // 4. Loop through the data and add custom markers
