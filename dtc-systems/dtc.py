@@ -11,6 +11,7 @@ from osgar.node import Node
 from osgar.bus import BusShutdownException
 from osgar.lib.mathex import normalizeAnglePIPI
 from osgar.followme import EmergencyStopException  # hard to believe! :(
+from geofence import Geofence
 
 
 def geo_length(pos1, pos2):
@@ -41,6 +42,11 @@ class DARPATriageChallenge(Node):
         self.waypoints = config.get('waypoints', [])[1:]  # remove start
         self.debug_all_waypoints = config.get('waypoints', [])[:]
         self.raise_exception_on_stop = config.get('terminate_on_stop', True)
+
+        self.geofence = None
+        geofence_lat_lon = config.get('geofence')
+        if geofence_lat_lon is not None:
+            self.geofence = Geofence(geofence_lat_lon)
 
         self.last_position = None
         self.verbose = False
@@ -194,8 +200,11 @@ class DARPATriageChallenge(Node):
         assert 'lon' in data, data
         lat, lon = data['lat'], data['lon']
         if lat is not None and lon is not None:
+            border_dist = None
+            if self.geofence is not None:
+                border_dist = self.geofence.border_dist((lat, lon))
             if int(self.time.total_seconds()) % 10 == 0:
-                print(self.time, 'GPS', data['lat'], data['lon'])
+                print(self.time, 'GPS', data['lat'], data['lon'], border_dist)
             p = data['lat'], data['lon']
             if self.verbose:
                 self.debug_arr.append((self.time, p))
