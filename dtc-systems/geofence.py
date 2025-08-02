@@ -14,7 +14,7 @@ class Geofence:
     # Earth's mean radius in meters
     EARTH_RADIUS_METERS = 6371 * 1000
 
-    def __init__(self, coordinates: list[list[float]]):
+    def __init__(self, coordinates):  # : list[list[float]]
         """
         Initializes the Geofence object.
 
@@ -30,7 +30,8 @@ class Geofence:
         self.geofence_poly = Polygon(self.polygon_coords_lon_lat)
 
     @staticmethod
-    def _haversine_distance(pos1: tuple[float, float], pos2: tuple[float, float]) -> float:
+    def _haversine_distance(pos1, pos2):
+        # (pos1: tuple[float, float], pos2: tuple[float, float]) -> float:
         """
         Calculates the Haversine distance between two points on Earth.
 
@@ -61,7 +62,7 @@ class Geofence:
         distance = Geofence.EARTH_RADIUS_METERS * c
         return distance
 
-    def border_dist(self, position: list[float]) -> float:
+    def border_dist(self, position):  # : list[float] -> float:
         """
         Calculates the shortest distance from a position to the geofence border.
 
