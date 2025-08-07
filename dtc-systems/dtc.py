@@ -151,11 +151,7 @@ class DARPATriageChallenge(Node):
                 return  # terminate without other driving
             elif self.time - self.report_start_time < timedelta(seconds=10):
                 # ignore detections for a moment (10s)
-                if self.closest_waypoint_dist is not None and self.closest_waypoint_dist < 10:
-                    print(f'{self.time} REMOVING {self.closest_waypoint} dist={self.closest_waypoint_dist}')
-                    self.waypoints = self.waypoints[:self.closest_waypoint] + self.waypoints[self.closest_waypoint + 1:]
-                    self.closest_waypoint_dist = None
-                    self.closest_waypoint = None
+                pass  # waypoints no longer correspond to cones/expected locations of objects
             else:
                 self.report_start_time = None  # end of report
 
