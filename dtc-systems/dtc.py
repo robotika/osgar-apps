@@ -47,6 +47,10 @@ class DARPATriageChallenge(Node):
         geofence_lat_lon = config.get('geofence')
         if geofence_lat_lon is not None:
             self.geofence = Geofence(geofence_lat_lon)
+            if len(self.waypoints) == 0:
+                pt = self.geofence.get_random_inner_waypoint()
+                print(f'Adding RND waypoint {pt}')
+                self.waypoints.append(pt)
 
         self.last_position = None
         self.verbose = False
@@ -181,11 +185,16 @@ class DARPATriageChallenge(Node):
 
             # GPS hacking
             if self.last_position is not None and self.gps_heading is not None and self.closest_waypoint_dist is not None:
-                if self.closest_waypoint_dist > 20:
+                if self.closest_waypoint_dist > 5:
                     to_waypoint = geo_angle(latlon2xy(*self.last_position), latlon2xy(*self.waypoints[self.closest_waypoint]))
                     diff_angle = normalizeAnglePIPI(to_waypoint - self.gps_heading)
                     if steering_angle == 0:
                         steering_angle = math.copysign(math.radians(10), diff_angle)
+                else:
+                    if self.geofence is not None:
+                        # remove closest waypoint and generate new one
+                        self.waypoints = [self.geofence.get_random_inner_waypoint()]
+                        print('New waypoints', self.waypoints)
 
         if steering_angle is None:
             # no way to go! -> STOP and look around
