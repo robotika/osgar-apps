@@ -42,5 +42,11 @@ class GeofenceTest(unittest.TestCase):
         with self.assertRaises(ValueError, msg="Initializing with < 3 points should raise ValueError."):
             Geofence([[50.1, 14.4], [50.2, 14.5]])
 
+    def test_random_point(self):
+        waypoint = self.prague_geofence.get_random_inner_waypoint()
+        self.assertGreater(self.prague_geofence.border_dist(waypoint), 0.0)
+        waypoint2 = self.prague_geofence.get_random_inner_waypoint()
+        self.assertNotEqual(waypoint, waypoint2)
+
 if __name__ == '__main__':
     unittest.main()

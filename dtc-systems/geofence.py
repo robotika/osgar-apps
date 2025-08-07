@@ -1,4 +1,6 @@
 import math
+from random import Random
+
 import numpy as np
 from shapely.geometry import Point, Polygon
 from shapely.ops import nearest_points
@@ -28,6 +30,7 @@ class Geofence:
 
         self.polygon_coords_lon_lat = [(lon, lat) for lat, lon in coordinates]
         self.geofence_poly = Polygon(self.polygon_coords_lon_lat)
+        self.random = Random(0).random  # internal random generator with seed
 
     @staticmethod
     def _haversine_distance(pos1, pos2):
@@ -88,3 +91,18 @@ class Geofence:
         is_inside = self.geofence_poly.contains(point_geom)
 
         return distance_meters if is_inside else -distance_meters
+
+    def get_random_inner_waypoint(self, min_dist_from_border=2.0):
+        """
+        Get random point inside geofence
+        :return:
+        """
+        bbox = self.geofence_poly.bounds
+        assert len(bbox) == 4, bbox
+        # 14.36, 50.04, 14.52, 50.11
+        for i in range(10):
+            t, u = self.random(), self.random()
+            pt = t * bbox[1] + (1 - t) * bbox[3], u * bbox[0] + (1 - u) * bbox[2]
+            if self.border_dist(pt) > min_dist_from_border:
+                return pt
+        return (bbox[1] + bbox[3]) / 2, (bbox[0] + bbox[2]) / 2  # fallback center (lat, lon)
