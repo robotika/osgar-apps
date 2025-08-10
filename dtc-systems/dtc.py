@@ -13,6 +13,8 @@ from osgar.lib.mathex import normalizeAnglePIPI
 from osgar.followme import EmergencyStopException  # hard to believe! :(
 from geofence import Geofence
 
+MAX_CMD_HISTORY = 100  # beware of dependency on pose2d update
+
 
 def geo_length(pos1, pos2):
     "return distance on sphere for two integer positions in milliseconds"
@@ -69,8 +71,12 @@ class DARPATriageChallenge(Node):
         self.debug_arr = []
 
         self.look_around = False  # in case of blocked path look left and right and pick direction
+        self.cmd_history = []
 
     def send_speed_cmd(self, speed, steering_angle):
+        self.cmd_history.append((speed, steering_angle))
+        if len(self.cmd_history) > MAX_CMD_HISTORY:
+            self.cmd_history = self.cmd_history[-MAX_CMD_HISTORY:]
         return self.bus.publish(
             'desired_steering',
             [round(speed * 1000), round(math.degrees(steering_angle) * 100)]
@@ -312,6 +318,18 @@ class DARPATriageChallenge(Node):
                 self.send_speed_cmd(speed, steering_angle)
         print('--------- END OF GO ---------')
 
+    def action_replay(self, cmd_list, reverse=True):
+        """
+        replay history in backward order
+        """
+        print(f'--------- ACTION REPLAY {len(cmd_list)} ---------')
+        assert reverse  # direct replay not supported yet
+        for speed, steering_angle in reversed(cmd_list):
+            while True:
+                if self.update() == 'pose2d':
+                    self.send_speed_cmd(-speed, steering_angle)
+        print('--------- END OF REPLAY ---------')
+
     def run(self):
         """
         override default Node.run()
@@ -320,11 +338,14 @@ class DARPATriageChallenge(Node):
         try:
             while True:
                 if self.look_around:
+                    backup_history = self.cmd_history[:]
                     big_scan = self.action_look_around()
                     steering_angle = self.get_direction(big_scan)
                     if steering_angle is not None:
                         self.action_go(speed=self.max_speed/2, steering_angle=steering_angle,
                                        duration=timedelta(seconds=1.0))
+                    else:
+                        self.action_replay(backup_history, reverse=True)
                     self.look_around = False
                 else:
                     self.update()
