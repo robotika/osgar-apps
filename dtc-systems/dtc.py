@@ -204,7 +204,9 @@ class DARPATriageChallenge(Node):
             self.look_around = True
         if self.verbose:
             print(speed, steering_angle)
-        self.send_speed_cmd(speed, steering_angle)
+        if not self.look_around:
+            # TODO refactoring - otherwise lookaround conflicts with other commands
+            self.send_speed_cmd(speed, steering_angle)
 
     def on_nmea_data(self, data):
         assert 'lat' in data, data
@@ -328,6 +330,7 @@ class DARPATriageChallenge(Node):
             while True:
                 if self.update() == 'pose2d':
                     self.send_speed_cmd(-speed, steering_angle)
+                    break
         print('--------- END OF REPLAY ---------')
 
     def run(self):
