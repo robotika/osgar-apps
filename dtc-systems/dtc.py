@@ -341,13 +341,13 @@ class DARPATriageChallenge(Node):
         try:
             while True:
                 if self.look_around:
-                    backup_history = self.cmd_history[:]
                     big_scan = self.action_look_around()
                     steering_angle = self.get_direction(big_scan)
                     if steering_angle is not None:
                         self.action_go(speed=self.max_speed/2, steering_angle=steering_angle,
                                        duration=timedelta(seconds=1.0))
                     else:
+                        backup_history = self.cmd_history[:]
                         self.action_replay(backup_history, reverse=True)
                     self.look_around = False
                 else:
