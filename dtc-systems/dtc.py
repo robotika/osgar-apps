@@ -155,7 +155,13 @@ class DARPATriageChallenge(Node):
             if self.time - self.report_start_time < timedelta(seconds=3):
                 self.send_speed_cmd(0, 0)
                 return  # terminate without other driving
-            elif self.time - self.report_start_time < timedelta(seconds=10):
+            elif self.time - self.report_start_time < timedelta(seconds=5):
+                self.send_speed_cmd(-0.25, 0)
+                return  # reverse 0.5m
+            elif self.time - self.report_start_time < timedelta(seconds=7):
+                self.send_speed_cmd(0.2, math.radians(-45))  # turn right
+                return  # reverse 0.5m
+            elif self.time - self.report_start_time < timedelta(seconds=12):
                 # ignore detections for a moment (10s)
                 pass  # waypoints no longer correspond to cones/expected locations of objects
             else:
