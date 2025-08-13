@@ -59,6 +59,7 @@ class DARPATriageChallenge(Node):
         self.scan = None
         self.backup_start_time = None
         self.report_start_time = None
+        self.tracking_start_time = None
 
         self.last_detections = None
         self.last_cones_distances = None  # not available
@@ -136,7 +137,8 @@ class DARPATriageChallenge(Node):
                     break
             else:
                 direction = None
-                print(self.time, "NO FREE SPACE", direction)
+                if self.verbose:
+                    print(self.time, "NO FREE SPACE", direction)
         if direction is not None and direction != 0:
             direction = math.radians(direction)  # fix agresive steering but leave 0 as default action
         return direction
@@ -173,6 +175,9 @@ class DARPATriageChallenge(Node):
         else:
             speed, steering_angle = self.max_speed, self.get_direction(self.scan)
             if self.last_detections is not None and len(self.last_detections) >= 1 and steering_angle == 0:
+                if self.tracking_start_time is None:
+                    self.tracking_start_time = self.time
+                    print(self.time, f'Started tracking ... ({len(self.last_detections)})')
                 best = 0
                 max_x = None
                 for index, detection in enumerate(self.last_detections):
@@ -190,6 +195,10 @@ class DARPATriageChallenge(Node):
                             'lon': self.last_position[1] if self.last_position is not None else None,
                         }
                         self.publish('report', report)
+            else:
+                if self.tracking_start_time is not None:
+                    print(self.time, f'Lost track {self.time - self.tracking_start_time}')
+                    self.tracking_start_time = None
 
             # GPS hacking
             if self.last_position is not None and self.gps_heading is not None and self.closest_waypoint_dist is not None:
@@ -200,7 +209,7 @@ class DARPATriageChallenge(Node):
                         steering_angle = math.copysign(math.radians(10), diff_angle)
                 else:
                     if self.geofence is not None:
-                        # remove closest waypoint and generate new one
+                        # remove the closest waypoint and generate new one
                         self.waypoints = [self.geofence.get_random_inner_waypoint()]
                         print('New waypoints', self.waypoints)
 
@@ -250,7 +259,7 @@ class DARPATriageChallenge(Node):
             self.closest_waypoint_dist = best_dist
 
     def on_detections(self, data):
-        self.last_detections = data[:]
+        self.last_detections = [det for det in data if det[0] == 'person']
 
     def on_depth(self, data):
         line = 400//2
