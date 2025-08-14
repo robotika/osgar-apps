@@ -52,6 +52,16 @@
           "out": ["raw"],
           "init": {"port": "/dev/ttyUSB0", "speed": 115200}
       },
+      "audio": {
+        "driver": "osgar.drivers.audio:Audio",
+        "init": {
+          "rate": 44100,
+          "channels": 1,
+          "format": "paInt16",
+          "frames_per_buffer": 1024,
+          "device_index": null
+        }
+      },
       "oak": {
         "driver": "osgar.drivers.oak_camera:OakCamera",
         "init": {
