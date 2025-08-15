@@ -1,10 +1,7 @@
 """
-   Report artifact for STIX in Colorado April 2019
-         reused for Pittsburgh August 2019
-     and reused again in Elma/Olympia February 2020
+   DTC reporter to be used on Challenge Event 2 in September 2025
 """
 import time
-import math
 import json
 from pathlib import Path
 
@@ -27,8 +24,7 @@ ARTF_TYPES = ['Survivor', 'Backpack', 'Cell Phone',  # common
 ARTF_TYPES_SHORT = [x[0] for x in ARTF_TYPES]
 
 json_headers = {
-#    "Authorization" : "Bearer subttesttoken123",  # demo
-#    "Authorization" : "Bearer NfEwAHEYsKqQkxSf",  # STIX
+    # local testing server
     "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4M2Q3OGM4ZS04MzhhLTQ0NzctOWM3Yi02N2VmMTZlNWY3MTYiLCJpIjowfQ.i4KuwEtc5_6oIYz5TDWcdzl5bMkvCpLZTSZG2Avy84w",  # test
     "Content-Type" : "application/json",
 }
@@ -46,7 +42,7 @@ def get_status():
     return response.content
 
 
-def report_artf(artf_type, x, y, z):
+def initial_report():
     report_data = {
 "casualty_id": 1,
 "team": "Robotika",
@@ -65,51 +61,19 @@ def report_artf(artf_type, x, y, z):
     # Correct POST /api/artifact_reports/ request
     response = requests.post(url, json=report_data, headers=json_headers)
     print(response.content)
-    assert response.status_code == 201, response.status_code
+    assert response.status_code in [200, 201], response.status_code
     print("-------------------")
     return response.content
 
 
-def report_artf0(artf_type, x, y, z):
-    artifact_report_data = {
-        "x": x,
-        "y": y,
-        "z": z,
-        "type": artf_type,
-    }
-    print('Report', artifact_report_data)
-    url = URL_BASE + "/api/artifact_reports/"
-
-    # Correct POST /api/artifact_reports/ request
-    response = requests.post(url, json=artifact_report_data, headers=json_headers)
-    print(response.content)
-    assert response.status_code == 201, response.status_code
-    print("-------------------")
-    return response.content
-
-
-def triple(x, y, z):
-    """
-    Generate 3 coordinates with the same Z and XY in triangle of 4m
-    """
-    dist = 4.0
-    arr = []
-    for angle_deg in [0, 120, 240]:
-        angle = math.radians(angle_deg)
-        arr.append((x + math.cos(angle)*dist, y + math.sin(angle)*dist, z))
-    return arr
-
-
-def score(artf_type, x, y, z):
-    """
-    return True for scored artifact report
-    """
+def submit_dtc_report():
     before = json.loads(bytes.decode(get_status()))
     time.sleep(2)
-    report_artf(artf_type, x, y, z)
+    report_status = json.loads(bytes.decode(initial_report()))
     time.sleep(2)
     after = json.loads(bytes.decode(get_status()))
-    return before['score'] < after['score']
+    # DTC does not provide online reporting
+    return report_status['report_status'] == "OK"
 
 
 def get_keyframe_image(data):
@@ -213,26 +177,9 @@ class Reporter(Node):
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='Report artifact to server')
-    parser.add_argument('artf_type', help='Type of artifact', choices=ARTF_TYPES + ARTF_TYPES_SHORT)
-    parser.add_argument('x', help='X coordinate in meters', type=float)
-    parser.add_argument('y', help='Y coordinate in meters', type=float)
-    parser.add_argument('z', help='Z coordinate in meters', type=float)
-#    parser.add_argument('--only-one', '-1', help='only one exact shot',
-#                        action='store_true')
+    parser = argparse.ArgumentParser(description='Manual DTC Report/test to server')
     args = parser.parse_args()
 
-    artf_type = args.artf_type
-    if artf_type in ARTF_TYPES_SHORT:
-        artf_type = ARTF_TYPES[ARTF_TYPES_SHORT.index(artf_type)]
-
-    print('Reporting:', artf_type)
-    if True:  # args.only_one:
-        print(score(artf_type, args.x, args.y, args.z))
-    else:
-        for x, y, z in triple(args.x, args.y, args.z):
-            if score(artf_type, x, y, z):
-                break
+    print(submit_dtc_report())
 
 # vim: expandtab sw=4 ts=4
-
