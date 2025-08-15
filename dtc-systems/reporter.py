@@ -73,7 +73,7 @@ def submit_dtc_report():
     time.sleep(2)
     after = json.loads(bytes.decode(get_status()))
     # DTC does not provide online reporting
-    return report_status['report_status'] == "OK"
+    return report_status['report_status'] == "accepted"
 
 
 def get_keyframe_image(data):
