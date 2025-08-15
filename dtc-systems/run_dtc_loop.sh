@@ -23,6 +23,6 @@ while true; do
   echo
   echo "Waiting for DTC run termination"
   sleep 1
-  python -m osgar.record $dtc "$@"
+  python -m osgar.record $dtc_dtc_cfg "$@"
 
 done
