@@ -42,18 +42,7 @@ def get_status():
     return response.content
 
 
-def initial_report():
-    report_data = {
-"casualty_id": 1,
-"team": "Robotika",
-"system": "Matty M01",
-        "location":
-            {
-                "latitude": 10,
-                "longitude": 20,
-                "time_ago": 1,
-            }
-}
+def initial_report(report_data):
 
     print('Report', report_data)
     url = URL_BASE + "/api/initial_report"
@@ -66,10 +55,32 @@ def initial_report():
     return response.content
 
 
-def submit_dtc_report():
+def submit_dtc_image(casualty_id, img_path):
+    report_data = {
+        'casualty_id': casualty_id,
+        "team": "Robotika",
+        "system": "Matty M01",
+        'time_ago': 0
+    }
+    print('Report', report_data)
+    url = URL_BASE + "/api/casualty_image"
+
+    with open(img_path, 'rb') as f:
+        files = {
+            'file': ("image.jpg", f, "image/jpeg")
+        }
+        response = requests.post(url, files=files, json=report_data, headers=json_headers)
+    #    response = requests.post(url, json=report_data, headers=json_headers)
+    print(response.content)
+    assert response.status_code in [200, 201], response.status_code
+    print("-------------------")
+    return response.content
+
+
+def submit_dtc_report(report_data):
     before = json.loads(bytes.decode(get_status()))
     time.sleep(2)
-    report_status = json.loads(bytes.decode(initial_report()))
+    report_status = json.loads(bytes.decode(initial_report(report_data)))
     time.sleep(2)
     after = json.loads(bytes.decode(get_status()))
     # DTC does not provide online reporting
@@ -99,6 +110,7 @@ def get_keyframe_image(data):
 class Reporter(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
+        self.is_team_reporter = config.get('is_team_reporter', False)
         self.grab_image = False
         self.report_index = 0
         Path('dtc_report/reports').mkdir(parents=True, exist_ok=True)
@@ -156,6 +168,9 @@ class Reporter(Node):
 }
 }
 
+        if self.is_team_reporter:
+            submit_dtc_report(report_cmd)
+
         print(self.time, f'REPORT {self.report_index}:', data)
         filename = f'report{self.report_index}.json'
         with open(Path('dtc_report/reports') / filename, 'w') as fd:
@@ -169,9 +184,12 @@ class Reporter(Node):
             if image is not None:
                 filename = f'image{self.report_index}.jpg'
                 print(self.time, f'Saving {filename} ...')
-                cv2.imwrite(str(Path('dtc_report/images') / filename), image)
+                img_path = str(Path('dtc_report/images') / filename)
+                cv2.imwrite(img_path, image)
                 self.grab_image = False
 
+                if self.is_team_reporter:
+                    submit_dtc_image(self.report_index, img_path)
 
 
 if __name__ == '__main__':
@@ -180,6 +198,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Manual DTC Report/test to server')
     args = parser.parse_args()
 
-    print(submit_dtc_report())
+    _report_data = {
+        "casualty_id": 1,
+        "team": "Robotika",
+        "system": "Matty M01",
+        "location":
+            {
+                "latitude": 10,
+                "longitude": 20,
+                "time_ago": 1,
+            }
+    }
+    print(submit_dtc_report(_report_data))
 
 # vim: expandtab sw=4 ts=4
