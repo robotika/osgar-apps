@@ -12,27 +12,21 @@ from osgar.node import Node
 
 
 URL_BASE = "http://localhost"  # local Robotika test/demo
-#URL_BASE = "http://localhost:8888"  # local Robotika test/demo
-#URL_BASE = "http://10.100.1.200:8000"  # Alpha (was Army and Safety Research) Tunnel
-#URL_BASE = "http://10.100.2.200:8000"  # Beta (was Miami and Experimental) Tunnel
 
-#URL_BASE = "http://10.100.1.200:8000"  # Finals
-
-ARTF_TYPES = ['Survivor', 'Backpack', 'Cell Phone',  # common
-              'Drill', 'Fire Extinguisher',          # tunnel extra
-              'Gas', 'Vent']                         # urban extra
-ARTF_TYPES_SHORT = [x[0] for x in ARTF_TYPES]
+json_authorization = {
+    # local testing server
+    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4M2Q3OGM4ZS04MzhhLTQ0NzctOWM3Yi02N2VmMTZlNWY3MTYiLCJpIjowfQ.i4KuwEtc5_6oIYz5TDWcdzl5bMkvCpLZTSZG2Avy84w",
+}
 
 json_headers = {
-    # local testing server
-    "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4M2Q3OGM4ZS04MzhhLTQ0NzctOWM3Yi02N2VmMTZlNWY3MTYiLCJpIjowfQ.i4KuwEtc5_6oIYz5TDWcdzl5bMkvCpLZTSZG2Avy84w",  # test
+    **json_authorization,
     "Content-Type" : "application/json",
 }
 
 
 def get_status():
     print('Get Status')
-    url = URL_BASE + "/api/status/"
+    url = URL_BASE + "/api/status"
 
     # Correct GET /api/status/ request
     response = requests.get(url, headers=json_headers)
@@ -67,10 +61,9 @@ def submit_dtc_image(casualty_id, img_path):
 
     with open(img_path, 'rb') as f:
         files = {
-            'file': ("image.jpg", f, "image/jpeg")
+            'file': f
         }
-        response = requests.post(url, files=files, json=report_data, headers=json_headers)
-    #    response = requests.post(url, json=report_data, headers=json_headers)
+        response = requests.post(url, files=files, data=report_data, headers=json_authorization)
     print(response.content)
     assert response.status_code in [200, 201], response.status_code
     print("-------------------")
