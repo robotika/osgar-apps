@@ -37,6 +37,7 @@ class RoboOrienteering(Node):
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
         self.waypoints = config.get('waypoints', [])[1:]  # remove start
+        self.debug_all_waypoints = config.get('waypoints', [])[:]
         self.last_position = None
         self.verbose = False
         self.scan = None
@@ -51,6 +52,7 @@ class RoboOrienteering(Node):
         self.closest_waypoint = None
         self.closest_waypoint_dist = None
         self.gps_heading = None
+        self.debug_arr = []
 
     def send_speed_cmd(self, speed, steering_angle):
         return self.bus.publish(
@@ -173,6 +175,8 @@ class RoboOrienteering(Node):
             if int(self.time.total_seconds()) % 10 == 0:
                 print(self.time, 'GPS', data['lat'], data['lon'])
             p = data['lat'], data['lon']
+            if self.verbose:
+                self.debug_arr.append((self.time, p))
             best_i, best_dist  = None, None
             for i, waypoint in enumerate(self.waypoints):
                 dist = geo_length(latlon2xy(*p), latlon2xy(*waypoint))
@@ -243,5 +247,28 @@ class RoboOrienteering(Node):
 
     def on_orientation_list(self, data):
         pass
+
+    def draw(self):
+        from matplotlib.patches import Circle
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        for x_center, y_center in self.waypoints:
+            ax.scatter(x_center, y_center)
+
+        x_center = [p[0] for (t, p) in self.debug_arr]
+        y_center = [p[1] for (t, p) in self.debug_arr]
+        ax.scatter(x_center, y_center)
+
+        radius = 0.0001
+        for c in self.waypoints + self.debug_all_waypoints:
+            circle = Circle(c, radius, fill=False, edgecolor='r', linestyle='--')
+            ax.add_patch(circle)
+            ax.set_aspect('equal')
+            ax.scatter(x_center, y_center)
+
+        plt.legend()
+        plt.title('Waypoints')
+        plt.grid(True, linestyle='--', color='gray', alpha=0.6)
+        plt.show()
 
 # vim: expandtab sw=4 ts=4

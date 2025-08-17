@@ -1,0 +1,142 @@
+{
+  "version": 2,
+  "robot": {
+    "modules": {
+      "app": {
+          "driver": "dtc:DARPATriageChallenge",
+          "in": ["emergency_stop", "pose2d", "nn_mask", "nmea_data", "orientation_list"],
+          "out": ["desired_steering"],
+          "init": {
+            "max_speed": 0.5,
+            "turn_angle": 40,
+            "waypoints": [],
+            "geofence": [
+              [49.911862, 14.199556],
+              [49.911905, 14.199690],
+              [49.912248, 14.199604],
+              [49.912217, 14.199459]
+            ]
+          }
+      },
+      "platform": {
+        "driver": "osgar.platforms.matty:Matty",
+        "in": ["esp_data"],
+        "out": ["esp_data"],
+        "init": {}
+      },
+      "timer": {
+        "driver": "timer",
+        "in": [],
+        "out": ["tick"],
+        "init": {
+          "sleep": 0.1
+        }
+      },
+      "gps": {
+        "driver": "gps",
+        "in": ["raw"],
+        "out": ["nmea_data"],
+        "init": {
+        }
+      },
+      "reporter": {
+        "driver": "reporter:Reporter",
+        "in": ["report", "image"],
+        "out": [],
+        "init": {
+        }
+      },
+      "serial": {
+          "driver": "serial",
+          "in": ["raw"],
+          "out": ["raw"],
+          "init": {"port": "/dev/ttyUSB0", "speed": 115200}
+      },
+      "audio": {
+        "driver": "osgar.drivers.audio:Audio",
+        "init": {
+          "rate": 44100,
+          "channels": 1,
+          "format": "paInt16",
+          "frames_per_buffer": 1024,
+          "device_index": null
+        }
+      },
+      "oak": {
+        "driver": "osgar.drivers.oak_camera:OakCamera",
+        "init": {
+          "fps": 10,
+          "is_color": false,
+          "video_encoder": "h265",
+          "h264_bitrate": 2000,
+          "is_depth": true,
+          "is_stereo_images": true,
+          "laser_projector_current": 0,
+          "flood_light_current": 500,
+          "is_imu_enabled": true,
+          "number_imu_records": 10,
+          "disable_magnetometer_fusion": false,
+          "mono_resolution": [640, 400],
+          "stereo_median_filter": "KERNEL_3x3",
+          "stereo_mode": "HIGH_ACCURACY",
+          "stereo_extended_disparity": false,
+          "stereo_subpixel": false,
+          "stereo_left_right_check": true,
+          "model": {
+            "blob": "models/yolov8n_coco_640x352.blob"
+          },
+          "nn_config": {
+            "output_format": "detection",
+            "NN_family": "YOLO",
+            "input_size": "640x352",
+            "NN_specific_metadata": {
+              "classes": 80,
+              "coordinates": 4,
+              "anchors": [],
+              "anchor_masks": {},
+              "iou_threshold": 0.5,
+              "confidence_threshold": 0.5
+            }
+          },
+          "mappings": {
+               "labels": [
+    "person",         "bicycle",    "car",           "motorbike",     "aeroplane",   "bus",           "train",
+    "truck",          "boat",       "traffic light", "fire hydrant",  "stop sign",   "parking meter", "bench",
+    "bird",           "cat",        "dog",           "horse",         "sheep",       "cow",           "elephant",
+    "bear",           "zebra",      "giraffe",       "backpack",      "umbrella",    "handbag",       "tie",
+    "suitcase",       "frisbee",    "skis",          "snowboard",     "sports ball", "kite",          "baseball bat",
+    "baseball glove", "skateboard", "surfboard",     "tennis racket", "bottle",      "wine glass",    "cup",
+    "fork",           "knife",      "spoon",         "bowl",          "banana",      "apple",         "sandwich",
+    "orange",         "broccoli",   "carrot",        "hot dog",       "pizza",       "donut",         "cake",
+    "chair",          "sofa",       "pottedplant",   "bed",           "diningtable", "toilet",        "tvmonitor",
+    "laptop",         "mouse",      "remote",        "keyboard",      "cell phone",  "microwave",     "oven",
+    "toaster",        "sink",       "refrigerator",  "book",          "clock",       "vase",          "scissors",
+    "teddy bear",     "hair drier", "toothbrush"
+               ]
+          }
+        }
+      }
+    },
+    "links": [
+      ["app.desired_steering", "platform.desired_steering"],
+      ["platform.pose2d", "app.pose2d"],
+      ["platform.emergency_stop", "app.emergency_stop"],
+      ["serial.raw", "platform.esp_data"],
+      ["platform.esp_data", "serial.raw"],
+      ["platform.gps_serial", "gps.raw"],
+      ["timer.tick", "platform.tick"],
+
+      ["platform.bumpers_front", "app.bumpers_front"],
+      ["platform.bumpers_rear", "app.bumpers_rear"],
+
+      ["gps.nmea_data", "app.nmea_data"],
+
+      ["app.report", "reporter.report"],
+      ["oak.left_im", "reporter.image"],
+
+      ["oak.depth", "app.depth"],
+      ["oak.detections", "app.detections"],
+      ["oak.orientation_list", "app.orientation_list"]
+    ]
+  }
+}
