@@ -50,7 +50,7 @@
           "driver": "serial",
           "in": ["raw"],
           "out": ["raw"],
-          "init": {"port": "/dev/ttyUSB0", "speed": 115200}
+          "init": {"port": "/dev/esp32", "speed": 115200}
       },
       "audio": {
         "driver": "osgar.drivers.audio:Audio",
