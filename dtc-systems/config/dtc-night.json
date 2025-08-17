@@ -52,6 +52,30 @@
           "out": ["raw"],
           "init": {"port": "/dev/esp32", "speed": 115200}
       },
+      "estop": {
+          "driver": "subt.estop:EStop",
+          "in": ["raw"],
+          "out": ["raw", "emergency_stop"],
+          "init": {}
+      },
+      "estop_serial": {
+          "driver": "serial",
+          "in": ["raw"],
+          "out": ["raw"],
+          "init": {"port": "/dev/estop", "speed": 9600}
+      },
+      "lora": {
+          "driver": "lora",
+          "in": ["raw", "pose2d"],
+          "out": ["raw", "cmd"],
+          "init": {}
+      },
+      "lora_serial": {
+          "driver": "serial",
+          "in": ["raw"],
+          "out": ["raw"],
+          "init": {"port": "/dev/lora", "speed": 115200}
+      },
       "audio": {
         "driver": "osgar.drivers.audio:Audio",
         "init": {
@@ -133,6 +157,14 @@
 
       ["app.report", "reporter.report"],
       ["oak.left_im", "reporter.image"],
+
+      ["estop_serial.raw", "estop.raw"],
+      ["estop.raw", "estop_serial.raw"],
+      ["estop.emergency_stop", "app.emergency_stop"],
+      ["lora_serial.raw", "lora.raw"],
+      ["lora.raw", "lora_serial.raw"],
+      ["platform.pose2d", "lora.pose2d"],
+      ["lora.cmd", "app.cmd"],
 
       ["oak.depth", "app.depth"],
       ["oak.detections", "app.detections"],
