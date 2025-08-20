@@ -12,7 +12,10 @@
           "driver": "crypt:Crypt",
           "in": ["raw", "packet"],
           "out": ["decrypted", "encrypted"],
-          "init": {}
+          "init": {
+            "enc_key": "cd88e9e7685df9292842afdb9155855023733c7bbc867d4e950aacd77a3cb4df",
+            "mac_key": "69bd50ff2f953e862d71feac8110d55db420e30db0b6d381ca26b0f48deef0cb"
+          }
       },
       "lora_serial": {
           "driver": "serial",

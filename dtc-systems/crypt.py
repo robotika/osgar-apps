@@ -9,8 +9,8 @@ import base64
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
-from osgar import Node
-from osgar.drivers.lora import split_lora_buffer
+from osgar.node import Node
+from osgar.drivers.lora import split_lora_buffer, parse_lora_packet
 
 
 # --- CONFIGURATION ---
@@ -94,6 +94,8 @@ class Crypt(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
         bus.register('encrypted', 'decrypted')
+        self.enc_key = bytes.fromhex(config['enc_key'])  # must be distributed among robots and basestation
+        self.mac_key = bytes.fromhex(config['mac_key'])
         self.buf = b''
 
     def on_raw(self, data):
@@ -103,7 +105,12 @@ class Crypt(Node):
         self.buf, packet = split_lora_buffer(self.buf + data)
         while len(packet) > 0:
             # process packet
-            self.publish('decrypted', decrypt_from_text(packet, ENC_KEY, MAC_KEY))
+            assert packet[-1] == ord('\n'), packet
+            assert packet[-2] == ord('\r'), packet  # LoRa is for some reason adding both \r\n
+            assert b'|' in packet, packet
+            addr, to_decode = parse_lora_packet(packet)
+            print(to_decode, packet)
+            self.publish('decrypted', decrypt_from_text(to_decode[:-2] + b'=', self.enc_key, self.mac_key))
             self.buf, packet = split_lora_buffer(self.buf)
 
     def on_packet(self, data):
@@ -111,10 +118,10 @@ class Crypt(Node):
         LoRa plain text (ASCII) packet to be encrypted and send via serial line
         """
         # LoRa cmd packet has to end with \n character
-        assert data[-1] == '\n', data
+        assert data[-1] == ord('\n'), data
         # encrypt data without cmd character
-        encrypted_text = encrypt_to_text(data[:-1], ENC_KEY, MAC_KEY)
-        self.publish('encrypted', bytes(encrypted_text) + b'\n')
+        encrypted_text = encrypt_to_text(data[:-1], self.enc_key, self.mac_key)
+        self.publish('encrypted', bytes(encrypted_text, 'ascii') + b'\n')
 
 
 # --- DEMONSTRATION ---
