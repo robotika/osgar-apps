@@ -110,9 +110,11 @@ class Crypt(Node):
             assert b'|' in packet, packet
             addr, to_decode = parse_lora_packet(packet)
             prefix = ''.join([f'{x}|' for x in addr])
-            self.publish('decrypted', bytes(prefix, 'ascii') +
-                         decrypt_from_text(to_decode, self.enc_key, self.mac_key) +
-                         b'\r\n')
+            try:
+                plaintext = decrypt_from_text(to_decode, self.enc_key, self.mac_key)
+                self.publish('decrypted', bytes(prefix, 'ascii') + plaintext + b'\r\n')
+            except ValueError:
+                print(f'Skipping msg {packet}')
             self.buf, packet = split_lora_buffer(self.buf)
 
     def on_packet(self, data):
