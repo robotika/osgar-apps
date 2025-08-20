@@ -109,8 +109,10 @@ class Crypt(Node):
             assert packet[-2] == ord('\r'), packet  # LoRa is for some reason adding both \r\n
             assert b'|' in packet, packet
             addr, to_decode = parse_lora_packet(packet)
-            print(to_decode, packet)
-            self.publish('decrypted', decrypt_from_text(to_decode[:-2] + b'=', self.enc_key, self.mac_key))
+            prefix = ''.join([f'{x}|' for x in addr])
+            self.publish('decrypted', bytes(prefix, 'ascii') +
+                         decrypt_from_text(to_decode, self.enc_key, self.mac_key) +
+                         b'\r\n')
             self.buf, packet = split_lora_buffer(self.buf)
 
     def on_packet(self, data):
