@@ -1,6 +1,8 @@
 """
   Module for medical evaluation - name "doctor" is in memory of GLB (that time to take care of other modules)
 """
+import cv2
+
 from pathlib import Path
 from osgar.node import Node
 
@@ -15,6 +17,7 @@ class Doctor(Node):
         self.is_scanning = False
         self.report_index = 0
         self.h265_fd = None
+        self.key_frame_detected = False
         self.wav_fd = None
         VIDEO_OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
 
@@ -33,10 +36,21 @@ class Doctor(Node):
             self.report_index += 1
             assert self.h265_fd is None
             self.h265_fd = open(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265', 'wb')
+            self.key_frame_detected = False
 
         if self.is_scanning and not data:
             assert self.h265_fd is not None
             self.h265_fd.close()
+            if self.verbose:
+                cap = cv2.VideoCapture(str(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265'))
+                while True:
+                    ret, frame = cap.read()
+                    if ret == 0:
+                        break
+                    cv2.imshow(f'video{self.report_index}.h265', frame)
+                    cv2.waitKey(100)
+                cap.release()
+
         self.is_scanning = data
 
     def on_h265_video(self, data):
@@ -45,7 +59,11 @@ class Doctor(Node):
         """
         if self.is_scanning:
             assert self.h265_fd is not None
-            self.h265_fd.write(data)
+            if not self.key_frame_detected:
+                self.key_frame_detected =  (data.startswith(bytes.fromhex('00000001 0950')) or
+                                            data.startswith(bytes.fromhex('00000001 460150')))
+            if self.key_frame_detected:
+                self.h265_fd.write(data)
 
     def on_audio(self, data):
         """
