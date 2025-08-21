@@ -163,12 +163,13 @@ class DARPATriageChallenge(Node):
                 self.send_speed_cmd(0, 0)
                 return  # terminate without other driving
             elif self.time - self.report_start_time < timedelta(seconds=5):
-                if self.is_scanning_person:
-                    self.is_scanning_person = False
-                    self.publish('scanning_person', self.is_scanning_person)
                 self.send_speed_cmd(-0.25, 0)
                 return  # reverse 0.5m
             elif self.time - self.report_start_time < timedelta(seconds=7):
+                # experimental - use also backup data collection
+                if self.is_scanning_person:
+                    self.is_scanning_person = False
+                    self.publish('scanning_person', self.is_scanning_person)
                 self.send_speed_cmd(0.2, math.radians(-45))  # turn right
                 return  # reverse 0.5m
             elif self.time - self.report_start_time < timedelta(seconds=12):
