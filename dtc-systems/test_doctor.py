@@ -10,9 +10,9 @@ class DoctorTest(unittest.TestCase):
         bus = MagicMock()
         ref_h265_data = b'some H265 binary data'
         doctor = Doctor(bus=bus, config={})
-        doctor.on_scanning(True)
+        doctor.on_scanning_person(True)
         doctor.on_h265_video(ref_h265_data)
-        doctor.on_scanning(False)
+        doctor.on_scanning_person(False)
 
         with open(VIDEO_OUTPUT_ROOT / 'video1.h265', 'rb') as f:
             content = f.read()

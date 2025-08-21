@@ -18,7 +18,13 @@ class Doctor(Node):
         self.wav_fd = None
         VIDEO_OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
 
-    def on_scanning(self, data):
+    def on_report_latlon(self, data):
+        """
+        initial lat, lon position of the report
+        """
+        pass
+
+    def on_scanning_person(self, data):
         """
         Boolean trigger if the robot is in stationary scanning mode
         """

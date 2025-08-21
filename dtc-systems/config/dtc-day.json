@@ -45,6 +45,13 @@
         "init": {
         }
       },
+      "doctor": {
+        "driver": "doctor:Doctor",
+        "in": ["report_latlon", "h256_video"],
+        "out": [],
+        "init": {
+        }
+      },
       "reporter": {
         "driver": "reporter:Reporter",
         "in": ["report", "image"],
@@ -172,7 +179,11 @@
 
       ["gps.nmea_data", "app.nmea_data"],
 
-      ["app.report", "reporter.report"],
+      ["app.scanning_person", "doctor.scanning_person"],
+      ["app.report_latlon", "doctor.report_latlon"],
+      ["oak.color", "doctor.h265_video"],
+      ["audio.audio_data", "doctor.audio"],
+      ["doctor.report", "reporter.report"],
       ["oak.color", "reporter.image"],
 
       ["estop_serial.raw", "estop.raw"],
