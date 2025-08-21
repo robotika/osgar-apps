@@ -20,6 +20,7 @@ class Doctor(Node):
         self.key_frame_detected = False
         self.wav_fd = None
         VIDEO_OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+        self.verbose = False  # TODO move to Node default
 
     def on_report_latlon(self, data):
         """
