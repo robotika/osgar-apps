@@ -8,7 +8,7 @@ class DoctorTest(unittest.TestCase):
 
     def test_usage(self):
         bus = MagicMock()
-        ref_h265_data = b'some H265 binary data'
+        ref_h265_data = bytes.fromhex('00000001 460150') + b'some H265 binary data'  # must be I-frame
         doctor = Doctor(bus=bus, config={})
         doctor.on_scanning_person(True)
         doctor.on_h265_video(ref_h265_data)
