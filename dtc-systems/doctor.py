@@ -1,0 +1,51 @@
+"""
+  Module for medical evaluation - name "doctor" is in memory of GLB (that time to take care of other modules)
+"""
+from pathlib import Path
+from osgar.node import Node
+
+
+VIDEO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'video'
+
+
+class Doctor(Node):
+    def __init__(self, config, bus):
+        super().__init__(config, bus)
+        bus.register('report')
+        self.is_scanning = False
+        self.report_index = 0
+        self.h265_fd = None
+        self.wav_fd = None
+        VIDEO_OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+
+    def on_scanning(self, data):
+        """
+        Boolean trigger if the robot is in stationary scanning mode
+        """
+        if data and not self.is_scanning:
+            # open files for recording video and audio
+            self.report_index += 1
+            assert self.h265_fd is None
+            self.h265_fd = open(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265', 'wb')
+
+        if self.is_scanning and not data:
+            assert self.h265_fd is not None
+            self.h265_fd.close()
+        self.is_scanning = data
+
+    def on_h265_video(self, data):
+        """
+        Collect H.265 data during scanning period
+        """
+        if self.is_scanning:
+            assert self.h265_fd is not None
+            self.h265_fd.write(data)
+
+    def on_audio(self, data):
+        """
+        Collect audio sample during scanning period
+        """
+
+
+if __name__ == "__main__":
+    pass
