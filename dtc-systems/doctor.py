@@ -56,8 +56,10 @@ class Doctor(Node):
         if self.is_scanning and not data:
             assert self.wav_fd is not None
             self.wav_fd.close()
+            self.wav_fd = None
             assert self.h265_fd is not None
             self.h265_fd.close()
+            self.h265_fd = None
             if self.verbose:
                 cap = cv2.VideoCapture(str(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265'))
                 while True:
