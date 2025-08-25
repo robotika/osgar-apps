@@ -8,6 +8,7 @@ import wave
 from ultralytics import YOLO
 
 from osgar.node import Node
+from wav2txt import is_coherent_speech
 
 
 AUDIO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'audio'
@@ -17,7 +18,7 @@ VIDEO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'video'
 class Doctor(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('report')
+        bus.register('report', 'audio_analysis')
         self.is_scanning = False
         self.report_index = 0
         self.wav_fd = None
@@ -75,6 +76,8 @@ class Doctor(Node):
                     cv2.imshow(f'video{self.report_index}.h265', pose_w_id)  #frame)
                     cv2.waitKey(100)
                 cap.release()
+            is_coherent, text = is_coherent_speech(str(AUDIO_OUTPUT_ROOT / f'audio{self.report_index}.wav'))
+            self.publish('audio_analysis', [is_coherent, text])
 
         self.is_scanning = data
 
