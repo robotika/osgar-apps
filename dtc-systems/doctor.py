@@ -5,6 +5,7 @@ from pathlib import Path
 
 import cv2
 import wave
+from ultralytics import YOLO
 
 from osgar.node import Node
 
@@ -24,6 +25,7 @@ class Doctor(Node):
         self.key_frame_detected = False
         AUDIO_OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
         VIDEO_OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+        self.onnx_model = YOLO('models/yolo11n-pose.onnx')  # parametrize?
         self.verbose = False  # TODO move to Node default
 
     def on_report_latlon(self, data):
@@ -66,7 +68,11 @@ class Doctor(Node):
                     ret, frame = cap.read()
                     if ret == 0:
                         break
-                    cv2.imshow(f'video{self.report_index}.h265', frame)
+                    results = self.onnx_model(frame)
+#                    print(results[0].keypoints)
+                    kpts = results[0].keypoints.xy.detach().cpu().numpy()[0]
+                    pose_w_id = results[0].plot()
+                    cv2.imshow(f'video{self.report_index}.h265', pose_w_id)  #frame)
                     cv2.waitKey(100)
                 cap.release()
 
