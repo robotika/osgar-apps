@@ -19,12 +19,31 @@ class DTCReportTest(unittest.TestCase):
         r.respiratory_distress = 0
         r.hr = 69
         r.rr = 13
+        r.trauma_head = 1
+        r.trauma_torso = 2
+
+        r.trauma_lower_ext = 3
+        r.trauma_upper_ext = 1
+        r.alertness_ocular = 0
+        r.alertness_verbal = 3
+        r.alertness_motor = 2
+
         data = pack_data(r)
+        self.assertEqual(len(data), 14)  # full size
         unpacked = unpack_data(data)
+
         self.assertIsNotNone(unpacked.severe_hemorrhage)
         self.assertIsNotNone(unpacked.respiratory_distress)
         self.assertEqual(r.hr, unpacked.hr)
         self.assertEqual(r.rr, unpacked.rr)
+        self.assertEqual(r.trauma_head, unpacked.trauma_head)
+        self.assertEqual(r.trauma_torso, unpacked.trauma_torso)
+
+        self.assertEqual(r.trauma_lower_ext, unpacked.trauma_lower_ext)
+        self.assertEqual(r.trauma_upper_ext, unpacked.trauma_upper_ext)
+        self.assertEqual(r.alertness_ocular, unpacked.alertness_ocular)
+        self.assertEqual(r.alertness_verbal, unpacked.alertness_verbal)
+        self.assertEqual(r.alertness_motor, unpacked.alertness_motor)
 
     def test_out_of_range(self):
         r = DTCReport(49.911534, 14.199770833333334)

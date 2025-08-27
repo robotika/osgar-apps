@@ -54,6 +54,41 @@ def pack_data(report):
     else:
         s.append(bitstring.pack('bool:1', False))
 
+    if report.trauma_head is not None:
+        s.append(bitstring.pack('bool:1, uint:2', True, report.trauma_head))
+    else:
+        s.append(bitstring.pack('bool:1', False))
+
+    if report.trauma_torso is not None:
+        s.append(bitstring.pack('bool:1, uint:2', True, report.trauma_torso))
+    else:
+        s.append(bitstring.pack('bool:1', False))
+
+    if report.trauma_lower_ext is not None:
+        s.append(bitstring.pack('bool:1, uint:2', True, report.trauma_lower_ext))
+    else:
+        s.append(bitstring.pack('bool:1', False))
+
+    if report.trauma_upper_ext is not None:
+        s.append(bitstring.pack('bool:1, uint:2', True, report.trauma_upper_ext))
+    else:
+        s.append(bitstring.pack('bool:1', False))
+
+    if report.alertness_ocular is not None:
+        s.append(bitstring.pack('bool:1, uint:2', True, report.alertness_ocular))
+    else:
+        s.append(bitstring.pack('bool:1', False))
+
+    if report.alertness_verbal is not None:
+        s.append(bitstring.pack('bool:1, uint:2', True, report.alertness_verbal))
+    else:
+        s.append(bitstring.pack('bool:1', False))
+
+    if report.alertness_motor is not None:
+        s.append(bitstring.pack('bool:1, uint:2', True, report.alertness_motor))
+    else:
+        s.append(bitstring.pack('bool:1', False))
+
     return s.tobytes()
 
 
@@ -79,5 +114,26 @@ def unpack_data(packed_bytes):
 
     if unpacker.read('bool:1'):
         report.rr = unpacker.read('uint:6')
+
+    if unpacker.read('bool:1'):
+        report.trauma_head = unpacker.read('uint:2')
+
+    if unpacker.read('bool:1'):
+        report.trauma_torso = unpacker.read('uint:2')
+
+    if unpacker.read('bool:1'):
+        report.trauma_lower_ext = unpacker.read('uint:2')
+
+    if unpacker.read('bool:1'):
+        report.trauma_upper_ext = unpacker.read('uint:2')
+
+    if unpacker.read('bool:1'):
+        report.alertness_ocular = unpacker.read('uint:2')
+
+    if unpacker.read('bool:1'):
+        report.alertness_verbal = unpacker.read('uint:2')
+
+    if unpacker.read('bool:1'):
+        report.alertness_motor = unpacker.read('uint:2')
 
     return report
