@@ -9,6 +9,7 @@ from ultralytics import YOLO
 
 from osgar.node import Node
 from wav2txt import is_coherent_speech
+from report import DTCReport, pack_data
 
 
 AUDIO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'audio'
@@ -18,7 +19,7 @@ VIDEO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'video'
 class Doctor(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('report', 'audio_analysis')
+        bus.register('packed_report', 'audio_analysis')
         self.is_scanning = False
         self.report_index = 0
         self.wav_fd = None
@@ -28,12 +29,22 @@ class Doctor(Node):
         VIDEO_OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
         self.onnx_model = YOLO('models/yolo11n-pose.onnx')  # parametrize?
         self.verbose = False  # TODO move to Node default
+        self.last_location = None
+
+    def publish_report(self):
+        assert self.last_location is not None
+        r = DTCReport(self.last_location['lat'], self.last_location['lon'])
+        r.severe_hemorrhage = 0  # absent
+        r.respiratory_distress = 0  # absent
+        r.hr = 70
+        r.rr = 15
+        self.publish('packed_report', pack_data(r))
 
     def on_report_latlon(self, data):
         """
         initial lat, lon position of the report
         """
-        pass
+        self.last_location = data.copy()
 
     def on_scanning_person(self, data):
         """
@@ -78,6 +89,7 @@ class Doctor(Node):
                 cap.release()
             is_coherent, text = is_coherent_speech(str(AUDIO_OUTPUT_ROOT / f'audio{self.report_index}.wav'))
             self.publish('audio_analysis', [is_coherent, text])
+            self.publish_report()
 
         self.is_scanning = data
 
