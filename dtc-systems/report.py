@@ -43,6 +43,17 @@ def pack_data(report):
     else:
         s.append(bitstring.pack('bool:1', False))
 
+    if report.hr is not None:
+        s.append(bitstring.pack('bool:1, uint:8', True, report.hr))
+    else:
+        s.append(bitstring.pack('bool:1', False))
+
+    if report.rr is not None:
+        # Newborns: 30 to 60 breaths per minute
+        s.append(bitstring.pack('bool:1, uint:6', True, report.rr))
+    else:
+        s.append(bitstring.pack('bool:1', False))
+
     return s.tobytes()
 
 
@@ -62,5 +73,11 @@ def unpack_data(packed_bytes):
 
     if unpacker.read('bool:1'):
         report.respiratory_distress = unpacker.read('uint:1')
+
+    if unpacker.read('bool:1'):
+        report.hr = unpacker.read('uint:8')
+
+    if unpacker.read('bool:1'):
+        report.rr = unpacker.read('uint:6')
 
     return report
