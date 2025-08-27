@@ -38,6 +38,11 @@ def pack_data(report):
         # If is omitted, just set the flag to 0
         s.append(bitstring.pack('bool:1', False))
 
+    if report.respiratory_distress is not None:
+        s.append(bitstring.pack('bool:1, uint:1', True, report.respiratory_distress))
+    else:
+        s.append(bitstring.pack('bool:1', False))
+
     return s.tobytes()
 
 
@@ -54,5 +59,8 @@ def unpack_data(packed_bytes):
     if available:
         # If the flag is true, read the optional field
         report.severe_hemorrhage = unpacker.read('uint:1')
+
+    if unpacker.read('bool:1'):
+        report.respiratory_distress = unpacker.read('uint:1')
 
     return report
