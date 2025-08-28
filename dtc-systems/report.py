@@ -7,6 +7,10 @@ import bitstring
 
 class DTCReport:
     def __init__(self, lat, lon):
+        # common header
+        self.casualty_id = None  # to be filled on basestation
+        self.system = None  # TODO "Matty M01"
+
         # required fields
         self.location_lat = lat  # range from -90 and 90 in degrees
         self.location_lon = lon  # range from -180 and 180 in degrees
@@ -22,6 +26,63 @@ class DTCReport:
         self.alertness_ocular = None  # <value_at_time>, // 0, 1, 2
         self.alertness_verbal = None  # <value_at_time>, // 0, 1, 2, 3
         self.alertness_motor = None  # <value_at_time>   // 0, 1, 2, 3
+
+    def tojson(self):
+        report_json = {
+            "casualty_id": self.casualty_id,
+            "team": "Robotika",
+            "system": self.system,
+            "location":
+                {
+                    "latitude": self.location_lat,
+                    "longitude": self.location_lon,
+                    "time_ago": 0
+                }
+        }
+        if self.severe_hemorrhage is not None:
+            report_json["severe_hemorrhage"] = {
+                "value": self.severe_hemorrhage,
+                "time_ago": 0
+            }
+        if self.respiratory_distress is not None:
+            report_json["respiratory_distress"] = {
+                "value": self.respiratory_distress,
+                "time_ago": 0
+            }
+        if self.hr is not None:
+            report_json['hr'] = {
+                "value": self.hr,
+                "time_ago": 0
+            }
+        if self.rr is not None:
+            report_json["rr"] = {
+                "value": self.rr,
+                "time_ago": 0
+            }            ,
+        if self.trauma_head is not None:
+            report_json["trauma_head"] = self.trauma_head
+        if self.trauma_torso is not None:
+            report_json["trauma_torso"] = self.trauma_torso
+        if self.trauma_lower_ext is not None:
+            report_json["trauma_lower_ext"] = self.trauma_lower_ext
+        if self.trauma_upper_ext is not None:
+            report_json["trauma_upper_ext"] = self.trauma_upper_ext
+        if self.alertness_ocular is not None:
+            report_json["alertness_ocular"] = {
+                "value": self.alertness_ocular,
+                "time_ago": 0
+            }
+        if self.alertness_verbal is not None:
+            report_json["alertness_verbal"] = {
+                "value": self.alertness_verbal,
+                "time_ago": 0
+            }
+        if self.alertness_motor is not None:
+            report_json["alertness_motor"] = {
+                "value": self.alertness_motor,
+                "time_ago": 0
+            }
+        return report_json
 
 
 def pack_data(report):

@@ -51,6 +51,21 @@ class DTCReportTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             pack_data(r)
 
+    def Xtest_system(self):
+        r = DTCReport('m03-', 49.911534, 14.199770833333334)
+
+    def test_json(self):
+        r = DTCReport(49.911534, 14.199770833333334)
+        json_data = r.tojson()
+        self.assertAlmostEqual(json_data['location']['latitude'], 49.911534)
+        self.assertAlmostEqual(json_data['location']['longitude'], 14.199770833333334)
+        self.assertNotIn('severe_hemorrhage', json_data)
+
+        r.severe_hemorrhage = 0
+        json_data = r.tojson()
+        self.assertIn('severe_hemorrhage', json_data)
+        self.assertEqual(json_data['severe_hemorrhage']['value'], 0)
+
 
 if __name__ == '__main__':
     unittest.main()

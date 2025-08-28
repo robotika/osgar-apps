@@ -19,7 +19,7 @@ VIDEO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'video'
 class Doctor(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('packed_report', 'audio_analysis')
+        bus.register('report', 'lora_report', 'audio_analysis')
         self.is_scanning = False
         self.report_index = 0
         self.wav_fd = None
@@ -38,7 +38,8 @@ class Doctor(Node):
         r.respiratory_distress = 0  # absent
         r.hr = 70
         r.rr = 15
-        self.publish('packed_report', pack_data(r))
+        self.publish('lora_report', pack_data(r) + b'\n')
+        self.publish('report', r.tojson())
 
     def on_report_latlon(self, data):
         """
