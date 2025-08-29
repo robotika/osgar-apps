@@ -66,7 +66,7 @@ class DTCReport:
             report_json["rr"] = {
                 "value": self.rr,
                 "time_ago": 0
-            }            ,
+            }
         if self.trauma_head is not None:
             report_json["trauma_head"] = self.trauma_head
         if self.trauma_torso is not None:

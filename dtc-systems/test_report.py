@@ -71,6 +71,12 @@ class DTCReportTest(unittest.TestCase):
         self.assertIn('severe_hemorrhage', json_data)
         self.assertEqual(json_data['severe_hemorrhage']['value'], 0)
 
+    def test_rr_bug(self):
+        r = DTCReport('m03-',49.911534, 14.199770833333334)
+        r.rr = 15
+        json_data = r.tojson()
+        self.assertEqual(json_data['rr']['value'], 15)
+
 
 if __name__ == '__main__':
     unittest.main()
