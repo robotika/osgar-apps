@@ -5,11 +5,19 @@
 import bitstring
 
 
+def normalize_matty_name(nickname):
+    if 'Matty M' in nickname:
+        return nickname
+    if nickname[-1] == '-':
+        nickname = nickname[:-1]  # cut - for OSGAR prefix name like `m03-`
+    return 'Matty ' + nickname.upper()
+
+
 class DTCReport:
-    def __init__(self, lat, lon):
+    def __init__(self, system, lat, lon):
         # common header
         self.casualty_id = None  # to be filled on basestation
-        self.system = None  # TODO "Matty M01"
+        self.system = normalize_matty_name(system)  # e.g. "Matty M01"
 
         # required fields
         self.location_lat = lat  # range from -90 and 90 in degrees
@@ -88,6 +96,11 @@ class DTCReport:
 def pack_data(report):
     """Packs the data, handling the optional fields"""
     s = bitstring.BitStream()
+    assert report.system is not None
+    assert len(report.system) >= 3, report.system
+    assert report.system[-3:-1] == 'M0', report.system
+    assert report.system[-1] in ['1', '2', '3', '4', '5'], report.system
+    s.append(bitstring.pack('uint:5, uint:3', ord('M')-ord('A'), int(report.system[-1])))
     s.append(bitstring.pack('int:32, int:32',
                             int(round(report.location_lat * 3_600_000)),
                             int(round(report.location_lon * 3_600_000))))
@@ -158,8 +171,11 @@ def unpack_data(packed_bytes):
     unpacker = bitstring.BitStream(packed_bytes)
 
     # Read the mandatory fields
+    letter, serial_num = unpacker.readlist('uint:5, uint:3')
+    assert letter == ord('M') - ord('A'), letter
+    sys_name = f'Matty M{serial_num:02}'
     lat_ms, lon_ms = unpacker.readlist('int:32, int:32')
-    report = DTCReport(lat_ms/3_600_000, lon_ms/3_600_000)
+    report = DTCReport(sys_name, lat_ms/3_600_000, lon_ms/3_600_000)
 
     # Read the presence flag
     available = unpacker.read('bool:1')

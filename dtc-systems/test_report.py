@@ -6,7 +6,7 @@ from report import DTCReport, pack_data, unpack_data
 class DTCReportTest(unittest.TestCase):
 
     def test_usage(self):
-        r = DTCReport(49.911534, 14.199770833333334)
+        r = DTCReport('m03-',49.911534, 14.199770833333334)
         data = pack_data(r)
         unpacked = unpack_data(data)
         self.assertAlmostEqual(r.location_lat, unpacked.location_lat, 6)
@@ -14,7 +14,7 @@ class DTCReportTest(unittest.TestCase):
         self.assertIsNone(unpacked.severe_hemorrhage)
 
     def test_bits(self):
-        r = DTCReport(49.911534, 14.199770833333334)
+        r = DTCReport('m03-',49.911534, 14.199770833333334)
         r.severe_hemorrhage = 1
         r.respiratory_distress = 0
         r.hr = 69
@@ -29,7 +29,7 @@ class DTCReportTest(unittest.TestCase):
         r.alertness_motor = 2
 
         data = pack_data(r)
-        self.assertEqual(len(data), 14)  # full size
+        self.assertEqual(len(data), 15)  # full size
         unpacked = unpack_data(data)
 
         self.assertIsNotNone(unpacked.severe_hemorrhage)
@@ -46,16 +46,21 @@ class DTCReportTest(unittest.TestCase):
         self.assertEqual(r.alertness_motor, unpacked.alertness_motor)
 
     def test_out_of_range(self):
-        r = DTCReport(49.911534, 14.199770833333334)
+        r = DTCReport('m01-',49.911534, 14.199770833333334)
         r.rr = 100
         with self.assertRaises(ValueError):
             pack_data(r)
 
-    def Xtest_system(self):
+    def test_system(self):
         r = DTCReport('m03-', 49.911534, 14.199770833333334)
+        self.assertEqual(r.system, 'Matty M03')
+        packed = pack_data(r)
+        self.assertEqual(packed[0], ((ord('M')-ord('A')) << 3) + 3)
+        new_r = unpack_data(packed)
+        self.assertEqual(new_r.system, 'Matty M03')
 
     def test_json(self):
-        r = DTCReport(49.911534, 14.199770833333334)
+        r = DTCReport('m03-',49.911534, 14.199770833333334)
         json_data = r.tojson()
         self.assertAlmostEqual(json_data['location']['latitude'], 49.911534)
         self.assertAlmostEqual(json_data['location']['longitude'], 14.199770833333334)

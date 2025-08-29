@@ -33,7 +33,8 @@ class Doctor(Node):
 
     def publish_report(self):
         assert self.last_location is not None
-        r = DTCReport(self.last_location['lat'], self.last_location['lon'])
+        # TODO provide system name externally (OSGAR_PREFIX or better in json or LoRa identification)
+        r = DTCReport('M01', self.last_location['lat'], self.last_location['lon'])
         r.severe_hemorrhage = 0  # absent
         r.respiratory_distress = 0  # absent
         r.hr = 70
