@@ -102,8 +102,8 @@ def pack_data(report):
     assert report.system[-1] in ['1', '2', '3', '4', '5'], report.system
     s.append(bitstring.pack('uint:5, uint:3', ord('M')-ord('A'), int(report.system[-1])))
     s.append(bitstring.pack('int:32, int:32',
-                            int(round(report.location_lat * 3_600_000)),
-                            int(round(report.location_lon * 3_600_000))))
+                            int(round(report.location_lat * 3_600_000)) if report.location_lat is not None else 0,
+                            int(round(report.location_lon * 3_600_000))  if report.location_lon is not None else 0))
 
     if report.severe_hemorrhage is not None:
         # If exists, set the flag to 1 and append the data

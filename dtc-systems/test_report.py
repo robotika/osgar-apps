@@ -77,6 +77,14 @@ class DTCReportTest(unittest.TestCase):
         json_data = r.tojson()
         self.assertEqual(json_data['rr']['value'], 15)
 
+    def test_pack_invalid_GPS(self):
+        # rather pack data with invalid GPS than crash ...
+        r = DTCReport('m03-', None, None)
+        data = pack_data(r)
+        r2 = unpack_data(data)
+        self.assertEqual(r2.location_lat, 0)
+        self.assertEqual(r2.location_lon, 0)
+
 
 if __name__ == '__main__':
     unittest.main()
