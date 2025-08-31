@@ -71,12 +71,6 @@
           "out": ["raw"],
           "init": {"port": "/dev/estop", "speed": 9600}
       },
-      "lora": {
-          "driver": "lora",
-          "in": ["raw", "pose2d"],
-          "out": ["raw", "cmd"],
-          "init": {}
-      },
       "crypt": {
           "driver": "crypt:Crypt",
           "in": ["raw", "packet"],
@@ -177,16 +171,13 @@
       ["audio.audio_data", "doctor.audio"],
       ["doctor.report", "reporter.report"],
       ["oak.left_im", "reporter.image"],
+      ["doctor.lora_report", "crypt.packet"],
 
       ["estop_serial.raw", "estop.raw"],
       ["estop.raw", "estop_serial.raw"],
       ["estop.emergency_stop", "app.emergency_stop"],
       ["lora_serial.raw", "crypt.raw"],
-      ["crypt.decrypted","lora.raw"],
-      ["lora.raw", "crypt.packet"],
       ["crypt.encrypted", "lora_serial.raw"],
-      ["platform.pose2d", "lora.pose2d"],
-      ["lora.cmd", "app.cmd"],
 
       ["oak.depth", "app.depth"],
       ["oak.detections", "app.detections"],
