@@ -10,6 +10,7 @@ import cv2
 
 from osgar.node import Node
 from report import DTCReport, unpack_data
+from osgar.drivers.lora import parse_lora_packet
 
 
 URL_BASE = "http://localhost"  # local Robotika test/demo
@@ -140,7 +141,8 @@ class Reporter(Node):
                     submit_dtc_image(self.report_index, img_path)
 
     def on_lora_report(self, data):
-        r = unpack_data(data)
+        addr, payload = parse_lora_packet(data)
+        r = unpack_data(payload)
         self.on_report(r.tojson())  # TODO refactor not to use on_* callback
 
 
