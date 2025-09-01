@@ -14,7 +14,7 @@
           "driver": "serial",
           "in": ["raw"],
           "out": ["raw"],
-          "init": {"port": "/dev/ttyUSB0", "speed": 9600}
+          "init": {"port": "/dev/estop", "speed": 9600}
       }
     },
     "links": [["estop_serial.raw", "estop.raw"],
