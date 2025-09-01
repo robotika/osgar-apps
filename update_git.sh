@@ -7,6 +7,9 @@ fi
 
 echo "Robot IP is: $1"
 
+cd ~/git/matty && git push robot@$1:/home/robot/git/bare/matty.git
+ssh robot@$1 "cd /home/robot/git/matty && git pull"
+
 cd ~/git/osgar && git push robot@$1:/home/robot/git/bare/osgar.git
 ssh robot@$1 "cd /home/robot/git/osgar && git pull"
 

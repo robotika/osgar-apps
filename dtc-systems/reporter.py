@@ -9,6 +9,8 @@ import requests
 import cv2
 
 from osgar.node import Node
+from report import DTCReport, unpack_data
+from osgar.drivers.lora import parse_lora_packet
 
 
 URL_BASE = "http://localhost"  # local Robotika test/demo
@@ -77,7 +79,7 @@ def submit_dtc_report(report_data):
     time.sleep(2)
     after = json.loads(bytes.decode(get_status()))
     # DTC does not provide online reporting
-    return report_status['report_status'] == "accepted"
+    return report_status['report_status'] == "accepted", report_status
 
 
 def get_keyframe_image(data):
@@ -103,6 +105,7 @@ def get_keyframe_image(data):
 class Reporter(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
+        bus.register('server_response', 'lora_ack')
         self.is_team_reporter = config.get('is_team_reporter', False)
         self.grab_image = False
         self.report_index = 0
@@ -110,61 +113,15 @@ class Reporter(Node):
         Path('dtc_report/images').mkdir(parents=True, exist_ok=True)
 
     def on_report(self, data):
+        report_cmd = data.copy()
         self.report_index += 1
-
-        report_cmd = {
-"casualty_id": self.report_index,
-"team": "Robotika",
-"system": "Matty M01",
-"location":
-{
-"latitude": data['lat'],
-"longitude": data['lon'],
-"time_ago": 0
-},
-"severe_hemorrhage": {
-"value": 1,
-"time_ago": 0
-},
-"respiratory_distress": {
-"value": 0,
-"time_ago": 0
-},
-"hr": {
-"value": 120,
-"time_ago": 0
-},
-"rr": {
-"value": 30,
-"time_ago": 0
-},
-"temp": {
-"value": 100,
-"time_ago": 0
-}
-,
-"trauma_head": 0,
-"trauma_torso": 0,
-"trauma_lower_ext": 1,
-"trauma_upper_ext": 0,
-"alertness_ocular": {
-"value": 1,
-"time_ago": 0
-},
-"alertness_verbal": {
-"value": 2,
-"time_ago": 0
-},
-"alertness_motor": {
-"value": 2,
-"time_ago": 0
-}
-}
+        report_cmd["casualty_id"] = self.report_index
 
         if self.is_team_reporter:
-            submit_dtc_report(report_cmd)
+            ok, server_response = submit_dtc_report(report_cmd)
+            self.publish('server_response', server_response)
 
-        print(self.time, f'REPORT {self.report_index}:', data)
+        print(self.time, f'REPORT {self.report_index}')
         filename = f'report{self.report_index}.json'
         with open(Path('dtc_report/reports') / filename, 'w') as fd:
             json.dump(report_cmd, fd)
@@ -183,6 +140,11 @@ class Reporter(Node):
 
                 if self.is_team_reporter:
                     submit_dtc_image(self.report_index, img_path)
+
+    def on_lora_report(self, data):
+        addr, payload = parse_lora_packet(data)
+        r = unpack_data(payload)
+        self.on_report(r.tojson())  # TODO refactor not to use on_* callback
 
 
 if __name__ == '__main__':

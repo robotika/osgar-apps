@@ -38,7 +38,11 @@ def latlon2xy(lat, lon):
 class DARPATriageChallenge(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('desired_steering', 'scan', 'report')
+        bus.register('desired_steering',
+                     'scan',  # based on depth data from camera
+                     'report_latlon',  # dictionary {'lat': degrees, 'lon': degrees}
+                     'scanning_person',  # data collection from nearby position of causalty (Boolean)
+                     )
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
         self.waypoints = config.get('waypoints', [])[1:]  # remove start
@@ -65,6 +69,7 @@ class DARPATriageChallenge(Node):
         self.last_cones_distances = None  # not available
         self.field_of_view = math.radians(45)  # TODO, should clipped camera image pass it?
         self.report_dist = config.get('report_dist', 2.0)
+        self.is_scanning_person = False
 
         self.closest_waypoint = None
         self.closest_waypoint_dist = None
@@ -161,6 +166,10 @@ class DARPATriageChallenge(Node):
                 self.send_speed_cmd(-0.25, 0)
                 return  # reverse 0.5m
             elif self.time - self.report_start_time < timedelta(seconds=7):
+                # experimental - use also backup data collection
+                if self.is_scanning_person:
+                    self.is_scanning_person = False
+                    self.publish('scanning_person', self.is_scanning_person)
                 self.send_speed_cmd(0.2, math.radians(-45))  # turn right
                 return  # reverse 0.5m
             elif self.time - self.report_start_time < timedelta(seconds=12):
@@ -194,7 +203,9 @@ class DARPATriageChallenge(Node):
                             'lat' : self.last_position[0] if self.last_position is not None else None,
                             'lon': self.last_position[1] if self.last_position is not None else None,
                         }
-                        self.publish('report', report)
+                        self.is_scanning_person = True
+                        self.publish('scanning_person', self.is_scanning_person)
+                        self.publish('report_latlon', report)
             else:
                 if self.tracking_start_time is not None:
                     print(self.time, f'Lost track {self.time - self.tracking_start_time}')
