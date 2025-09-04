@@ -16,3 +16,6 @@ ssh robot@$1 "cd /home/robot/git/osgar && git pull"
 cd ~/git/osgar-apps && git push robot@$1:/home/robot/git/bare/osgar-apps.git
 ssh robot@$1 "cd /home/robot/git/osgar-apps && git pull"
 
+cd ~/git/dtc-video-analysis && git push robot@$1:/home/robot/git/bare/dtc-video-analysis.git
+ssh robot@$1 "cd /home/robot/git/dtc-video-analysis && git pull"
+
