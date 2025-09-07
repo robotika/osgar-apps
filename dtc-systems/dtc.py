@@ -197,7 +197,9 @@ class DARPATriageChallenge(Node):
                 x1, y1, x2, y2 = self.last_detections[best][2]
                 steering_angle = (self.field_of_view / 2) * (0.5 - (x1 + x2) / 2)  # steering left is positive
                 if self.last_cones_distances is not None and len(self.last_cones_distances) > best and self.last_cones_distances[best] is not None:
-                    if self.last_cones_distances[best] < self.report_dist and self.report_start_time is None:
+                    if ((self.last_cones_distances[best] < self.report_dist or y1 < 0.1)
+                            and self.report_start_time is None):
+                        print(self.time, 'SCANNING PERSON started', y1, y2, self.last_cones_distances[best])
                         self.report_start_time = self.time
                         report = {
                             'lat' : self.last_position[0] if self.last_position is not None else None,
