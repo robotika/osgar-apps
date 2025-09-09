@@ -6,5 +6,4 @@ pactl get-default-sink
 pactl get-default-source
 echo -----------------------
 
-ffplay -nodisp sounds/can_you_hear_me.mp3 -autoexit
-
+ffplay -nodisp sounds/can_you_hear_me.mp3 -autoexit -loglevel error
