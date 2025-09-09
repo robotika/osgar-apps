@@ -12,9 +12,9 @@ class DTCAudio(Node):
 
     def on_trigger(self, data):
         self.publish('playing', True)
-        print('Playing ...')
-        call('ffplay -nodisp sounds/can_you_hear_me.mp3 -autoexit'.split())
-        print('... finished.')
+        print(self.time, 'Playing ...')
+        call('ffplay -nodisp sounds/can_you_hear_me.mp3 -autoexit -loglevel error'.split())
+        print(self.time, '... finished.')
         self.publish('playing', False)
 
 
