@@ -96,6 +96,11 @@
           "device_index": null
         }
       },
+      "audio_player": {
+        "driver": "dtc_audio:DTCAudio",
+        "init": {
+        }
+      },
       "oak": {
         "driver": "osgar.drivers.oak_camera:OakCamera",
         "init": {
@@ -166,6 +171,7 @@
       ["gps.nmea_data", "app.nmea_data"],
 
       ["app.scanning_person", "doctor.scanning_person"],
+      ["app.scanning_person", "audio_player.trigger"],
       ["app.report_latlon", "doctor.report_latlon"],
       ["oak.left_im", "doctor.h265_video"],
       ["audio.audio_data", "doctor.audio"],
