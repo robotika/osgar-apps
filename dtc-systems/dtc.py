@@ -42,12 +42,14 @@ class DARPATriageChallenge(Node):
                      'scan',  # based on depth data from camera
                      'report_latlon',  # dictionary {'lat': degrees, 'lon': degrees}
                      'scanning_person',  # data collection from nearby position of causalty (Boolean)
+                     'play_sound'  # filename without extension in sounds/ folder
                      )
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
         self.waypoints = config.get('waypoints', [])[1:]  # remove start
         self.debug_all_waypoints = config.get('waypoints', [])[:]
         self.raise_exception_on_stop = config.get('terminate_on_stop', True)
+        self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX', 'M01')
 
         self.geofence = None
         geofence_lat_lon = config.get('geofence')
@@ -78,6 +80,7 @@ class DARPATriageChallenge(Node):
 
         self.look_around = False  # in case of blocked path look left and right and pick direction
         self.cmd_history = []
+        self.status_ready = False
 
     def send_speed_cmd(self, speed, steering_angle):
         self.cmd_history.append((speed, steering_angle))
@@ -288,6 +291,10 @@ class DARPATriageChallenge(Node):
             arr.append(dist)
         self.publish('scan', arr)
         self.scan = arr
+
+        if not self.status_ready:
+            self.publish('play_sound', self.system_name + 'ready')
+            self.status_ready = True
 
         if self.last_detections is None:
             return

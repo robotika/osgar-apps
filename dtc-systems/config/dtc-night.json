@@ -175,6 +175,7 @@
 
       ["app.scanning_person", "doctor.scanning_person"],
       ["app.scanning_person", "audio_player.trigger"],
+      ["app.play_sound", "audio_player.play_sound"],
       ["app.report_latlon", "doctor.report_latlon"],
       ["oak.left_im", "doctor.h265_video"],
       ["audio.audio_data", "doctor.audio"],
