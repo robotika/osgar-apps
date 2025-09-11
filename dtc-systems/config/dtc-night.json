@@ -2,7 +2,7 @@
   "version": 2,
   "robot": {
     "env": {
-      "OSGAR_LOG_PREFIX": null
+      "OSGAR_LOGS_PREFIX": null
     },
     "modules": {
       "app": {
