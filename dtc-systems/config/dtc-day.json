@@ -1,6 +1,9 @@
 {
   "version": 2,
   "robot": {
+    "env": {
+      "OSGAR_LOG_PREFIX": null
+    },
     "modules": {
       "app": {
           "driver": "dtc:DARPATriageChallenge",
