@@ -43,7 +43,7 @@ class DARPATriageChallenge(Node):
                      'scan',  # based on depth data from camera
                      'report_latlon',  # dictionary {'lat': degrees, 'lon': degrees}
                      'scanning_person',  # data collection from nearby position of causalty (Boolean)
-                     'play_sound'  # filename without extension in sounds/ folder
+                     'play_sound',  # filename without extension in sounds/ folder
                      'lora_latlon',  # LoRa encoded empty encoded DTC report
                      )
         self.max_speed = config.get('max_speed', 0.2)
