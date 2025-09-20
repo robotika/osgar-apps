@@ -191,6 +191,7 @@
       ["app.scanning_person", "audio_player.trigger"],
       ["app.play_sound", "audio_player.play_sound"],
       ["app.report_latlon", "doctor.report_latlon"],
+      ["app.lora_latlon", "crypt.packet"],
       ["oak.color", "doctor.h265_video"],
       ["audio.audio_data", "doctor.audio"],
       ["doctor.report", "reporter.report"],

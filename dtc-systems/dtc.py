@@ -12,6 +12,7 @@ from osgar.bus import BusShutdownException
 from osgar.lib.mathex import normalizeAnglePIPI
 from osgar.followme import EmergencyStopException  # hard to believe! :(
 from geofence import Geofence
+from report import DTCReport, normalize_matty_name, pack_data
 
 MAX_CMD_HISTORY = 100  # beware of dependency on pose2d update
 
@@ -43,6 +44,7 @@ class DARPATriageChallenge(Node):
                      'report_latlon',  # dictionary {'lat': degrees, 'lon': degrees}
                      'scanning_person',  # data collection from nearby position of causalty (Boolean)
                      'play_sound'  # filename without extension in sounds/ folder
+                     'lora_latlon',  # LoRa encoded empty encoded DTC report
                      )
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
@@ -243,6 +245,13 @@ class DARPATriageChallenge(Node):
         assert 'lat' in data, data
         assert 'lon' in data, data
         lat, lon = data['lat'], data['lon']
+        utc_time = data['utc_time']
+        if utc_time is not None:
+            matty_name = normalize_matty_name(self.system_name)
+            if int(round(float(utc_time))) % 10 == int(matty_name[-1]):
+                # per system every 10s
+                empty_report = DTCReport(matty_name, lat, lon)
+                self.publish('lora_latlon', pack_data(empty_report))
         if lat is not None and lon is not None:
             border_dist = None
             if self.geofence is not None:
