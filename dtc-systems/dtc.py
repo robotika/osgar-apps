@@ -51,10 +51,14 @@ class DARPATriageChallenge(Node):
         self.waypoints = config.get('waypoints', [])[1:]  # remove start
         self.debug_all_waypoints = config.get('waypoints', [])[:]
         self.raise_exception_on_stop = config.get('terminate_on_stop', True)
-        self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX', 'M01')
+        self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX', 'm01-')
 
         self.geofence = None
-        geofence_lat_lon = config.get('geofence')
+        # try system specific geofence
+        geofence_lat_lon = config.get(self.system_name + 'geofence')
+        if geofence_lat_lon is None:
+            # if not available use common geofence
+            geofence_lat_lon = config.get('geofence')
         if geofence_lat_lon is not None:
             self.geofence = Geofence(geofence_lat_lon)
             if len(self.waypoints) == 0:
