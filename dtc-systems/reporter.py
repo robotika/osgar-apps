@@ -148,7 +148,7 @@ class Reporter(Node):
         r = unpack_data(payload)
         if r.casualty_id is None or r.casualty_id == 0:
             # just report of robot positions
-            print(self.time, f'Pose {addr}: {r.location_lat}')
+            print(self.time, f'Pose {addr}: ({r.location_lat:.6f}, {r.location_lon:.6f})')
         else:
             self.on_report(r.tojson())  # TODO refactor not to use on_* callback
 
