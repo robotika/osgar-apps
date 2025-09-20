@@ -13,7 +13,9 @@ from report import DTCReport, unpack_data
 from osgar.drivers.lora import parse_lora_packet
 
 
-URL_BASE = "http://localhost"  # local Robotika test/demo
+#URL_BASE = "http://localhost"  # local Robotika test/demo
+URL_BASE = "http://192.168.1.7"  # local Robotika test/demo
+
 
 json_authorization = {
     # local testing server
