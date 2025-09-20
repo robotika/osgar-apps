@@ -146,7 +146,11 @@ class Reporter(Node):
     def on_lora_report(self, data):
         addr, payload = parse_lora_packet(data)
         r = unpack_data(payload)
-        self.on_report(r.tojson())  # TODO refactor not to use on_* callback
+        if r.casualty_id is None or r.casualty_id == 0:
+            # just report of robot positions
+            print(self.time, f'Pose {addr}: {r.location_lat}')
+        else:
+            self.on_report(r.tojson())  # TODO refactor not to use on_* callback
 
 
 if __name__ == '__main__':
