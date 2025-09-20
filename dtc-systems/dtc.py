@@ -255,7 +255,7 @@ class DARPATriageChallenge(Node):
             if int(round(float(utc_time))) % 10 == int(matty_name[-1]):
                 # per system every 10s
                 empty_report = DTCReport(matty_name, lat, lon)
-                self.publish('lora_latlon', pack_data(empty_report))
+                self.publish('lora_latlon', pack_data(empty_report) + b'\n')  # extra '\n' required by crypt
         if lat is not None and lon is not None:
             border_dist = None
             if self.geofence is not None:
