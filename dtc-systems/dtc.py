@@ -168,7 +168,7 @@ class DARPATriageChallenge(Node):
 
         if self.report_start_time is not None:
             # report via stop 3s
-            if self.time - self.report_start_time < timedelta(seconds=3):
+            if self.time - self.report_start_time < timedelta(seconds=13):  # 8s play sound, 5s listen
                 self.send_speed_cmd(0, 0)
                 return  # terminate without other driving
             elif self.time - self.report_start_time < timedelta(seconds=5):
