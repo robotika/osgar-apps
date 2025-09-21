@@ -145,6 +145,8 @@ class Reporter(Node):
 
     def on_lora_report(self, data):
         addr, payload = parse_lora_packet(data)
+        if 1 in addr:
+            return  # note, hard link to base-station!
         r = unpack_data(payload)
         if r.casualty_id is None or r.casualty_id == 0:
             # just report of robot positions
