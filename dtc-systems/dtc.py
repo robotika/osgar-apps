@@ -16,6 +16,8 @@ from report import DTCReport, normalize_matty_name, pack_data
 
 MAX_CMD_HISTORY = 100  # beware of dependency on pose2d update
 
+SCANNING_TIME_SEC = 13  # 8s talking 5s listening
+
 
 def geo_length(pos1, pos2):
     "return distance on sphere for two integer positions in milliseconds"
@@ -168,20 +170,20 @@ class DARPATriageChallenge(Node):
 
         if self.report_start_time is not None:
             # report via stop 3s
-            if self.time - self.report_start_time < timedelta(seconds=13):  # 8s play sound, 5s listen
+            if self.time - self.report_start_time < timedelta(seconds=SCANNING_TIME_SEC):
                 self.send_speed_cmd(0, 0)
                 return  # terminate without other driving
-            elif self.time - self.report_start_time < timedelta(seconds=5):
+            elif self.time - self.report_start_time < timedelta(seconds=SCANNING_TIME_SEC + 2):
                 self.send_speed_cmd(-0.25, 0)
                 return  # reverse 0.5m
-            elif self.time - self.report_start_time < timedelta(seconds=7):
+            elif self.time - self.report_start_time < timedelta(seconds=SCANNING_TIME_SEC + 4):
                 # experimental - use also backup data collection
                 if self.is_scanning_person:
                     self.is_scanning_person = False
                     self.publish('scanning_person', self.is_scanning_person)
                 self.send_speed_cmd(0.2, math.radians(-45))  # turn right
                 return  # reverse 0.5m
-            elif self.time - self.report_start_time < timedelta(seconds=12):
+            elif self.time - self.report_start_time < timedelta(seconds=SCANNING_TIME_SEC + 9):
                 # ignore detections for a moment (10s)
                 pass  # waypoints no longer correspond to cones/expected locations of objects
             else:
