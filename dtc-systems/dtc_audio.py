@@ -11,15 +11,12 @@ class DTCAudio(Node):
         bus.register('playing')
 
     def on_play_sound(self, data):
+        self.publish('playing', [data, True])
+        print(self.time, f'Playing ... {data}')
         filename = f'sounds/{data}.mp3'
         self._play(filename)
-
-    def on_trigger(self, data):
-        self.publish('playing', True)
-        print(self.time, 'Playing ...')
-        self._play('sounds/can_you_hear_me.mp3')
         print(self.time, '... finished.')
-        self.publish('playing', False)
+        self.publish('playing', [data, False])
 
     def _play(self, filename):
         call(f'ffplay -nodisp {filename} -autoexit -loglevel error'.split())
@@ -30,7 +27,7 @@ def self_test():
     from unittest.mock import MagicMock
     bus = MagicMock()
     audio_player = DTCAudio(bus=bus, config={})
-    audio_player.on_trigger(None)
+    audio_player.on_play_sound('can_you_hear_me')
 
 
 if __name__ == '__main__':

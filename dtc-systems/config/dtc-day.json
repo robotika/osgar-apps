@@ -200,7 +200,6 @@
       ["gps.nmea_data", "app.nmea_data"],
 
       ["app.scanning_person", "doctor.scanning_person"],
-      ["app.scanning_person", "audio_player.trigger"],
       ["app.play_sound", "audio_player.play_sound"],
       ["app.report_latlon", "doctor.report_latlon"],
       ["app.lora_latlon", "crypt.packet"],
@@ -209,6 +208,8 @@
       ["doctor.report", "reporter.report"],
       ["oak.color", "reporter.image"],
       ["doctor.lora_report", "crypt.packet"],
+      ["doctor.play_sound", "audio_player.play_sound"],
+      ["audio_player.playing", "doctor.playing"],
 
       ["estop_serial.raw", "estop.raw"],
       ["estop.raw", "estop_serial.raw"],

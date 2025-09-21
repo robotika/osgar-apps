@@ -15,13 +15,16 @@ from report import DTCReport, pack_data
 AUDIO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'audio'
 VIDEO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'video'
 
+DTC_QUERY_SOUND = 'can_you_hear_me'
+
 
 class Doctor(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('report', 'lora_report', 'audio_analysis')
+        bus.register('report', 'lora_report', 'audio_analysis', 'play_sound')
         self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX', 'M01')
         self.is_scanning = False
+        self.is_playing = False
         self.report_index = 0
         self.wav_fd = None
         self.h265_fd = None
@@ -66,6 +69,8 @@ class Doctor(Node):
             self.wav_fd.setnchannels(channels)
             self.wav_fd.setsampwidth(sample_width)
             self.wav_fd.setframerate(rate)
+            self.publish('play_sound', DTC_QUERY_SOUND)
+            self.is_playing = True
 
             assert self.h265_fd is None
             self.h265_fd = open(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265', 'wb')
@@ -101,7 +106,7 @@ class Doctor(Node):
         """
         Collect audio sample during scanning period
         """
-        if self.is_scanning:
+        if self.is_scanning and not self.is_playing:
             assert self.wav_fd is not None
             self.wav_fd.writeframes(data)
 
@@ -117,6 +122,11 @@ class Doctor(Node):
             if self.key_frame_detected:
                 self.h265_fd.write(data)
 
+    def on_playing(self, data):
+        name, status = data
+        if name == DTC_QUERY_SOUND:
+            self.is_playing = status
+        # ... but maybe we would like to track also playing other sounds??
 
 
 if __name__ == "__main__":
