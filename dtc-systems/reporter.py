@@ -151,6 +151,9 @@ class Reporter(Node):
             print(self.time, f'Pose {addr}: ({r.location_lat:.6f}, {r.location_lon:.6f})')
         else:
             self.on_report(r.tojson())  # TODO refactor not to use on_* callback
+            if self.is_team_reporter:
+                # confirm receiving and successful processing
+                self.publish('lora_ack', data)
 
 
 if __name__ == '__main__':
