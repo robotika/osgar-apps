@@ -22,7 +22,7 @@ class Doctor(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
         bus.register('report', 'lora_report', 'audio_analysis', 'play_sound')
-        self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX', 'M01')
+        self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX', 'm01-')
         self.is_scanning = False
         self.is_playing = False
         self.report_index = 0
