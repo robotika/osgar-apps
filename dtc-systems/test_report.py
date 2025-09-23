@@ -15,6 +15,7 @@ class DTCReportTest(unittest.TestCase):
 
     def test_bits(self):
         r = DTCReport('m03-',49.911534, 14.199770833333334)
+        r.casualty_id = 13
         r.severe_hemorrhage = 1
         r.respiratory_distress = 0
         r.hr = 69
@@ -29,8 +30,10 @@ class DTCReportTest(unittest.TestCase):
         r.alertness_motor = 2
 
         data = pack_data(r)
-        self.assertEqual(len(data), 15)  # full size
+        self.assertEqual(len(data), 16)  # full size
         unpacked = unpack_data(data)
+
+        self.assertEqual(unpacked.casualty_id, 13)
 
         self.assertIsNotNone(unpacked.severe_hemorrhage)
         self.assertIsNotNone(unpacked.respiratory_distress)

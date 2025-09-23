@@ -12,8 +12,11 @@ from osgar.bus import BusShutdownException
 from osgar.lib.mathex import normalizeAnglePIPI
 from osgar.followme import EmergencyStopException  # hard to believe! :(
 from geofence import Geofence
+from report import DTCReport, normalize_matty_name, pack_data
 
 MAX_CMD_HISTORY = 100  # beware of dependency on pose2d update
+
+SCANNING_TIME_SEC = 13  # 8s talking 5s listening
 
 
 def geo_length(pos1, pos2):
@@ -42,15 +45,22 @@ class DARPATriageChallenge(Node):
                      'scan',  # based on depth data from camera
                      'report_latlon',  # dictionary {'lat': degrees, 'lon': degrees}
                      'scanning_person',  # data collection from nearby position of causalty (Boolean)
+                     'play_sound',  # filename without extension in sounds/ folder
+                     'lora_latlon',  # LoRa encoded empty encoded DTC report
                      )
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
         self.waypoints = config.get('waypoints', [])[1:]  # remove start
         self.debug_all_waypoints = config.get('waypoints', [])[:]
         self.raise_exception_on_stop = config.get('terminate_on_stop', True)
+        self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX', 'm01-')
 
         self.geofence = None
-        geofence_lat_lon = config.get('geofence')
+        # try system specific geofence
+        geofence_lat_lon = config.get(self.system_name + 'geofence')
+        if geofence_lat_lon is None:
+            # if not available use common geofence
+            geofence_lat_lon = config.get('geofence')
         if geofence_lat_lon is not None:
             self.geofence = Geofence(geofence_lat_lon)
             if len(self.waypoints) == 0:
@@ -78,6 +88,7 @@ class DARPATriageChallenge(Node):
 
         self.look_around = False  # in case of blocked path look left and right and pick direction
         self.cmd_history = []
+        self.status_ready = False
 
     def send_speed_cmd(self, speed, steering_angle):
         self.cmd_history.append((speed, steering_angle))
@@ -159,20 +170,20 @@ class DARPATriageChallenge(Node):
 
         if self.report_start_time is not None:
             # report via stop 3s
-            if self.time - self.report_start_time < timedelta(seconds=3):
+            if self.time - self.report_start_time < timedelta(seconds=SCANNING_TIME_SEC):
                 self.send_speed_cmd(0, 0)
                 return  # terminate without other driving
-            elif self.time - self.report_start_time < timedelta(seconds=5):
+            elif self.time - self.report_start_time < timedelta(seconds=SCANNING_TIME_SEC + 2):
                 self.send_speed_cmd(-0.25, 0)
                 return  # reverse 0.5m
-            elif self.time - self.report_start_time < timedelta(seconds=7):
+            elif self.time - self.report_start_time < timedelta(seconds=SCANNING_TIME_SEC + 4):
                 # experimental - use also backup data collection
                 if self.is_scanning_person:
                     self.is_scanning_person = False
                     self.publish('scanning_person', self.is_scanning_person)
                 self.send_speed_cmd(0.2, math.radians(-45))  # turn right
                 return  # reverse 0.5m
-            elif self.time - self.report_start_time < timedelta(seconds=12):
+            elif self.time - self.report_start_time < timedelta(seconds=SCANNING_TIME_SEC + 9):
                 # ignore detections for a moment (10s)
                 pass  # waypoints no longer correspond to cones/expected locations of objects
             else:
@@ -197,7 +208,9 @@ class DARPATriageChallenge(Node):
                 x1, y1, x2, y2 = self.last_detections[best][2]
                 steering_angle = (self.field_of_view / 2) * (0.5 - (x1 + x2) / 2)  # steering left is positive
                 if self.last_cones_distances is not None and len(self.last_cones_distances) > best and self.last_cones_distances[best] is not None:
-                    if self.last_cones_distances[best] < self.report_dist and self.report_start_time is None:
+                    if ((self.last_cones_distances[best] < self.report_dist or y1 < 0.1)
+                            and self.report_start_time is None):
+                        print(self.time, 'SCANNING PERSON started', y1, y2, self.last_cones_distances[best])
                         self.report_start_time = self.time
                         report = {
                             'lat' : self.last_position[0] if self.last_position is not None else None,
@@ -238,6 +251,13 @@ class DARPATriageChallenge(Node):
         assert 'lat' in data, data
         assert 'lon' in data, data
         lat, lon = data['lat'], data['lon']
+        utc_time = data['utc_time']
+        if utc_time is not None:
+            matty_name = normalize_matty_name(self.system_name)
+            if int(round(float(utc_time))) % 10 == int(matty_name[-1]):
+                # per system every 10s
+                empty_report = DTCReport(matty_name, lat, lon)
+                self.publish('lora_latlon', pack_data(empty_report) + b'\n')  # extra '\n' required by crypt
         if lat is not None and lon is not None:
             border_dist = None
             if self.geofence is not None:
@@ -286,6 +306,10 @@ class DARPATriageChallenge(Node):
             arr.append(dist)
         self.publish('scan', arr)
         self.scan = arr
+
+        if not self.status_ready:
+            self.publish('play_sound', self.system_name + 'ready')
+            self.status_ready = True
 
         if self.last_detections is None:
             return

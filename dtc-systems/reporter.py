@@ -13,7 +13,9 @@ from report import DTCReport, unpack_data
 from osgar.drivers.lora import parse_lora_packet
 
 
-URL_BASE = "http://localhost"  # local Robotika test/demo
+#URL_BASE = "http://localhost"  # local Robotika test/demo
+URL_BASE = "http://192.168.1.7"  # local Robotika test/demo
+
 
 json_authorization = {
     # local testing server
@@ -143,8 +145,17 @@ class Reporter(Node):
 
     def on_lora_report(self, data):
         addr, payload = parse_lora_packet(data)
+        if 1 in addr:
+            return  # note, hard link to base-station!
         r = unpack_data(payload)
-        self.on_report(r.tojson())  # TODO refactor not to use on_* callback
+        if r.casualty_id is None or r.casualty_id == 0:
+            # just report of robot positions
+            print(self.time, f'Pose {addr}: ({r.location_lat:.6f}, {r.location_lon:.6f})')
+        else:
+            self.on_report(r.tojson())  # TODO refactor not to use on_* callback
+            if self.is_team_reporter:
+                # confirm receiving and successful processing
+                self.publish('lora_ack', data)
 
 
 if __name__ == '__main__':

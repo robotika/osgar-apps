@@ -1,6 +1,9 @@
 {
   "version": 2,
   "robot": {
+    "env": {
+      "OSGAR_LOGS_PREFIX": null
+    },
     "modules": {
       "app": {
           "driver": "dtc:DARPATriageChallenge",
@@ -13,6 +16,18 @@
             "geofence": [
               [49.911862, 14.199556],
               [49.911905, 14.199690],
+              [49.912248, 14.199604],
+              [49.912217, 14.199459]
+            ],
+            "m03-geofence": [
+              [49.911862, 14.199556],
+              [49.911905, 14.199690],
+              [49.9120750, 14.1996283],
+              [49.9120458, 14.1995144]
+            ],
+            "m05-geofence": [
+              [49.9120750, 14.1996283],
+              [49.9120458, 14.1995144],
               [49.912248, 14.199604],
               [49.912217, 14.199459]
             ]
@@ -96,6 +111,11 @@
           "device_index": null
         }
       },
+      "audio_player": {
+        "driver": "dtc_audio:DTCAudio",
+        "init": {
+        }
+      },
       "oak": {
         "driver": "osgar.drivers.oak_camera:OakCamera",
         "init": {
@@ -166,12 +186,16 @@
       ["gps.nmea_data", "app.nmea_data"],
 
       ["app.scanning_person", "doctor.scanning_person"],
+      ["app.play_sound", "audio_player.play_sound"],
       ["app.report_latlon", "doctor.report_latlon"],
+      ["app.lora_latlon", "crypt.packet"],
       ["oak.left_im", "doctor.h265_video"],
       ["audio.audio_data", "doctor.audio"],
       ["doctor.report", "reporter.report"],
       ["oak.left_im", "reporter.image"],
       ["doctor.lora_report", "crypt.packet"],
+      ["doctor.play_sound", "audio_player.play_sound"],
+      ["audio_player.playing", "doctor.playing"],
 
       ["estop_serial.raw", "estop.raw"],
       ["estop.raw", "estop_serial.raw"],

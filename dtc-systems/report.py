@@ -104,6 +104,7 @@ def pack_data(report):
     s.append(bitstring.pack('int:32, int:32',
                             int(round(report.location_lat * 3_600_000)) if report.location_lat is not None else 0,
                             int(round(report.location_lon * 3_600_000))  if report.location_lon is not None else 0))
+    s.append(bitstring.pack('uint:8', report.casualty_id if report.casualty_id is not None else 0))
 
     if report.severe_hemorrhage is not None:
         # If exists, set the flag to 1 and append the data
@@ -176,6 +177,7 @@ def unpack_data(packed_bytes):
     sys_name = f'Matty M{serial_num:02}'
     lat_ms, lon_ms = unpacker.readlist('int:32, int:32')
     report = DTCReport(sys_name, lat_ms/3_600_000, lon_ms/3_600_000)
+    report.casualty_id = unpacker.read('uint:8')
 
     # Read the presence flag
     available = unpacker.read('bool:1')
