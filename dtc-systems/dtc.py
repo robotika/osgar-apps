@@ -252,6 +252,10 @@ class DARPATriageChallenge(Node):
         assert 'lon' in data, data
         lat, lon = data['lat'], data['lon']
         utc_time = data['utc_time']
+        if lon is not None and data['lon_dir'] == 'W':
+            lon = -lon
+        if lat is not None and data['lat_dir'] == 'S':
+            lat = -lat
         if utc_time is not None:
             matty_name = normalize_matty_name(self.system_name)
             if int(round(float(utc_time))) % 10 == int(matty_name[-1]):
@@ -263,8 +267,8 @@ class DARPATriageChallenge(Node):
             if self.geofence is not None:
                 border_dist = self.geofence.border_dist((lat, lon))
             if int(self.time.total_seconds()) % 10 == 0:
-                print(self.time, 'GPS', data['lat'], data['lon'], border_dist)
-            p = data['lat'], data['lon']
+                print(self.time, 'GPS', lat, lon, border_dist)
+            p = lat, lon
             if self.verbose:
                 self.debug_arr.append((self.time, p))
             best_i, best_dist  = None, None
