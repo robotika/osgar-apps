@@ -1,0 +1,61 @@
+{
+  "version": 2,
+  "robot": {
+    "modules": {
+      "platform": {
+        "driver": "osgar.platforms.matty:Matty",
+        "in": ["esp_data"],
+        "out": ["esp_data"],
+        "init": {}
+      },
+      "timer": {
+        "driver": "timer",
+        "in": [],
+        "out": ["tick"],
+        "init": {
+          "sleep": 0.1
+        }
+      },
+      "gps": {
+        "driver": "gps",
+        "in": ["raw"],
+        "out": ["nmea_data"],
+        "init": {
+        }
+      },
+      "serial": {
+          "driver": "serial",
+          "in": ["raw"],
+          "out": ["raw"],
+          "init": {"port": "/dev/esp32", "speed": 115200}
+      },
+      "to_k2": {
+          "driver": "osgar.drivers.push:Push",
+          "init": {
+            "endpoint": "tcp://192.168.0.152:5555"
+          }
+      },
+      "from_rc": {
+          "driver": "osgar.drivers.pull:Pull",
+          "init": {
+            "bind": true,
+            "endpoint": "tcp://192.168.0.152:5555",
+            "outputs": ["desired_speed"]
+          }
+       },
+      "rc_node": {
+        "driver": "app.rc_node:RcNode",
+        "init": {}
+      }
+    },
+    "links": [
+      ["from_rc.desired_speed", "rc_node.desired_speed"],
+      ["rc_node.desired_speed", "platform.desired_steering"],
+
+      ["serial.raw", "platform.esp_data"],
+      ["platform.esp_data", "serial.raw"],
+      ["platform.gps_serial", "gps.raw"],
+      ["timer.tick", "platform.tick"]
+    ]
+  }
+}
