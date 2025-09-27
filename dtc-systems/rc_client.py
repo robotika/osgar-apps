@@ -27,7 +27,7 @@ class RcClient:
         self.input_thread.join(timeout=timeout)
 
     def send_speed(self, speed, angle):
-        self.bus.publish('desired_speed', [round(speed * 1000), round(math.degrees(angle) * 100)])
+        self.bus.publish('desired_steering', [round(speed * 1000), round(math.degrees(angle) * 100)])
 
 
     def run_input(self):

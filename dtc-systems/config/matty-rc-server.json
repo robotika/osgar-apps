@@ -34,7 +34,7 @@
           "init": {
             "bind": true,
             "endpoint": "tcp://0.0.0.0:5555",
-            "outputs": ["desired_speed"]
+            "outputs": ["desired_steering"]
           }
        }
     },
