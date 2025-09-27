@@ -36,15 +36,10 @@
             "endpoint": "tcp://0.0.0.0:5555",
             "outputs": ["desired_speed"]
           }
-       },
-      "rc_node": {
-        "driver": "rc_node:RcNode",
-        "init": {}
-      }
+       }
     },
     "links": [
-      ["from_rc.desired_speed", "rc_node.desired_speed"],
-      ["rc_node.desired_speed", "platform.desired_steering"],
+      ["from_rc.desired_speed", "platform.desired_steering"],
 
       ["serial.raw", "platform.esp_data"],
       ["platform.esp_data", "serial.raw"],
