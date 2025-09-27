@@ -39,7 +39,7 @@
        }
     },
     "links": [
-      ["from_rc.desired_speed", "platform.desired_steering"],
+      ["from_rc.desired_steering", "platform.desired_steering"],
 
       ["serial.raw", "platform.esp_data"],
       ["platform.esp_data", "serial.raw"],

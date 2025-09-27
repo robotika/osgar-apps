@@ -4,21 +4,15 @@
 import math
 from threading import Thread
 
-ROBOT_LENGTH = 0.348 * 2  # just for K2
-
-
-def angle_angular_speed(angel, speed):
-    return math.tan(math.radians(angel)) * speed / ROBOT_LENGTH
-
 
 class RcClient:
     def __init__(self, config, bus):
         self.input_thread = Thread(target=self.run_input, daemon=True)
         self.bus = bus
-        self.bus.register("desired_speed")
+        self.bus.register("desired_steering")
         self.verbose = False
-        self.max_speed = 1.0
-        self.max_angular_speed = 2
+        self.max_speed = 0.5
+        self.max_angle = 45
         import pygame
         global pygame
 
@@ -32,9 +26,8 @@ class RcClient:
     def join(self, timeout=None):
         self.input_thread.join(timeout=timeout)
 
-    def send_speed(self, speed, angular_speed):
-        angular_speed = math.copysign(min(self.max_angular_speed, abs(angular_speed)), angular_speed)
-        self.bus.publish('desired_speed', [round(speed * 1000), round(math.degrees(angular_speed) * 100)])
+    def send_speed(self, speed, angle):
+        self.bus.publish('desired_speed', [round(speed * 1000), round(math.degrees(angle) * 100)])
 
 
     def run_input(self):
@@ -54,18 +47,17 @@ class RcClient:
                         speed = max(speed - 0.1, -max_speed)
 
                     elif event.key == pygame.K_LEFT:
-                        angle = min(angle + 5, 70)
+                        angle = min(angle + 5, self.max_angle)
 
                     elif event.key == pygame.K_RIGHT:
-                        angle = max(angle - 5, -70)
+                        angle = max(angle - 5, -self.max_angle)
 
                     elif event.key == pygame.K_SPACE:
                         speed = 0
                         angle = 0
 
-                    angular_speed = angle_angular_speed(angle, speed)
-                    print(f"{speed:0.1f}, {angular_speed:0.3f}, {angle}")
-                    self.send_speed(speed, angular_speed)
+                    print(f"{speed:0.1f}, {angle}")
+                    self.send_speed(speed, math.radians(angle))
 
     def request_stop(self):
         self.bus.shutdown()
