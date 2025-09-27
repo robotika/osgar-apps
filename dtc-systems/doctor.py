@@ -11,6 +11,13 @@ from osgar.node import Node
 from wav2txt import is_coherent_speech
 from report import DTCReport, pack_data
 
+import sys
+import importlib
+fb_module = str(Path(__file__).parent.parent.parent / 'dtc-video-analysis')
+if fb_module not in sys.path:
+    sys.path.append(fb_module)
+fb_main = importlib.import_module('detect-and-stream').main
+
 
 AUDIO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'audio'
 VIDEO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'video'
@@ -83,6 +90,8 @@ class Doctor(Node):
             assert self.h265_fd is not None
             self.h265_fd.close()
             self.h265_fd = None
+            filename = str(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265')
+            fb_main(filename, debug=False)
             if self.verbose:
                 cap = cv2.VideoCapture(str(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265'))
                 while True:
