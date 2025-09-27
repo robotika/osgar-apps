@@ -2,6 +2,8 @@
   Module for medical evaluation - name "doctor" is in memory of GLB (that time to take care of other modules)
 """
 from pathlib import Path
+from cProfile import Profile
+from pstats import SortKey, Stats
 
 import cv2
 import wave
@@ -91,7 +93,10 @@ class Doctor(Node):
             self.h265_fd.close()
             self.h265_fd = None
             filename = str(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265')
-            fb_main(filename, debug=False)
+
+#            with Profile() as profile:
+#                fb_report = fb_main(filename, debug=False)
+#            Stats(profile).strip_dirs().sort_stats(SortKey.CUMULATIVE).print_stats()
             if self.verbose:
                 cap = cv2.VideoCapture(str(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265'))
                 while True:
