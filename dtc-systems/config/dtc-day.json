@@ -156,6 +156,8 @@
           "stereo_extended_disparity": false,
           "stereo_subpixel": false,
           "stereo_left_right_check": true,
+          "verbose_detections": false,
+          "sleep_on_start_sec": 10,
           "model": {
             "blob": "models/yolov8n_coco_640x352.blob"
           },
