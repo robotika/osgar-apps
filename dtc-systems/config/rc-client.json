@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "robot": {
+    "modules": {
+      "rc": {
+        "driver": "rc_client:RcClient",
+        "init": {}
+      },
+      "to_k2": {
+          "driver": "osgar.drivers.push:Push",
+          "init": {
+            "endpoint": "tcp://m03-odroid.local:5555"
+          }
+      }
+      },
+    "links": [["rc.desired_speed", "to_k2.desired_speed"]]
+  }
+}
