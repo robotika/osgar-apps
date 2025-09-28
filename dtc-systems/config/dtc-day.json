@@ -157,7 +157,7 @@
           "stereo_subpixel": false,
           "stereo_left_right_check": true,
           "verbose_detections": false,
-          "sleep_on_start_sec": 10,
+          "sleep_on_start_sec": 5,
           "model": {
             "blob": "models/yolov8n_coco_640x352.blob"
           },
