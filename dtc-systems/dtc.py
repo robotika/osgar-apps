@@ -267,7 +267,7 @@ class DARPATriageChallenge(Node):
             if self.geofence is not None:
                 border_dist = self.geofence.border_dist((lat, lon))
             if int(self.time.total_seconds()) % 10 == 0:
-                print(self.time, 'GPS', lat, lon, border_dist)
+                print(self.time, 'GPS', lat, lon, border_dist, self.waypoints)
             p = lat, lon
             if self.verbose:
                 self.debug_arr.append((self.time, p))
