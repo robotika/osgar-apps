@@ -13,6 +13,7 @@ class DoctorTest(unittest.TestCase):
         ref_h265_data = bytes.fromhex('00000001 460150') + b'some H265 binary data'  # must be I-frame
         audio_data = np.zeros(100, dtype=np.uint16)
         doctor = Doctor(bus=bus, config={})
+        doctor.last_location = {'lat': 32.6570764, 'lon': -83.7562508}
         doctor.on_scanning_person(True)
         doctor.on_h265_video(ref_h265_data)
         doctor.on_audio(audio_data)
@@ -30,6 +31,7 @@ class DoctorTest(unittest.TestCase):
         bus = MagicMock()
         audio_data = np.zeros(100, dtype=np.uint16)
         doctor = Doctor(bus=bus, config={})
+        doctor.last_location = {'lat': 32.6570764, 'lon': -83.7562508}
         doctor.on_scanning_person(True)
         doctor.on_audio(audio_data)
         doctor.on_scanning_person(False)
@@ -37,6 +39,28 @@ class DoctorTest(unittest.TestCase):
         doctor.on_audio(audio_data)
         doctor.on_scanning_person(False)
 
+    def test_fb_report(self):
+        bus = MagicMock()
+        doctor = Doctor(bus=bus, config={})
+        doctor.last_location = {'lat': 32.6570764, 'lon': -83.7562508}
+        fb_report = {'Head': 'Normal',
+             'Heart Rate': 0,
+             'Lower Extermities': 'Normal',
+             'Motor': 'Absent',
+             'Ocular': 'Open',
+             'Respiratory Distress': 'Absent',
+             'Respiratory Rate': 0,
+             'Severe Hemorrhage': 'Absent',
+             'Torso': 'Normal',
+             'Upper Extermities': 'Normal',
+             'Verbal': '<TODO>'}
+        doctor.report_index = 1
+        doctor.publish_report(fb_report, audio_pair=[False, ''])
+        last = bus.mock_calls[-1]
+        self.assertEqual(last.args[0], 'report')
+        report = last.args[1]
+        self.assertEqual(report['severe_hemorrhage']['value'], 0)
+        # TODO other conversions!
 
 if __name__ == '__main__':
     unittest.main()

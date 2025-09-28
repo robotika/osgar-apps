@@ -44,10 +44,12 @@ class Doctor(Node):
         self.verbose = False  # TODO move to Node default
         self.last_location = None
 
-    def publish_report(self):
+    def publish_report(self, fb_report, audio_pair):
         assert self.last_location is not None
+        if fb_report is None:
+            return  # probably false detection -> no report
         r = DTCReport(self.system_name, self.last_location['lat'], self.last_location['lon'])
-        r.severe_hemorrhage = 0  # absent
+        r.severe_hemorrhage = 0 if fb_report['Severe Hemorrhage'] == 'Absent' else 1
         r.respiratory_distress = 0  # absent
         r.hr = 70
         r.rr = 15
@@ -94,9 +96,9 @@ class Doctor(Node):
             self.h265_fd = None
             filename = str(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265')
 
-#            with Profile() as profile:
-#                fb_report = fb_main(filename, debug=False)
-#            Stats(profile).strip_dirs().sort_stats(SortKey.CUMULATIVE).print_stats()
+            with Profile() as profile:
+                fb_report = fb_main(filename, debug=False)
+            Stats(profile).strip_dirs().sort_stats(SortKey.CUMULATIVE).print_stats(10)
             if self.verbose:
                 cap = cv2.VideoCapture(str(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265'))
                 while True:
@@ -112,7 +114,7 @@ class Doctor(Node):
                 cap.release()
             is_coherent, text = is_coherent_speech(str(AUDIO_OUTPUT_ROOT / f'audio{self.report_index}.wav'))
             self.publish('audio_analysis', [is_coherent, text])
-            self.publish_report()
+            self.publish_report(fb_report, [is_coherent, text])
 
         self.is_scanning = data
 
