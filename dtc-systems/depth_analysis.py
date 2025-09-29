@@ -27,9 +27,10 @@ def extract_depth(log_path, stream_name):
                 dist50 = int(np.percentile( data[line:line_end, index:box_width + index][mask], 50))
             else:
                 dist5, dist10, dist50 = 0, 0, 0
-#            print(timestamp, dist5, dist10, dist50)
-            arr.append((timestamp.total_seconds(), dist5, dist10, dist50))
-            if i > 100:
+#            print(timestamp, dist5, dist10, dist50, mask.sum())
+#            arr.append((timestamp.total_seconds(), dist5, dist10, dist50))
+            arr.append((timestamp.total_seconds(), mask.sum()))
+            if i > 1000:
                 break
         return arr
 
@@ -38,7 +39,7 @@ def draw(arr):
     import matplotlib.pyplot as plt
     for i in range(len(arr[0]) - 1):
         x = [v[0] for v in arr]
-        y = [v[i+1]/1000.0 for v in arr]
+        y = [v[i+1] for v in arr]
         plt.plot(x, y)
     plt.show()
 
