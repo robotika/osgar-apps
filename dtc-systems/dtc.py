@@ -298,16 +298,15 @@ class DARPATriageChallenge(Node):
         self.last_detections = [det for det in data if det[0] == 'person']
 
     def on_depth(self, data):
+        data = data.copy()
         line = self.horizon
         line_end = self.horizon + 30
         box_width = 160
         arr = []
         for index in range(0 , 641 - box_width, 20):
-            mask = data[line:line_end, index:box_width + index] != 0
-            if mask.max():
-                dist = int(np.percentile( data[line:line_end, index:box_width + index][mask], 5))
-            else:
-                dist = 0
+            mask = data[line:line_end, index:box_width + index] == 0
+            data[line:line_end, index:box_width + index][mask] = 10000 # 10m
+            dist = int(np.percentile( data[line:line_end, index:box_width + index], 5))
             arr.append(dist)
         self.publish('scan', arr)
         self.scan = arr
