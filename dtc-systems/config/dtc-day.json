@@ -12,6 +12,7 @@
           "init": {
             "max_speed": 0.5,
             "turn_angle": 40,
+            "horizon": 250,
             "waypoints": [],
             "geofenceZT": [
               [49.911862, 14.199556],

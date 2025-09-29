@@ -50,6 +50,7 @@ class DARPATriageChallenge(Node):
                      )
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
+        self.horizon = config.get('horizon', 200)
         self.waypoints = config.get('waypoints', [])[1:]  # remove start
         self.debug_all_waypoints = config.get('waypoints', [])[:]
         self.raise_exception_on_stop = config.get('terminate_on_stop', True)
@@ -297,8 +298,8 @@ class DARPATriageChallenge(Node):
         self.last_detections = [det for det in data if det[0] == 'person']
 
     def on_depth(self, data):
-        line = 400//2
-        line_end = 400//2 + 30
+        line = self.horizon
+        line_end = self.horizon + 30
         box_width = 160
         arr = []
         for index in range(0 , 641 - box_width, 20):
