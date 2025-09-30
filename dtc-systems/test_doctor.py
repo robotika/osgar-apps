@@ -53,9 +53,9 @@ class DoctorTest(unittest.TestCase):
              'Severe Hemorrhage': 'Absent',
              'Torso': 'Normal',
              'Upper Extermities': 'Normal',
-             'Verbal': '<TODO>'}
+             'Verbal': 'Absent'}
         doctor.report_index = 1
-        doctor.publish_report(fb_report, audio_pair=[False, ''])
+        doctor.publish_report(fb_report)
         last = bus.mock_calls[-1]
         self.assertEqual(last.args[0], 'report')
         report = last.args[1]
@@ -71,6 +71,7 @@ class DoctorTest(unittest.TestCase):
 
         self.assertEqual(report['alertness_ocular']['value'], 0)
         self.assertEqual(report['alertness_motor']['value'], 2)
+        self.assertEqual(report['alertness_verbal']['value'], 2)
 
 
 if __name__ == '__main__':

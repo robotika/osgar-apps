@@ -45,7 +45,7 @@ class Doctor(Node):
         self.verbose = False  # TODO move to Node default
         self.last_location = None
 
-    def publish_report(self, fb_report, audio_pair):
+    def publish_report(self, fb_report):
         assert self.last_location is not None
         if fb_report is None:
             return  # probably false detection -> no report
@@ -60,6 +60,7 @@ class Doctor(Node):
         r.trauma_upper_ext = 0 if fb_report['Upper Extermities'] == 'Normal' else 1
         r.alertness_ocular = 0 if fb_report['Ocular'] == 'Open' else 1
         r.alertness_motor = 0 if fb_report['Motor'] == 'Normal' else 1 if fb_report['Motor'] == 'Abnormal' else 2
+        r.alertness_verbal = 0 if fb_report['Verbal'] == 'Normal' else 1 if fb_report['Verbal'] == 'Abnormal' else 2
 
         assert self.report_index > 0, self.report_index
         r.casualty_id = self.report_index
@@ -104,8 +105,11 @@ class Doctor(Node):
             self.h265_fd = None
             filename = str(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265')
 
+            is_coherent, text = is_coherent_speech(str(AUDIO_OUTPUT_ROOT / f'audio{self.report_index}.wav'))
+            self.publish('audio_analysis', [is_coherent, text])
+
             with Profile() as profile:
-                fb_report = fb_main(filename, debug=False)
+                fb_report = fb_main(filename, [is_coherent, text], debug=False)
             s = StringIO()
             Stats(profile, stream=s).strip_dirs().sort_stats(SortKey.CUMULATIVE).print_stats(10)
             self.publish('debug_profiler', s.getvalue())
@@ -122,9 +126,7 @@ class Doctor(Node):
                     cv2.imshow(f'video{self.report_index}.h265', pose_w_id)  #frame)
                     cv2.waitKey(100)
                 cap.release()
-            is_coherent, text = is_coherent_speech(str(AUDIO_OUTPUT_ROOT / f'audio{self.report_index}.wav'))
-            self.publish('audio_analysis', [is_coherent, text])
-            self.publish_report(fb_report, [is_coherent, text])
+            self.publish_report(fb_report)
 
         self.is_scanning = data
 
