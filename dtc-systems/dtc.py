@@ -18,6 +18,14 @@ MAX_CMD_HISTORY = 100  # beware of dependency on pose2d update
 
 SCANNING_TIME_SEC = 13  # 8s talking 5s listening
 
+LEFT_LED_INDEX = 0  # to be moved into matty.py ... once game is over
+LED_COLORS = {  # red, gree, blue
+    'm01-': [0, 0, 0xFF],
+    'm02-': [0, 0xFF, 0],
+    'm03-': [0xFF, 0, 0],
+    'm04-': [0xFF, 0x6E, 0xC7], # pink
+    'm05-': [0xFF, 0x7F, 0]  # orange
+}
 
 def geo_length(pos1, pos2):
     "return distance on sphere for two integer positions in milliseconds"
@@ -47,6 +55,7 @@ class DARPATriageChallenge(Node):
                      'scanning_person',  # data collection from nearby position of causalty (Boolean)
                      'play_sound',  # filename without extension in sounds/ folder
                      'lora_latlon',  # LoRa encoded empty encoded DTC report
+                     'set_leds',  # set LEDs - [index, red, green, blue]
                      )
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
@@ -101,6 +110,10 @@ class DARPATriageChallenge(Node):
         )
 
     def on_emergency_stop(self, data):
+        if data:
+            self.publish('set_leds', [LEFT_LED_INDEX, 0, 0, 0])  # turn off left LED
+            self.send_speed_cmd(0, 0)  # STOP! (note, that it could be e-stop)
+
         if self.raise_exception_on_stop and data:
             raise EmergencyStopException()
 
@@ -312,6 +325,7 @@ class DARPATriageChallenge(Node):
         self.scan = arr
 
         if not self.status_ready:
+            self.publish('set_leds', [LEFT_LED_INDEX] + [v//2 for v in LED_COLORS.get(self.system_name, [0, 0, 0])])
             self.publish('play_sound', self.system_name + 'ready')
             self.status_ready = True
 

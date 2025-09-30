@@ -205,6 +205,7 @@
     },
     "links": [
       ["app.desired_steering", "platform.desired_steering"],
+      ["app.set_leds", "platform.set_leds"],
       ["platform.pose2d", "app.pose2d"],
       ["platform.emergency_stop", "app.emergency_stop"],
       ["serial.raw", "platform.esp_data"],
