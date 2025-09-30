@@ -129,7 +129,7 @@
           "fps": 10,
           "is_color": false,
           "video_encoder": "h265",
-          "h264_bitrate": 2000,
+          "h264_bitrate": 4000,
           "is_depth": true,
           "is_stereo_images": true,
           "laser_projector_current": 0,
