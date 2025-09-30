@@ -51,9 +51,16 @@ class Doctor(Node):
             return  # probably false detection -> no report
         r = DTCReport(self.system_name, self.last_location['lat'], self.last_location['lon'])
         r.severe_hemorrhage = 0 if fb_report['Severe Hemorrhage'] == 'Absent' else 1
-        r.respiratory_distress = 0  # absent
-        r.hr = 70
-        r.rr = 15
+        r.respiratory_distress = 0 if fb_report['Respiratory Distress'] == 'Absent' else 1
+        r.hr = fb_report['Heart Rate']
+        r.rr = fb_report['Respiratory Rate']
+        r.trauma_head = 0 if fb_report['Head'] == 'Normal' else 1
+        r.trauma_torso = 0 if fb_report['Torso'] == 'Normal' else 1
+        r.trauma_lower_ext = 0 if fb_report['Lower Extermities'] == 'Normal' else 1
+        r.trauma_upper_ext = 0 if fb_report['Upper Extermities'] == 'Normal' else 1
+        r.alertness_ocular = 0 if fb_report['Ocular'] == 'Open' else 1
+        r.alertness_motor = 0 if fb_report['Motor'] == 'Normal' else 1 if fb_report['Motor'] == 'Abnormal' else 2
+
         assert self.report_index > 0, self.report_index
         r.casualty_id = self.report_index
         self.publish('lora_report', pack_data(r) + b'\n')

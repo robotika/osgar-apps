@@ -49,7 +49,7 @@ class DoctorTest(unittest.TestCase):
              'Motor': 'Absent',
              'Ocular': 'Open',
              'Respiratory Distress': 'Absent',
-             'Respiratory Rate': 0,
+             'Respiratory Rate': 13,
              'Severe Hemorrhage': 'Absent',
              'Torso': 'Normal',
              'Upper Extermities': 'Normal',
@@ -60,7 +60,18 @@ class DoctorTest(unittest.TestCase):
         self.assertEqual(last.args[0], 'report')
         report = last.args[1]
         self.assertEqual(report['severe_hemorrhage']['value'], 0)
-        # TODO other conversions!
+        self.assertEqual(report['respiratory_distress']['value'], 0)
+        self.assertEqual(report['hr']['value'], 0)
+        self.assertEqual(report['rr']['value'], 13)
+
+        self.assertEqual(report['trauma_head'], 0)
+        self.assertEqual(report['trauma_torso'], 0)
+        self.assertEqual(report['trauma_lower_ext'], 0)
+        self.assertEqual(report['trauma_upper_ext'], 0)
+
+        self.assertEqual(report['alertness_ocular']['value'], 0)
+        self.assertEqual(report['alertness_motor']['value'], 2)
+
 
 if __name__ == '__main__':
     unittest.main()
