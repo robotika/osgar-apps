@@ -313,7 +313,7 @@ class DARPATriageChallenge(Node):
 
     def on_depth(self, data):
         data = data.copy()
-        line = self.horizon
+        line = self.horizon - 30
         line_end = self.horizon + 30
         box_width = 160
         arr = []
