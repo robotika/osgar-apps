@@ -18,7 +18,8 @@ MAX_CMD_HISTORY = 100  # beware of dependency on pose2d update
 
 SCANNING_TIME_SEC = 13  # 8s talking 5s listening
 
-LEFT_LED_INDEX = 0  # to be moved into matty.py ... once game is over
+LEFT_LED_INDEX = 1  # to be moved into matty.py
+RIGHT_LED_INDEX = 0  # to be moved into matty.py
 LED_COLORS = {  # red, gree, blue
     'm01-': [0, 0, 0xFF],
     'm02-': [0, 0xFF, 0],
