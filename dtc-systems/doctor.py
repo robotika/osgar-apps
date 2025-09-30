@@ -1,6 +1,7 @@
 """
   Module for medical evaluation - name "doctor" is in memory of GLB (that time to take care of other modules)
 """
+from io import StringIO
 from pathlib import Path
 from cProfile import Profile
 from pstats import SortKey, Stats
@@ -30,7 +31,7 @@ DTC_QUERY_SOUND = 'can_you_hear_me'
 class Doctor(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('report', 'lora_report', 'audio_analysis', 'play_sound')
+        bus.register('report', 'lora_report', 'audio_analysis', 'play_sound', 'debug_profiler')
         self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX', 'm01-')
         self.is_scanning = False
         self.is_playing = False
@@ -98,7 +99,9 @@ class Doctor(Node):
 
             with Profile() as profile:
                 fb_report = fb_main(filename, debug=False)
-            Stats(profile).strip_dirs().sort_stats(SortKey.CUMULATIVE).print_stats(10)
+            s = StringIO()
+            Stats(profile, stream=s).strip_dirs().sort_stats(SortKey.CUMULATIVE).print_stats(10)
+            self.publish('debug_profiler', s.getvalue())
             if self.verbose:
                 cap = cv2.VideoCapture(str(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265'))
                 while True:
