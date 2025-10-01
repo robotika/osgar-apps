@@ -430,19 +430,25 @@ class DARPATriageChallenge(Node):
         from matplotlib.patches import Circle
         import matplotlib.pyplot as plt
         fig, ax = plt.subplots()
-        for x_center, y_center in self.waypoints:
+        for y_center, x_center in self.waypoints:
             ax.scatter(x_center, y_center)
 
-        x_center = [p[0] for (t, p) in self.debug_arr]
-        y_center = [p[1] for (t, p) in self.debug_arr]
+        x_center = [p[1] for (t, p) in self.debug_arr]
+        y_center = [p[0] for (t, p) in self.debug_arr]
         ax.scatter(x_center, y_center)
 
         radius = 0.0001
         for c in self.waypoints + self.debug_all_waypoints:
-            circle = Circle(c, radius, fill=False, edgecolor='r', linestyle='--')
+            circle = Circle([c[1], c[0]], radius, fill=False, edgecolor='r', linestyle='--')
             ax.add_patch(circle)
             ax.set_aspect('equal')
             ax.scatter(x_center, y_center)
+
+        if self.geofence is not None:
+            pts = self.geofence.polygon_coords_lon_lat
+            x_coords = [lon for lon, lat in pts]  # x-coordinates of vertices, closing the loop
+            y_coords = [lat for lon, lat in pts]  # y-coordinates of vertices, closing the loop
+            ax.fill(x_coords, y_coords, color='blue', alpha=0.2, edgecolor='black')
 
         plt.legend()
         plt.title('Waypoints')
