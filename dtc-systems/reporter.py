@@ -156,7 +156,8 @@ class Reporter(Node):
             self.on_report(r.tojson())  # TODO refactor not to use on_* callback
             if self.is_team_reporter:
                 # confirm receiving and successful processing
-                self.publish('lora_ack', data)
+#                self.publish('lora_ack', data)
+                pass
 
 
 if __name__ == '__main__':
