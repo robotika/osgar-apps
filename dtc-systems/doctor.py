@@ -31,7 +31,7 @@ DTC_QUERY_SOUND = 'can_you_hear_me'
 class Doctor(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('report', 'lora_report', 'audio_analysis', 'play_sound', 'debug_profiler')
+        bus.register('report', 'lora_report', 'audio_analysis', 'debug_profiler')
         self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX', 'm01-')
         self.is_scanning = False
         self.is_playing = False
@@ -89,8 +89,7 @@ class Doctor(Node):
             self.wav_fd.setnchannels(channels)
             self.wav_fd.setsampwidth(sample_width)
             self.wav_fd.setframerate(rate)
-            self.publish('play_sound', DTC_QUERY_SOUND)
-            self.is_playing = True
+            self.is_playing = True  # playing trigger moved to dtc.py
 
             assert self.h265_fd is None
             self.h265_fd = open(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265', 'wb')

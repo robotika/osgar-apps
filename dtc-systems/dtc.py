@@ -13,6 +13,7 @@ from osgar.lib.mathex import normalizeAnglePIPI
 from osgar.followme import EmergencyStopException  # hard to believe! :(
 from geofence import Geofence
 from report import DTCReport, normalize_matty_name, pack_data
+from doctor import DTC_QUERY_SOUND
 
 MAX_CMD_HISTORY = 100  # beware of dependency on pose2d update
 
@@ -234,6 +235,7 @@ class DARPATriageChallenge(Node):
                         self.is_scanning_person = True
                         self.publish('scanning_person', self.is_scanning_person)
                         self.publish('report_latlon', report)
+                        self.publish('play_sound', DTC_QUERY_SOUND)
             else:
                 if self.tracking_start_time is not None:
                     print(self.time, f'Lost track {self.time - self.tracking_start_time}')
