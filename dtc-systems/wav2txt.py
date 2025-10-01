@@ -23,7 +23,7 @@ def is_coherent_speech(wav_path, threshold=0.5):
         num_words = len(words)
         
         # Check if the number of words is above a certain threshold
-        if num_words / duration > threshold:
+        if True:  # (ignore for now) num_words / duration > threshold:
             return True, transcription
         else:
             return False, "<Insufficient word count for coherent speech>"
@@ -40,4 +40,4 @@ if __name__ == '__main__':
     parser.add_argument('wavfile', help='Input wav file')
     args = parser.parse_args()
 
-    is_coherent_speech(args.wavfile)
+    print(is_coherent_speech(args.wavfile))
