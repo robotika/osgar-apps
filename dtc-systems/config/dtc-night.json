@@ -257,6 +257,7 @@
       ["app.set_leds", "platform.set_leds"],
       ["platform.pose2d", "app.pose2d"],
       ["platform.emergency_stop", "app.emergency_stop"],
+      ["platform.rotation", "app.rotation"],
       ["serial.raw", "platform.esp_data"],
       ["platform.esp_data", "serial.raw"],
       ["platform.gps_serial", "gps.raw"],

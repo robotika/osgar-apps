@@ -363,6 +363,9 @@ class DARPATriageChallenge(Node):
     def on_orientation_list(self, data):
         pass
 
+    def on_rotation(self, data):
+        pass
+
     def action_look_around(self):
         """
         turn in place 45 deg left then 45 deg right and accumulate scan
