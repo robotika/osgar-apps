@@ -144,7 +144,7 @@ class Reporter(Node):
                     submit_dtc_image(self.report_index, img_path)
 
     def on_lora_report(self, data):
-        addr, payload = parse_lora_packet(data)
+        addr, payload = data
         if 1 in addr:
             return  # note, hard link to base-station!
         r = unpack_data(payload)
