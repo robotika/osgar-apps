@@ -301,13 +301,7 @@ class DARPATriageChallenge(Node):
                     dist = geo_length(latlon2xy(*p), latlon2xy(*waypoint))
                     print(i, waypoint, dist)
                 print(f'{self.time} ----------------------')
-            if self.last_position is not None:
-                tmp = geo_angle(latlon2xy(*self.last_position), latlon2xy(*p))
-                if tmp is not None:
-                    self.last_position = p
-                    self.gps_heading = tmp
-            else:
-                self.last_position = p
+            self.last_position = p
             self.closest_waypoint = best_i
             self.closest_waypoint_dist = best_dist
 
@@ -367,6 +361,7 @@ class DARPATriageChallenge(Node):
     def on_rotation(self, data):
         yaw, pitch, roll = data
         self.yaw = math.radians(yaw/100.0)
+        self.gps_heading = self.yaw  # replace former heading estimation from multiple GPS points
 
     def action_look_around(self):
         """
