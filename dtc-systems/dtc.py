@@ -96,6 +96,7 @@ class DARPATriageChallenge(Node):
         self.closest_waypoint = None
         self.closest_waypoint_dist = None
         self.gps_heading = None
+        self.yaw = None
         self.debug_arr = []
 
         self.look_around = False  # in case of blocked path look left and right and pick direction
@@ -287,7 +288,7 @@ class DARPATriageChallenge(Node):
                 print(self.time, 'GPS', lat, lon, border_dist, self.waypoints)
             p = lat, lon
             if self.verbose:
-                self.debug_arr.append((self.time, p))
+                self.debug_arr.append((self.time, p, self.gps_heading, self.yaw))
             best_i, best_dist  = None, None
             for i, waypoint in enumerate(self.waypoints):
                 dist = geo_length(latlon2xy(*p), latlon2xy(*waypoint))
@@ -364,7 +365,8 @@ class DARPATriageChallenge(Node):
         pass
 
     def on_rotation(self, data):
-        pass
+        yaw, pitch, roll = data
+        self.yaw = math.radians(yaw/100.0)
 
     def action_look_around(self):
         """
@@ -432,13 +434,38 @@ class DARPATriageChallenge(Node):
     def draw(self):
         from matplotlib.patches import Circle
         import matplotlib.pyplot as plt
+        from matplotlib.collections import LineCollection
+
         fig, ax = plt.subplots()
         for y_center, x_center in self.waypoints:
             ax.scatter(x_center, y_center)
 
-        x_center = [p[1] for (t, p) in self.debug_arr]
-        y_center = [p[0] for (t, p) in self.debug_arr]
+        x_center = [p[1] for (t, p, _, _) in self.debug_arr]
+        y_center = [p[0] for (t, p, _, _) in self.debug_arr]
+        gps_heading = [a[2] for a in self.debug_arr]
+        yaw = [a[3] for a in self.debug_arr]
         ax.scatter(x_center, y_center)
+
+        scale = 0.00001
+        lines = []
+        for x, y, h in zip(x_center, y_center, gps_heading):
+            if h is None:
+                continue
+            x2 = math.cos(h)*scale + x
+            y2 = math.sin(h)*scale + y
+            lines.append(((x, y), (x2, y2)))
+        lc = LineCollection(lines, colors='black', linewidths=2)
+        ax.add_collection(lc)
+
+        lines = []
+        for x, y, h in zip(x_center, y_center, yaw):
+            if h is None:
+                continue
+            x2 = math.cos(h)*scale + x
+            y2 = math.sin(h)*scale + y
+            lines.append(((x, y), (x2, y2)))
+        lc = LineCollection(lines, colors='red', linewidths=2)
+        ax.add_collection(lc)
 
         radius = 0.0001
         for c in self.waypoints + self.debug_all_waypoints:
