@@ -93,7 +93,9 @@ def decrypt_from_text(base64_string: str, enc_key: bytes, mac_key: bytes) -> byt
 class Crypt(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('encrypted', 'decrypted')
+        bus.register('encrypted',  # encrypted bytes to be sent directly to LoRa
+                     'decrypted',  # pair [[addr list], payload] for decrypted LoRa data
+                     )
         self.enc_key = bytes.fromhex(config['enc_key'])  # must be distributed among robots and basestation
         self.mac_key = bytes.fromhex(config['mac_key'])
         self.buf = b''
@@ -109,10 +111,9 @@ class Crypt(Node):
             assert packet[-2] == ord('\r'), packet  # LoRa is for some reason adding both \r\n
             assert b'|' in packet, packet
             addr, to_decode = parse_lora_packet(packet)
-            prefix = ''.join([f'{x}|' for x in addr])
             try:
                 plaintext = decrypt_from_text(to_decode, self.enc_key, self.mac_key)
-                self.publish('decrypted', bytes(prefix, 'ascii') + plaintext + b'\r\n')
+                self.publish('decrypted', [addr, plaintext])
             except ValueError:
                 print(f'Skipping msg {packet}')
             self.buf, packet = split_lora_buffer(self.buf)

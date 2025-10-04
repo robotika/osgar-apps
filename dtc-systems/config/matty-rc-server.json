@@ -1,0 +1,97 @@
+{
+  "version": 2,
+  "robot": {
+    "modules": {
+      "platform": {
+        "driver": "osgar.platforms.matty:Matty",
+        "in": [
+          "esp_data"
+        ],
+        "out": [
+          "esp_data"
+        ],
+        "init": {}
+      },
+      "timer": {
+        "driver": "timer",
+        "in": [],
+        "out": [
+          "tick"
+        ],
+        "init": {
+          "sleep": 0.1
+        }
+      },
+      "gps": {
+        "driver": "gps",
+        "in": [
+          "raw"
+        ],
+        "out": [
+          "nmea_data"
+        ],
+        "init": {
+        }
+      },
+      "serial": {
+        "driver": "serial",
+        "in": [
+          "raw"
+        ],
+        "out": [
+          "raw"
+        ],
+        "init": {
+          "port": "/dev/esp32",
+          "speed": 115200
+        }
+      },
+      "from_rc": {
+        "driver": "osgar.drivers.pull:Pull",
+        "init": {
+          "bind": true,
+          "endpoint": "tcp://0.0.0.0:5555",
+          "outputs": [
+            "desired_steering"
+          ]
+        }
+      },
+      "oak": {
+        "driver": "osgar.drivers.oak_camera:OakCamera",
+        "init": {
+          "fps": 10,
+          "is_color": true,
+          "video_encoder": "h265",
+          "h264_bitrate": 2000,
+          "is_depth": true,
+          "is_stereo_images": false,
+          "laser_projector_current": 0,
+          "flood_light_current": 500,
+          "is_imu_enabled": true,
+          "number_imu_records": 10,
+          "disable_magnetometer_fusion": false,
+          "mono_resolution": [
+            640,
+            400
+          ],
+          "color_resolution": "THE_1080_P",
+          "color_manual_focus": 130,
+          "stereo_median_filter": "KERNEL_3x3",
+          "stereo_mode": "HIGH_ACCURACY",
+          "stereo_extended_disparity": false,
+          "stereo_subpixel": false,
+          "stereo_left_right_check": true,
+          "sleep_on_start_sec": 5
+        }
+      }
+    },
+    "links": [
+      ["from_rc.desired_steering", "platform.desired_steering"],
+
+      ["serial.raw", "platform.esp_data"],
+      ["platform.esp_data", "serial.raw"],
+      ["platform.gps_serial", "gps.raw"],
+      ["timer.tick", "platform.tick"]
+    ]
+  }
+}

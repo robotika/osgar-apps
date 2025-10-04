@@ -106,3 +106,41 @@ class Geofence:
             if self.border_dist(pt) > min_dist_from_border:
                 return pt
         return (bbox[1] + bbox[3]) / 2, (bbox[0] + bbox[2]) / 2  # fallback center (lat, lon)
+
+
+def draw(filename, names):
+    import json
+    import matplotlib.pyplot as plt
+
+    with open(filename, 'r') as f:
+        config = json.load(f)
+
+    fig, ax = plt.subplots()
+
+    for name in names:
+        geofence = config['robot']['modules']['app']['init'][name]
+        x_coords = [lon for lat, lon in geofence]  # x-coordinates of vertices, closing the loop
+        y_coords = [lat for lat, lon in geofence]  # y-coordinates of vertices, closing the loop
+
+        ax.fill(x_coords, y_coords, color='blue', alpha=0.6, edgecolor='black')
+
+    def onclick(event):
+        if event.xdata is not None and event.ydata is not None:
+            print(f"              [{event.ydata}, {event.xdata}],")
+
+    cid = fig.canvas.mpl_connect('button_press_event', onclick)
+
+    ax.set_xlabel("lon")
+    ax.set_ylabel("lat")
+    plt.grid(True)
+    plt.show()
+
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('config', help='Input config file')
+    parser.add_argument('--name', nargs='+', help='list of names', default=['geofence'])
+    args = parser.parse_args()
+
+    draw(args.config, args.name)

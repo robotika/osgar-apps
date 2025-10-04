@@ -1,7 +1,10 @@
 """
   Module for medical evaluation - name "doctor" is in memory of GLB (that time to take care of other modules)
 """
+from io import StringIO
 from pathlib import Path
+from cProfile import Profile
+from pstats import SortKey, Stats
 
 import cv2
 import wave
@@ -10,6 +13,13 @@ from ultralytics import YOLO
 from osgar.node import Node
 from wav2txt import is_coherent_speech
 from report import DTCReport, pack_data
+
+import sys
+import importlib
+fb_module = str(Path(__file__).parent.parent.parent / 'dtc-video-analysis')
+if fb_module not in sys.path:
+    sys.path.append(fb_module)
+fb_main = importlib.import_module('detect-and-stream').main
 
 
 AUDIO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'audio'
@@ -21,7 +31,7 @@ DTC_QUERY_SOUND = 'can_you_hear_me'
 class Doctor(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('report', 'lora_report', 'audio_analysis', 'play_sound')
+        bus.register('report', 'lora_report', 'audio_analysis', 'debug_profiler')
         self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX', 'm01-')
         self.is_scanning = False
         self.is_playing = False
@@ -35,13 +45,23 @@ class Doctor(Node):
         self.verbose = False  # TODO move to Node default
         self.last_location = None
 
-    def publish_report(self):
+    def publish_report(self, fb_report):
         assert self.last_location is not None
+        if fb_report is None:
+            return  # probably false detection -> no report
         r = DTCReport(self.system_name, self.last_location['lat'], self.last_location['lon'])
-        r.severe_hemorrhage = 0  # absent
-        r.respiratory_distress = 0  # absent
-        r.hr = 70
-        r.rr = 15
+        r.severe_hemorrhage = 0 if fb_report['Severe Hemorrhage'] == 'Absent' else 1
+        r.respiratory_distress = 0 if fb_report['Respiratory Distress'] == 'Absent' else 1
+        r.hr = fb_report['Heart Rate']
+        r.rr = fb_report['Respiratory Rate']
+        r.trauma_head = 0 if fb_report['Head'] == 'Normal' else 1
+        r.trauma_torso = 0 if fb_report['Torso'] == 'Normal' else 1
+        r.trauma_lower_ext = 0 if fb_report['Lower Extermities'] == 'Normal' else 1
+        r.trauma_upper_ext = 0 if fb_report['Upper Extermities'] == 'Normal' else 1
+        r.alertness_ocular = 0 if fb_report['Ocular'] == 'Open' else 1
+        r.alertness_motor = 0 if fb_report['Motor'] == 'Normal' else 1 if fb_report['Motor'] == 'Abnormal' else 2
+        r.alertness_verbal = 0 if fb_report['Verbal'] == 'Normal' else 1 if fb_report['Verbal'] == 'Abnormal' else 2
+
         assert self.report_index > 0, self.report_index
         r.casualty_id = self.report_index
         self.publish('lora_report', pack_data(r) + b'\n')
@@ -69,8 +89,7 @@ class Doctor(Node):
             self.wav_fd.setnchannels(channels)
             self.wav_fd.setsampwidth(sample_width)
             self.wav_fd.setframerate(rate)
-            self.publish('play_sound', DTC_QUERY_SOUND)
-            self.is_playing = True
+            self.is_playing = True  # playing trigger moved to dtc.py
 
             assert self.h265_fd is None
             self.h265_fd = open(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265', 'wb')
@@ -83,6 +102,16 @@ class Doctor(Node):
             assert self.h265_fd is not None
             self.h265_fd.close()
             self.h265_fd = None
+            filename = str(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265')
+
+            is_coherent, text = is_coherent_speech(str(AUDIO_OUTPUT_ROOT / f'audio{self.report_index}.wav'))
+            self.publish('audio_analysis', [is_coherent, text])
+
+            with Profile() as profile:
+                fb_report = fb_main(filename, [is_coherent, text], debug=False)
+            s = StringIO()
+            Stats(profile, stream=s).strip_dirs().sort_stats(SortKey.CUMULATIVE).print_stats(10)
+            self.publish('debug_profiler', s.getvalue())
             if self.verbose:
                 cap = cv2.VideoCapture(str(VIDEO_OUTPUT_ROOT / f'video{self.report_index}.h265'))
                 while True:
@@ -96,9 +125,7 @@ class Doctor(Node):
                     cv2.imshow(f'video{self.report_index}.h265', pose_w_id)  #frame)
                     cv2.waitKey(100)
                 cap.release()
-            is_coherent, text = is_coherent_speech(str(AUDIO_OUTPUT_ROOT / f'audio{self.report_index}.wav'))
-            self.publish('audio_analysis', [is_coherent, text])
-            self.publish_report()
+            self.publish_report(fb_report)
 
         self.is_scanning = data
 

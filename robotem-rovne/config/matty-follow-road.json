@@ -37,7 +37,7 @@
           "driver": "serial",
           "in": ["raw"],
           "out": ["raw"],
-          "init": {"port": "/dev/ttyUSB0", "speed": 115200}
+          "init": {"port": "/dev/esp32", "speed": 115200}
       },
       "oak": {
         "driver": "osgar.drivers.oak_camera:OakCamera",
@@ -61,6 +61,7 @@
           "stereo_extended_disparity": false,
           "stereo_subpixel": false,
           "stereo_left_right_check": true,
+          "sleep_on_start_sec": 3,
           "model": {
             "blob": "models/road-detector.blob"
           },

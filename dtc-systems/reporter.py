@@ -144,7 +144,7 @@ class Reporter(Node):
                     submit_dtc_image(self.report_index, img_path)
 
     def on_lora_report(self, data):
-        addr, payload = parse_lora_packet(data)
+        addr, payload = data
         if 1 in addr:
             return  # note, hard link to base-station!
         r = unpack_data(payload)
@@ -152,10 +152,12 @@ class Reporter(Node):
             # just report of robot positions
             print(self.time, f'Pose {addr}: ({r.location_lat:.6f}, {r.location_lon:.6f})')
         else:
+            print(self.time, f'Report {r.tojson()}')
             self.on_report(r.tojson())  # TODO refactor not to use on_* callback
             if self.is_team_reporter:
                 # confirm receiving and successful processing
-                self.publish('lora_ack', data)
+#                self.publish('lora_ack', data)
+                pass
 
 
 if __name__ == '__main__':

@@ -13,11 +13,21 @@ from osgar.lib.mathex import normalizeAnglePIPI
 from osgar.followme import EmergencyStopException  # hard to believe! :(
 from geofence import Geofence
 from report import DTCReport, normalize_matty_name, pack_data
+from doctor import DTC_QUERY_SOUND
 
 MAX_CMD_HISTORY = 100  # beware of dependency on pose2d update
 
 SCANNING_TIME_SEC = 13  # 8s talking 5s listening
 
+LEFT_LED_INDEX = 1  # to be moved into matty.py
+RIGHT_LED_INDEX = 0  # to be moved into matty.py
+LED_COLORS = {  # red, gree, blue
+    'm01-': [0, 0, 0xFF],
+    'm02-': [0, 0xFF, 0],
+    'm03-': [0xFF, 0, 0],
+    'm04-': [0xFF, 0x6E, 0xC7], # pink
+    'm05-': [0xFF, 0x7F, 0]  # orange
+}
 
 def geo_length(pos1, pos2):
     "return distance on sphere for two integer positions in milliseconds"
@@ -47,9 +57,11 @@ class DARPATriageChallenge(Node):
                      'scanning_person',  # data collection from nearby position of causalty (Boolean)
                      'play_sound',  # filename without extension in sounds/ folder
                      'lora_latlon',  # LoRa encoded empty encoded DTC report
+                     'set_leds',  # set LEDs - [index, red, green, blue]
                      )
         self.max_speed = config.get('max_speed', 0.2)
         self.turn_angle = config.get('turn_angle', 20)
+        self.horizon = config.get('horizon', 200)
         self.waypoints = config.get('waypoints', [])[1:]  # remove start
         self.debug_all_waypoints = config.get('waypoints', [])[:]
         self.raise_exception_on_stop = config.get('terminate_on_stop', True)
@@ -84,6 +96,7 @@ class DARPATriageChallenge(Node):
         self.closest_waypoint = None
         self.closest_waypoint_dist = None
         self.gps_heading = None
+        self.yaw = None
         self.debug_arr = []
 
         self.look_around = False  # in case of blocked path look left and right and pick direction
@@ -100,6 +113,10 @@ class DARPATriageChallenge(Node):
         )
 
     def on_emergency_stop(self, data):
+        if data:
+            self.publish('set_leds', [LEFT_LED_INDEX, 0, 0, 0])  # turn off left LED
+            self.send_speed_cmd(0, 0)  # STOP! (note, that it could be e-stop)
+
         if self.raise_exception_on_stop and data:
             raise EmergencyStopException()
 
@@ -219,6 +236,7 @@ class DARPATriageChallenge(Node):
                         self.is_scanning_person = True
                         self.publish('scanning_person', self.is_scanning_person)
                         self.publish('report_latlon', report)
+                        self.publish('play_sound', DTC_QUERY_SOUND)
             else:
                 if self.tracking_start_time is not None:
                     print(self.time, f'Lost track {self.time - self.tracking_start_time}')
@@ -252,6 +270,10 @@ class DARPATriageChallenge(Node):
         assert 'lon' in data, data
         lat, lon = data['lat'], data['lon']
         utc_time = data['utc_time']
+        if lon is not None and data['lon_dir'] == 'W':
+            lon = -lon
+        if lat is not None and data['lat_dir'] == 'S':
+            lat = -lat
         if utc_time is not None:
             matty_name = normalize_matty_name(self.system_name)
             if int(round(float(utc_time))) % 10 == int(matty_name[-1]):
@@ -263,10 +285,10 @@ class DARPATriageChallenge(Node):
             if self.geofence is not None:
                 border_dist = self.geofence.border_dist((lat, lon))
             if int(self.time.total_seconds()) % 10 == 0:
-                print(self.time, 'GPS', data['lat'], data['lon'], border_dist)
-            p = data['lat'], data['lon']
+                print(self.time, 'GPS', lat, lon, border_dist, self.waypoints)
+            p = lat, lon
             if self.verbose:
-                self.debug_arr.append((self.time, p))
+                self.debug_arr.append((self.time, p, self.gps_heading, self.yaw))
             best_i, best_dist  = None, None
             for i, waypoint in enumerate(self.waypoints):
                 dist = geo_length(latlon2xy(*p), latlon2xy(*waypoint))
@@ -279,13 +301,7 @@ class DARPATriageChallenge(Node):
                     dist = geo_length(latlon2xy(*p), latlon2xy(*waypoint))
                     print(i, waypoint, dist)
                 print(f'{self.time} ----------------------')
-            if self.last_position is not None:
-                tmp = geo_angle(latlon2xy(*self.last_position), latlon2xy(*p))
-                if tmp is not None:
-                    self.last_position = p
-                    self.gps_heading = tmp
-            else:
-                self.last_position = p
+            self.last_position = p
             self.closest_waypoint = best_i
             self.closest_waypoint_dist = best_dist
 
@@ -293,21 +309,21 @@ class DARPATriageChallenge(Node):
         self.last_detections = [det for det in data if det[0] == 'person']
 
     def on_depth(self, data):
-        line = 400//2
-        line_end = 400//2 + 30
+        data = data.copy()
+        line = self.horizon - 30
+        line_end = self.horizon + 30
         box_width = 160
         arr = []
         for index in range(0 , 641 - box_width, 20):
-            mask = data[line:line_end, index:box_width + index] != 0
-            if mask.max():
-                dist = int(np.percentile( data[line:line_end, index:box_width + index][mask], 5))
-            else:
-                dist = 0
+            mask = data[line:line_end, index:box_width + index] == 0
+            data[line:line_end, index:box_width + index][mask] = 10000 # 10m
+            dist = int(np.percentile( data[line:line_end, index:box_width + index], 5))
             arr.append(dist)
         self.publish('scan', arr)
         self.scan = arr
 
         if not self.status_ready:
+            self.publish('set_leds', [LEFT_LED_INDEX] + [v//2 for v in LED_COLORS.get(self.system_name, [0, 0, 0])])
             self.publish('play_sound', self.system_name + 'ready')
             self.status_ready = True
 
@@ -341,6 +357,11 @@ class DARPATriageChallenge(Node):
 
     def on_orientation_list(self, data):
         pass
+
+    def on_rotation(self, data):
+        yaw, pitch, roll = data
+        self.yaw = math.radians(yaw/100.0)
+        self.gps_heading = self.yaw  # replace former heading estimation from multiple GPS points
 
     def action_look_around(self):
         """
@@ -408,20 +429,51 @@ class DARPATriageChallenge(Node):
     def draw(self):
         from matplotlib.patches import Circle
         import matplotlib.pyplot as plt
+        from matplotlib.collections import LineCollection
+
         fig, ax = plt.subplots()
-        for x_center, y_center in self.waypoints:
+        for y_center, x_center in self.waypoints:
             ax.scatter(x_center, y_center)
 
-        x_center = [p[0] for (t, p) in self.debug_arr]
-        y_center = [p[1] for (t, p) in self.debug_arr]
+        x_center = [p[1] for (t, p, _, _) in self.debug_arr]
+        y_center = [p[0] for (t, p, _, _) in self.debug_arr]
+        gps_heading = [a[2] for a in self.debug_arr]
+        yaw = [a[3] for a in self.debug_arr]
         ax.scatter(x_center, y_center)
+
+        scale = 0.00001
+        lines = []
+        for x, y, h in zip(x_center, y_center, gps_heading):
+            if h is None:
+                continue
+            x2 = math.cos(h)*scale + x
+            y2 = math.sin(h)*scale + y
+            lines.append(((x, y), (x2, y2)))
+        lc = LineCollection(lines, colors='black', linewidths=2)
+        ax.add_collection(lc)
+
+        lines = []
+        for x, y, h in zip(x_center, y_center, yaw):
+            if h is None:
+                continue
+            x2 = math.cos(h)*scale + x
+            y2 = math.sin(h)*scale + y
+            lines.append(((x, y), (x2, y2)))
+        lc = LineCollection(lines, colors='red', linewidths=2)
+        ax.add_collection(lc)
 
         radius = 0.0001
         for c in self.waypoints + self.debug_all_waypoints:
-            circle = Circle(c, radius, fill=False, edgecolor='r', linestyle='--')
+            circle = Circle([c[1], c[0]], radius, fill=False, edgecolor='r', linestyle='--')
             ax.add_patch(circle)
             ax.set_aspect('equal')
             ax.scatter(x_center, y_center)
+
+        if self.geofence is not None:
+            pts = self.geofence.polygon_coords_lon_lat
+            x_coords = [lon for lon, lat in pts]  # x-coordinates of vertices, closing the loop
+            y_coords = [lat for lon, lat in pts]  # y-coordinates of vertices, closing the loop
+            ax.fill(x_coords, y_coords, color='blue', alpha=0.2, edgecolor='black')
 
         plt.legend()
         plt.title('Waypoints')
