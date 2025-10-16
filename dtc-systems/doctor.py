@@ -108,7 +108,7 @@ class Doctor(Node):
             self.publish('audio_analysis', [is_coherent, text])
 
             with Profile() as profile:
-                fb_report = fb_main(filename, [is_coherent, text], debug=False)
+                fb_report = fb_main(filename, [is_coherent, text], debug=self.verbose)
             s = StringIO()
             Stats(profile, stream=s).strip_dirs().sort_stats(SortKey.CUMULATIVE).print_stats(10)
             self.publish('debug_profiler', s.getvalue())
