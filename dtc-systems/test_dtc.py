@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, call
 
 import numpy as np
 
-from dtc import geo_length, latlon2xy
+from dtc import geo_length, latlon2xy, geo_angle
 
 
 class DTCTest(unittest.TestCase):
@@ -22,6 +22,14 @@ class DTCTest(unittest.TestCase):
         pos1 = latlon2xy(lat1, lon1)
         pos2 = latlon2xy(lat2, lon2)
         self.assertAlmostEqual(geo_length(pos1, pos2), 1.069138328237836)  # should be ~4m
+
+    def test_geo_angle(self):
+        # m04-dtc-night-251002_020022.log - first 20s
+        lat1, lon1 = 32.500546, -83.75836183333334
+        lat2, lon2 = 32.500537333333334, -83.75832816666667
+        pos1 = latlon2xy(lat1, lon1)
+        pos2 = latlon2xy(lat2, lon2)
+        self.assertAlmostEqual(geo_angle(pos1, pos2), -1.177851198213697)
 
 
 if __name__ == '__main__':
