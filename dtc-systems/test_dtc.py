@@ -15,6 +15,14 @@ class DTCTest(unittest.TestCase):
         pos2 = latlon2xy(lat2, lon2)
         self.assertAlmostEqual(geo_length(pos1, pos2), 3.428055074790579)
 
+    def test_geo_length2(self):
+        # m04-dtc-night-251002_020022.log - first 20s
+        lat1, lon1 = 32.500546, -83.75836183333334
+        lat2, lon2 = 32.500537333333334, -83.75832816666667
+        pos1 = latlon2xy(lat1, lon1)
+        pos2 = latlon2xy(lat2, lon2)
+        self.assertAlmostEqual(geo_length(pos1, pos2), 1.069138328237836)  # should be ~4m
+
 
 if __name__ == '__main__':
     unittest.main()
