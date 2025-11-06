@@ -5,3 +5,4 @@ opencv-python==4.7.0.72
 shapely==2.0.1
 ultralytics>=8.2.40
 librosa>=0.10.0
+speechrecognition==3.14.3
