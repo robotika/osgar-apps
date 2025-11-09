@@ -1,9 +1,19 @@
+import importlib
 import unittest
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock, call, patch
 
 import numpy as np
 
-from doctor import Doctor, VIDEO_OUTPUT_ROOT, AUDIO_OUTPUT_ROOT
+# Patch private black-box function "detect-and-stream"
+original_function = importlib.import_module
+def my_side_effect(name, package=None):
+    if name == 'detect-and-stream':
+        return MagicMock()  # mocked result
+    else:
+        return original_function(name, package)  # call the original function for other args
+
+with patch('importlib.import_module', side_effect=my_side_effect) as mock_func:
+        from doctor import Doctor, VIDEO_OUTPUT_ROOT, AUDIO_OUTPUT_ROOT
 
 
 class DoctorTest(unittest.TestCase):
