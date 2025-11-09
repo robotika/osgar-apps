@@ -21,11 +21,10 @@ if fb_module not in sys.path:
     sys.path.append(fb_module)
 fb_main = importlib.import_module('detect-and-stream').main
 
+from dtc_common import DTC_QUERY_SOUND
 
 AUDIO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'audio'
 VIDEO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'video'
-
-DTC_QUERY_SOUND = 'can_you_hear_me'
 
 
 class Doctor(Node):
@@ -108,7 +107,7 @@ class Doctor(Node):
             self.publish('audio_analysis', [is_coherent, text])
 
             with Profile() as profile:
-                fb_report = fb_main(filename, [is_coherent, text], debug=False)
+                fb_report = fb_main(filename, [is_coherent, text], debug=self.verbose)
             s = StringIO()
             Stats(profile, stream=s).strip_dirs().sort_stats(SortKey.CUMULATIVE).print_stats(10)
             self.publish('debug_profiler', s.getvalue())

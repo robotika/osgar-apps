@@ -13,7 +13,7 @@ from osgar.lib.mathex import normalizeAnglePIPI
 from osgar.followme import EmergencyStopException  # hard to believe! :(
 from geofence import Geofence
 from report import DTCReport, normalize_matty_name, pack_data
-from doctor import DTC_QUERY_SOUND
+from dtc_common import DTC_QUERY_SOUND
 
 MAX_CMD_HISTORY = 100  # beware of dependency on pose2d update
 
@@ -31,7 +31,7 @@ LED_COLORS = {  # red, gree, blue
 
 def geo_length(pos1, pos2):
     "return distance on sphere for two integer positions in milliseconds"
-    x_scale = math.cos(math.radians(pos1[0]/3600000))
+    x_scale = math.cos(math.radians(pos1[1]/3600000))  # based on lat
     scale = 40000000/(360*3600000)
     return math.hypot((pos2[0] - pos1[0])*x_scale, pos2[1] - pos1[1]) * scale
 
@@ -39,7 +39,7 @@ def geo_length(pos1, pos2):
 def geo_angle(pos1, pos2):
     if geo_length(pos1, pos2) < 1.0:
         return None
-    x_scale = math.cos(math.radians(pos1[0]/3600000))
+    x_scale = math.cos(math.radians(pos1[1]/3600000))  # based on lat
     return math.atan2(pos2[1] - pos1[1], (pos2[0] - pos1[0])*x_scale)
 
 
