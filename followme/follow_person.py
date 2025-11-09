@@ -56,7 +56,7 @@ class FollowPerson(Node):
     def on_emergency_stop(self, data):
         if data:
             self.publish('set_leds', [LEFT_LED_INDEX, 0, 0, 0])  # turn off left LED
-            self.publish('set_leds', [RIGHT_LED_INDEX, 0, 0xFF, 0])  # turn on green LED
+            self.publish('set_leds', [RIGHT_LED_INDEX, 0, 128, 0])  # turn on green LED
             self.send_speed_cmd(0, 0)  # STOP! (note, that it could be e-stop)
 
         if self.raise_exception_on_stop and data:
