@@ -13,6 +13,7 @@ def my_side_effect(name, package=None):
         return original_function(name, package)  # call the original function for other args
 
 with patch('importlib.import_module', side_effect=my_side_effect) as mock_func:
+    with patch.dict('sys.modules', {'ultralytics': MagicMock()}):
         from doctor import Doctor, VIDEO_OUTPUT_ROOT, AUDIO_OUTPUT_ROOT
 
 
