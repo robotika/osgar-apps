@@ -13,7 +13,7 @@ from osgar.lib.mathex import normalizeAnglePIPI
 from osgar.followme import EmergencyStopException  # hard to believe! :(
 from geofence import Geofence
 from report import DTCReport, normalize_matty_name, pack_data
-from doctor import DTC_QUERY_SOUND
+from dtc_common import DTC_QUERY_SOUND
 
 MAX_CMD_HISTORY = 100  # beware of dependency on pose2d update
 

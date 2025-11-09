@@ -21,11 +21,10 @@ if fb_module not in sys.path:
     sys.path.append(fb_module)
 fb_main = importlib.import_module('detect-and-stream').main
 
+from dtc_common import DTC_QUERY_SOUND
 
 AUDIO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'audio'
 VIDEO_OUTPUT_ROOT = Path(__file__).parent / 'dtc_report' / 'video'
-
-DTC_QUERY_SOUND = 'can_you_hear_me'
 
 
 class Doctor(Node):
