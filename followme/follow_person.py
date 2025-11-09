@@ -35,6 +35,7 @@ class FollowPerson(Node):
         self.horizon = config.get('horizon', 200)
         self.raise_exception_on_stop = config.get('terminate_on_stop', True)
         self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX', 'm01-')
+        self.field_of_view = math.radians(45)  # TODO, review - get info from camera
 
         self.last_position = None
         self.verbose = False
@@ -55,6 +56,7 @@ class FollowPerson(Node):
     def on_emergency_stop(self, data):
         if data:
             self.publish('set_leds', [LEFT_LED_INDEX, 0, 0, 0])  # turn off left LED
+            self.publish('set_leds', [RIGHT_LED_INDEX, 0, 0xFF, 0])  # turn on green LED
             self.send_speed_cmd(0, 0)  # STOP! (note, that it could be e-stop)
 
         if self.raise_exception_on_stop and data:
@@ -132,6 +134,7 @@ class FollowPerson(Node):
 
         if not self.status_ready:
             self.publish('set_leds', [LEFT_LED_INDEX] + [v//2 for v in LED_COLORS.get(self.system_name, [0, 0, 0])])
+            self.publish('set_leds', [RIGHT_LED_INDEX] + [v//2 for v in LED_COLORS.get(self.system_name, [0, 0, 0])])
             self.status_ready = True
 
     def on_orientation_list(self, data):
