@@ -87,7 +87,7 @@ class FollowPerson(Node):
             x1, y1, x2, y2 = self.last_detections[best][2]
             steering_angle = (self.field_of_view / 2) * (0.5 - (x1 + x2) / 2)  # steering left is positive
             speed = self.max_speed  # TODO on/off, maybe even based on angle difference?
-            if y1 < 0.1:
+            if y1 < 0.01:
                 speed = 0  # to close, edge of image
 #            if self.last_cones_distances is not None and len(self.last_cones_distances) > best and self.last_cones_distances[best] is not None:
 #                if ((self.last_cones_distances[best] < self.report_dist or y1 < 0.1)
