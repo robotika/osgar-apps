@@ -22,6 +22,8 @@ LED_COLORS = {  # red, gree, blue
     'm05-': [0xFF, 0x7F, 0]  # orange
 }
 
+MAX_STEERING_AGE = 10
+
 
 class FollowPerson(Node):
     def __init__(self, config, bus):
@@ -46,6 +48,8 @@ class FollowPerson(Node):
 
         self.tracking_start_time = None
         self.status_ready = False
+        self.last_steering = None
+        self.last_steering_age = None
 
     def send_speed_cmd(self, speed, steering_angle):
         return self.bus.publish(
@@ -93,7 +97,12 @@ class FollowPerson(Node):
 #                if ((self.last_cones_distances[best] < self.report_dist or y1 < 0.1)
 #                        and self.report_start_time is None):
 #                    print(self.time, 'SCANNING PERSON started', y1, y2, self.last_cones_distances[best])
+            self.last_steering = steering_angle
+            self.last_steering_age = 0
         else:
+            if self.last_steering is not None and self.last_steering_age < MAX_STEERING_AGE:
+                speed, steering_angle = self.max_speed, self.last_steering  # or slower? or depending on age
+                self.last_steering_age += 1
             if self.tracking_start_time is not None:
                 print(self.time, f'Lost track {self.time - self.tracking_start_time}')
                 self.tracking_start_time = None
