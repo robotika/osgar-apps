@@ -23,6 +23,7 @@ LED_COLORS = {  # red, gree, blue
 }
 
 MAX_STEERING_AGE = 10
+P_SCALE_STEERING_DIFF = 2.0  # scaling factor for steering
 
 
 class FollowPerson(Node):
@@ -37,7 +38,7 @@ class FollowPerson(Node):
         self.horizon = config.get('horizon', 200)
         self.raise_exception_on_stop = config.get('terminate_on_stop', True)
         self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX', 'm01-')
-        self.field_of_view = math.radians(45)  # TODO, review - get info from camera
+        self.field_of_view = math.radians(69)  # OAK-D Pro color camera TODO review night -> config
 
         self.last_position = None
         self.verbose = False
@@ -89,7 +90,7 @@ class FollowPerson(Node):
                     max_x = x1 + x2
                     best = index
             x1, y1, x2, y2 = self.last_detections[best][2]
-            steering_angle = (self.field_of_view / 2) * (0.5 - (x1 + x2) / 2)  # steering left is positive
+            steering_angle = P_SCALE_STEERING_DIFF * (self.field_of_view / 2) * (0.5 - (x1 + x2) / 2)  # steering left is positive
             speed = self.max_speed  # TODO on/off, maybe even based on angle difference?
 #            if y1 < 0.01:
 #                speed = 0  # to close, edge of image
