@@ -16,6 +16,7 @@ ssh robot@$1 "cd /home/robot/git/osgar && git pull"
 cd ~/git/osgar-apps && git push robot@$1:/home/robot/git/bare/osgar-apps.git
 ssh robot@$1 "cd /home/robot/git/osgar-apps && git pull"
 
-cd ~/git/dtc-video-analysis && git push robot@$1:/home/robot/git/bare/dtc-video-analysis.git
-ssh robot@$1 "cd /home/robot/git/dtc-video-analysis && git pull"
+# only DTC specific and DTC2 is over and DTC3 will probably never come
+# cd ~/git/dtc-video-analysis && git push robot@$1:/home/robot/git/bare/dtc-video-analysis.git
+# ssh robot@$1 "cd /home/robot/git/dtc-video-analysis && git pull"
 
