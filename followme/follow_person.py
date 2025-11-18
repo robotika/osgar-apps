@@ -149,4 +149,54 @@ class FollowPerson(Node):
         yaw, pitch, roll = data
         self.yaw = math.radians(yaw/100.0)
 
+    def on_pozyx_range(self, data):
+        # [1, 3431, 3411, [2777589, 357, -78]]
+        if data[0] == 1:
+            tag = 0x6827
+            if data[1] == tag or data[2] == tag:
+                src = data[1] if data[2] == tag else data[2]
+                dist = data[3][1] / 1000
+                """
+                if src == self.left_id:
+                    self.left_range_arr.append(dist)
+                    self.left_range_arr = self.left_range_arr[-FILTER_SIZE:]
+                    self.left_range = median(self.left_range_arr)
+                elif src == self.right_id:
+                    self.right_range_arr.append(dist)
+                    self.right_range_arr = self.right_range_arr[-FILTER_SIZE:]
+                    self.right_range = median(self.right_range_arr)
+                else:
+                    assert src is None, src
+                    self.back_range = dist
+
+                if self.left_range is not None and self.right_range is not None:
+                    diff = self.left_range - self.right_range
+                    dist = (self.left_range + self.right_range)/2
+                    if self.verbose:
+                        print(diff, dist)
+                        self.debug_arr.append((self.time.total_seconds(), diff))
+                    angular_speed = math.radians(10)
+                    speed = 0.0
+                    if dist > 1.2:
+                        speed = min(0.5, 0.1 + (dist - 1.2) * 0.4)
+                    if self.last_min_dist is not None and self.last_min_dist < 700:
+                        speed = 0.0
+
+                    if self.follow_enabled:
+                        if abs(diff) < 0.05:
+                            self.send_speed_cmd(speed, 0.0)
+                        elif diff > 0:
+                            self.send_speed_cmd(speed, -angular_speed)
+                        else:
+                            self.send_speed_cmd(speed, angular_speed)
+                    else:
+                        self.send_speed_cmd(0, 0)
+                        """
+
+    def on_pozyx_gpio(self, data):
+        # [1, 26663, 0]
+        valid, device_id, digital_input = data
+        if valid:
+            self.follow_enabled = (digital_input == 0)
+
 # vim: expandtab sw=4 ts=4
