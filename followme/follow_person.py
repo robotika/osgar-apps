@@ -34,6 +34,7 @@ class FollowPerson(Node):
                      'set_leds',  # set LEDs - [index, red, green, blue]
                      )
         self.max_speed = config.get('max_speed', 0.2)
+        self.min_dist_limit = config.get('min_dist_limit', None)  # default unlimited
         self.turn_angle = config.get('turn_angle', 20)
         self.horizon = config.get('horizon', 200)
         self.raise_exception_on_stop = config.get('terminate_on_stop', True)
@@ -51,6 +52,10 @@ class FollowPerson(Node):
         self.status_ready = False
         self.last_steering = None
         self.last_steering_age = None
+
+        # Pozyx/Qorvo
+        self.follow_enabled = None  # not known
+        self.follow_last_dist = None  # not known
 
     def send_speed_cmd(self, speed, steering_angle):
         return self.bus.publish(
@@ -104,6 +109,9 @@ class FollowPerson(Node):
         if steering_angle is None:
             # no way to go! -> STOP and look around
             speed, steering_angle = 0, 0
+        if self.min_dist_limit is not None:
+            if self.follow_last_dist is None or self.follow_last_dist < self.min_dist_limit:
+                speed = 0
         if self.verbose:
             print(speed, steering_angle)
         self.send_speed_cmd(speed, steering_angle)
@@ -148,6 +156,12 @@ class FollowPerson(Node):
     def on_rotation(self, data):
         yaw, pitch, roll = data
         self.yaw = math.radians(yaw/100.0)
+
+    def on_tag_range(self, data):
+        # Qorvo data [[19767, 951], [20396, 291]] ... [ID, dist_mm] to anchors
+        self.follow_enabled = (len(data) > 0)  # power off for disabled service
+        if len(data) == 1:  # not supported multiple anchors yet
+            self.follow_last_dist = data[0][1]/1000.0  # data in millimeters
 
     def on_pozyx_range(self, data):
         # [1, 3431, 3411, [2777589, 357, -78]]

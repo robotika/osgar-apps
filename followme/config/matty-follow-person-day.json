@@ -11,6 +11,7 @@
           "out": ["desired_steering"],
           "init": {
             "max_speed": 0.5,
+            "min_dist_limit": 1.0,
             "turn_angle": 40,
             "horizon": 250
           }
@@ -42,14 +43,20 @@
           "out": ["raw"],
           "init": {"port": "/dev/esp32", "speed": 115200}
       },
-      "pozyx": {
-          "driver": "pozyx",
-          "in": [],
-          "out": ["range", "gpio"],
+      "qorvo": {
+          "driver": "osgar.drivers.qorvo:Qorvo",
+          "in": ["raw"],
+          "out": ["range", "raw"],
+          "init": {
+          }
+      },
+      "qserial": {
+        "driver": "serial",
+        "in": ["raw"],
+        "out": ["raw"],
           "init": {
             "port": "/dev/ttyACM0",
-            "devices": ["0xD67", "0xD53","0x6827"],
-            "gpio": ["0x6827"]
+            "speed": 115200
           }
       },
       "oak": {
@@ -131,8 +138,10 @@
       ["oak.detections", "app.detections"],
       ["oak.orientation_list", "app.orientation_list"],
 
-      ["pozyx.range", "app.pozyx_range"],
-      ["pozyx.gpio", "app.pozyx_gpio"]
+      ["timer.tick", "qorvo.timer"],
+      ["qorvo.raw", "qserial.raw"],
+      ["qserial.raw", "qorvo.raw"],
+      ["qorvo.range", "app.tag_range"]
     ]
   }
 }
