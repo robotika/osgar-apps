@@ -11,7 +11,7 @@
           "out": ["desired_steering"],
           "init": {
             "max_speed": 0.5,
-            "min_dist_limit": 1.0,
+            "min_dist_limit": 2.0,
             "turn_angle": 40,
             "horizon": 250
           }
