@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "robot": {
+    "modules": {
+      "rc": {
+        "driver": "remote:RemoteClient",
+        "init": {}
+      },
+      "to_send": {
+          "driver": "osgar.drivers.push:Push",
+          "init": {
+            "endpoint": "tcp://m03-odroid.local:5565"
+          }
+      }
+      },
+    "links": [["rc.cmd", "to_send.cmd"]]
+  }
+}
