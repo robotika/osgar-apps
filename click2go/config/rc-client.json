@@ -11,8 +11,15 @@
           "init": {
             "endpoint": "tcp://m03-odroid.local:5565"
           }
-      }
       },
+      "from_robot": {
+          "driver": "osgar.drivers.pull:Pull",
+              "init": {
+              "endpoint": "tcp://0.0.0.0:5566",
+              "outputs": ["color", "pose2d"]
+          }
+      }
+    },
     "links": [["rc.cmd", "to_send.cmd"]]
   }
 }

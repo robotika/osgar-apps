@@ -63,7 +63,7 @@
       "tobase": {
           "driver": "osgar.drivers.push:Push",
               "init": {
-              "endpoint": "tcp://0.0.0.0:5566"
+              "endpoint": "tcp://192.168.0.52:5566"
           }
       }
     },
