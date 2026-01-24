@@ -63,12 +63,12 @@
           "stereo_left_right_check": true,
           "sleep_on_start_sec": 3,
           "model": {
-            "blob": "models/road-detector.blob"
+            "blob": "models/robotourist-083-redroad-20260116-224x224-rgb-chw-1shave.blob"
           },
           "nn_config": {
             "output_format": "LayerFp16",
-            "NN_family": "resnet",
-            "input_size": "160x120"
+            "NN_family": "robotourist",
+            "input_size": "224x224"
           }
         }
       }
