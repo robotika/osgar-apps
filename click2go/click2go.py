@@ -10,7 +10,7 @@ from osgar.node import Node
 class Click2Go(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('desired_speed', 'desired_steering')
+        bus.register('desired_speed', 'desired_steering', 'image')
         self.start_pose = None
         self.traveled_dist = 0.0
         self.verbose = False
@@ -56,6 +56,15 @@ class Click2Go(Node):
         start_time = self.time
         while self.time - start_time < dt:
             self.update()
+
+    def on_tick(self, data):
+        pass
+
+    def on_cmd(self, data):
+#        image = bytes([10, 20, 30])
+        with open('save.h264', 'rb') as f:
+            image = f.read()
+        self.publish('image', image)  # TODO change to "image"
 
     def sub_run(self):
         self.update()  # define self.time

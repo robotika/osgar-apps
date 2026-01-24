@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "robot": {
+    "modules": {
+      "app": {
+          "driver": "click2go:Click2Go",
+          "in": ["emergency_stop", "pose2d"],
+          "out": ["desired_speed"],
+          "init": {
+            "max_speed": 0.5,
+            "dist": 10,
+            "timeout": 60
+          }
+      },
+      "timer": {
+        "driver": "timer",
+        "in": [],
+        "out": ["tick"],
+        "init": {
+          "sleep": 1
+        }
+      },
+      "frombase": {
+          "driver": "osgar.drivers.pull:Pull",
+              "init": {
+                "endpoint": "tcp://0.0.0.0:5565",
+                "bind": true,
+                "outputs": ["cmd"]
+          }
+      },
+      "tobase": {
+          "driver": "osgar.drivers.push:Push",
+              "init": {
+                "bind": true,
+                "endpoint": "tcp://127.0.0.1:5566"
+          }
+      }
+    },
+    "links": [
+      ["timer.tick", "app.tick"],
+
+      ["app.image", "tobase.image"],
+      ["frombase.cmd", "app.cmd"]
+    ]
+  }
+}
