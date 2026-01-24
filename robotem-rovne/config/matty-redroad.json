@@ -44,7 +44,7 @@
         "init": {
           "fps": 10,
           "is_color": true,
-          "video_encoder": "h265",
+          "video_encoder": "mjpeg",
           "h264_bitrate": 2000,
           "is_depth": true,
           "is_stereo_images": true,
