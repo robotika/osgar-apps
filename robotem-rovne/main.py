@@ -80,15 +80,16 @@ class RobotemRovne(Node):
 
     def on_nn_mask(self, data):
         self.last_nn_mask = data.copy()  # make sure you modify only own copy
-        assert self.last_nn_mask.shape == (120, 160), self.last_nn_mask.shape
-        self.last_nn_mask[:60, :] = 0  # remove sky detections
+#        assert self.last_nn_mask.shape == (120, 160), self.last_nn_mask.shape
+        height, width = self.last_nn_mask.shape
+        self.last_nn_mask[:height//2, :] = 0  # remove sky detections
 
         center_y, center_x = mask_center(self.last_nn_mask)
-        dead = 10
+        dead = width//16 # was 10
         turn_angle = math.radians(20)
-        if center_x > 80 + dead:
+        if center_x > width//2 + dead:
             self.last_dir = -turn_angle
-        elif center_x < 80 - dead:
+        elif center_x < width//2 - dead:
             self.last_dir = turn_angle
         else:
             self.last_dir = 0  # straight
