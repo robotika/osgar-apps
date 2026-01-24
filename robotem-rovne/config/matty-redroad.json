@@ -44,9 +44,9 @@
         "init": {
           "fps": 10,
           "is_color": true,
-          "video_encoder": "h264",
+          "video_encoder": "h265",
           "h264_bitrate": 2000,
-          "is_depth": false,
+          "is_depth": true,
           "is_stereo_images": true,
           "laser_projector_current": 0,
           "flood_light_current": 500,
