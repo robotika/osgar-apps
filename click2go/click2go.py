@@ -39,7 +39,13 @@ class Click2Go(Node):
         if self.last_cmd is None:
             self.send_speed_cmd(0, 0)
         else:
-            self.send_speed_cmd(self.max_speed, 0)
+            if self.last_cmd[0] < 640:
+                steering_angle = math.radians(20)
+            elif self.last_cmd[0] > 2*640:
+                steering_angle = math.radians(-20)
+            else:
+                steering_angle = 0
+            self.send_speed_cmd(self.max_speed, steering_angle)
 
     def on_emergency_stop(self, data):
         self.emergency_stop = data
@@ -71,6 +77,6 @@ class Click2Go(Node):
         else:
             image = self.last_h26x_image
         self.publish('image', image)
-        self.last_cmd = data.copy
+        self.last_cmd = data.copy()
 
 # vim: expandtab sw=4 ts=4
