@@ -7,13 +7,15 @@ import numpy as np
 
 from osgar.lib.serialize import serialize, deserialize
 
+DOWNSCALE = 2
 
 pending_click = None
 
 def mouse_callback(event, x, y, flags, param):
     global pending_click
     if event == cv2.EVENT_LBUTTONDOWN:
-        pending_click = f"CV2_Client:{x},{y}"
+#        pending_click = f"CV2_Client:{x},{y}"
+        pending_click = [x, y]
 
 def start_cv_client(server_ip):
     global pending_click
@@ -23,8 +25,8 @@ def start_cv_client(server_ip):
     # Set a receive timeout (1000ms = 1s)
     sub_socket.setsockopt(zmq.RCVTIMEO, 1000) 
     sub_socket.connect(f"tcp://{server_ip}:5555")
-    sub_socket.setsockopt_string(zmq.SUBSCRIBE, "") 
-    
+    sub_socket.setsockopt_string(zmq.SUBSCRIBE, "")
+
     push_socket = context.socket(zmq.PUSH)
     push_socket.connect(f"tcp://{server_ip}:5556")
 
@@ -54,7 +56,7 @@ def start_cv_client(server_ip):
                     cap.release()
                     if img is not None:
                         h, w = img.shape[:2]
-                        img = cv2.resize(img, (w//2, h//2))
+                        img = cv2.resize(img, (w//DOWNSCALE, h//DOWNSCALE))
 
                 if img is not None:
                     cv2.imshow(window_name, img)
@@ -67,8 +69,8 @@ def start_cv_client(server_ip):
             # This part now runs even if no image was received
             if pending_click:
 #                push_socket.send_string(pending_click)
-                data = pending_click
-                raw = serialize(data)
+                data = pending_click.copy()
+                raw = serialize([x*DOWNSCALE for x in data])
                 push_socket.send_multipart([bytes('cmd', 'ascii'), raw])
                 pending_click = None
 
