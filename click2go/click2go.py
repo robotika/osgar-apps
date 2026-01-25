@@ -21,6 +21,7 @@ class Click2Go(Node):
         self.emergency_stop = None
         self.last_h26x_image = None
         self.last_cmd = None
+        self.img_count = 0
 
     def send_speed_cmd(self, speed, steering_angle):
         self.publish('desired_steering', [round(speed*1000), round(math.degrees(steering_angle)*100)])
@@ -57,6 +58,10 @@ class Click2Go(Node):
         if data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 460150')):
             # I - key frame
             self.last_h26x_image = data
+            self.img_count += 1
+            if self.img_count >= 10:
+                self.img_count = 0
+                self.publish('image', self.last_h26x_image)
 
     def on_cmd(self, data):
         print('New cmd:', data)
@@ -65,7 +70,7 @@ class Click2Go(Node):
                 image = f.read()
         else:
             image = self.last_h26x_image
-        self.publish('image', image)  # TODO change to "image"
+        self.publish('image', image)
         self.last_cmd = data.copy
 
 # vim: expandtab sw=4 ts=4
