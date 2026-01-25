@@ -59,7 +59,7 @@ class Click2Go(Node):
             # I - key frame
             self.last_h26x_image = data
             self.img_count += 1
-            if self.img_count >= 10:
+            if self.img_count >= 1:
                 self.img_count = 0
                 self.publish('image', self.last_h26x_image)
 
