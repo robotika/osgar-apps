@@ -23,7 +23,7 @@
       "frombase": {
           "driver": "osgar.drivers.pull:Pull",
               "init": {
-                "endpoint": "tcp://0.0.0.0:5565",
+                "endpoint": "tcp://*:5556",
                 "bind": true,
                 "outputs": ["cmd"]
           }
@@ -32,7 +32,8 @@
           "driver": "osgar.drivers.push:Push",
               "init": {
                 "bind": true,
-                "endpoint": "tcp://127.0.0.1:5566"
+                "pubsub": true,
+                "endpoint": "tcp://*:5555"
           }
       }
     },

@@ -61,6 +61,7 @@ class Click2Go(Node):
         pass
 
     def on_cmd(self, data):
+        print('New cmd:', data)
 #        image = bytes([10, 20, 30])
         with open('save.h264', 'rb') as f:
             image = f.read()

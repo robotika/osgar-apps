@@ -65,6 +65,7 @@
           "driver": "osgar.drivers.push:Push",
               "init": {
               "endpoint": "tcp://*:5555",
+              "pubsub": true,
               "bind": true
           }
       }

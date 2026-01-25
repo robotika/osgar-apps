@@ -5,6 +5,9 @@ import cv2
 import zmq
 import numpy as np
 
+from osgar.lib.serialize import serialize, deserialize
+
+
 pending_click = None
 
 def mouse_callback(event, x, y, flags, param):
@@ -36,12 +39,23 @@ def start_cv_client(server_ip):
             try:
                 # This will now only block for 1 second
 #                jpg_buffer = sub_socket.recv()
-                channel, jpg_buffer = sub_socket.recv_multipart()
+                channel, raw = sub_socket.recv_multipart()
+                jpg_buffer = deserialize(raw)
                 print(f'Received {channel} {len(jpg_buffer)} data!')
                 
                 nparr = np.frombuffer(jpg_buffer, np.uint8)
                 img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                
+                if img is None:
+                    # try decode video instead
+                    with open('tmpX.h26x', 'wb') as f:
+                        f.write(jpg_buffer)
+                    cap = cv2.VideoCapture('tmpX.h26x')
+                    ret, img = cap.read()
+                    cap.release()
+                    if img is not None:
+                        h, w = img.shape[:2]
+                        img = cv2.resize(img, (w//2, h//2))
+
                 if img is not None:
                     cv2.imshow(window_name, img)
                     
@@ -53,7 +67,9 @@ def start_cv_client(server_ip):
             # This part now runs even if no image was received
             if pending_click:
 #                push_socket.send_string(pending_click)
-                push_socket.send_multipart([bytes('cmd', 'ascii'), bytes(pending_click, 'ascii')])
+                data = pending_click
+                raw = serialize(data)
+                push_socket.send_multipart([bytes('cmd', 'ascii'), raw])
                 pending_click = None
 
             # Crucial: cv2.waitKey handles the window refresh
