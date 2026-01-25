@@ -6,7 +6,7 @@ def start_broadcast_server(image_path):
     # 1. Broadcaster (PUB) - Binds to 5555
     pub_socket = context.socket(zmq.PUB)
     pub_socket.bind("tcp://*:5555")
-    
+
     # 2. Click Collector (PULL) - Binds to 5556
     pull_socket = context.socket(zmq.PULL)
     pull_socket.bind("tcp://*:5556")
@@ -26,8 +26,9 @@ def start_broadcast_server(image_path):
             # Check for clicks from ANY subscriber
             try:
                 # Use NOBLOCK to keep the broadcast loop moving
-                click_data = pull_socket.recv_string(flags=zmq.NOBLOCK)
-                print(f"Received: {click_data}")
+#                click_data = pull_socket.recv_string(flags=zmq.NOBLOCK)
+                channel, click_data = pull_socket.recv_multipart(flags=zmq.NOBLOCK)
+                print(f"Received: {channel} {click_data}")
             except zmq.Again:
                 pass
             

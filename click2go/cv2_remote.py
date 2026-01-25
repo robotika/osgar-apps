@@ -52,7 +52,8 @@ def start_cv_client(server_ip):
             
             # This part now runs even if no image was received
             if pending_click:
-                push_socket.send_string(pending_click)
+#                push_socket.send_string(pending_click)
+                push_socket.send_multipart([bytes('cmd', 'ascii'), bytes(pending_click, 'ascii')])
                 pending_click = None
 
             # Crucial: cv2.waitKey handles the window refresh
