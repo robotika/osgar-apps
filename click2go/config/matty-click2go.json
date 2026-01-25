@@ -77,8 +77,8 @@
       ["platform.esp_data", "serial.raw"],
       ["timer.tick", "platform.tick"],
 
-      ["platform.pose2d", "tobase.pose2d"],
-      ["oak.color", "tobase.color"],
+      ["oak.color", "app.color"],
+      ["app.image", "tobase.image"],
       ["frombase.cmd", "app.cmd"]
     ]
   }

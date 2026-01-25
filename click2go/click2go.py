@@ -33,6 +33,7 @@ class Click2Go(Node):
 
         self.repeat = config.get('repeat', 1)
         self.emergency_stop = None
+        self.last_h26x_image = None
 
     def send_speed_cmd(self, speed, angular_speed=None, steering_angle=None):
         if angular_speed is not None:
@@ -60,11 +61,16 @@ class Click2Go(Node):
     def on_tick(self, data):
         pass
 
+    def on_color(self, data):
+        self.last_h26x_image = data
+
     def on_cmd(self, data):
         print('New cmd:', data)
-#        image = bytes([10, 20, 30])
-        with open('save.h264', 'rb') as f:
-            image = f.read()
+        if self.last_h26x_image is None:
+            with open('save.h264', 'rb') as f:
+                image = f.read()
+        else:
+            image = self.last_h26x_image
         self.publish('image', image)  # TODO change to "image"
 
     def sub_run(self):
