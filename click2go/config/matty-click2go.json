@@ -56,14 +56,16 @@
       "frombase": {
           "driver": "osgar.drivers.pull:Pull",
               "init": {
-              "endpoint": "tcp://0.0.0.0:5565",
+              "endpoint": "tcp://*:5556",
+              "bind": true,
               "outputs": ["cmd"]
           }
       },
       "tobase": {
           "driver": "osgar.drivers.push:Push",
               "init": {
-              "endpoint": "tcp://192.168.0.52:5566"
+              "endpoint": "tcp://*:5555",
+              "bind": true
           }
       }
     },
