@@ -45,8 +45,11 @@ def read_h264_image(data, i_frame_only=True):
     return image
 
 
-def read_logfile(logfile, writer=None, add_time=True):
-    nn_mask_stream = lookup_stream_id(logfile, 'oak.nn_mask')
+def read_logfile(logfile, writer=None, add_time=True, threshold=None):
+    if threshold is None:
+        nn_mask_stream = lookup_stream_id(logfile, 'oak.nn_mask')
+    else:
+        nn_mask_stream = lookup_stream_id(logfile, 'oak.redroad')
     img_stream = lookup_stream_id(logfile, 'oak.color')
     pose2d_stream = lookup_stream_id(logfile, 'platform.pose2d')
     total_duration, total_dist = get_time_and_dist(logfile, 'platform.pose2d')
@@ -61,6 +64,8 @@ def read_logfile(logfile, writer=None, add_time=True):
                 if img is None:
                     continue
                 mask = deserialize(data)
+                if threshold is not None:
+                    mask = (mask > threshold).astype(np.uint8)
                 assert mask.shape in [(120, 160), (112,112)], mask.shape
                 orig_height, orig_width = mask.shape
 #                mask[:height//2, :] = 0  # remove sky detections
@@ -138,6 +143,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('logfile', nargs='+', help='recorded log file(s)')
     parser.add_argument('--create-video', help='filename of output video')
+    parser.add_argument('--threshold', '-t', type=int, help='threshold value for redroad detection')
     args = parser.parse_args()
 
     if args.create_video is not None:
@@ -151,7 +157,7 @@ def main():
         writer = None  # no video writer
 
     for logfile in args.logfile:
-        read_logfile(logfile, writer=writer)
+        read_logfile(logfile, writer=writer, threshold=args.threshold)
 
     if writer is not None:
         writer.release()
