@@ -20,7 +20,8 @@ def start_broadcast_server(image_path):
     try:
         while True:
             # Broadcast the frame to ALL subscribers
-            pub_socket.send(jpg_bytes)
+#            pub_socket.send(jpg_bytes)
+            pub_socket.send_multipart([bytes('image', 'ascii'), jpg_bytes])
             
             # Check for clicks from ANY subscriber
             try:

@@ -35,7 +35,9 @@ def start_cv_client(server_ip):
         while True:
             try:
                 # This will now only block for 1 second
-                jpg_buffer = sub_socket.recv()
+#                jpg_buffer = sub_socket.recv()
+                channel, jpg_buffer = sub_socket.recv_multipart()
+                print(f'Received {channel} {len(jpg_buffer)} data!')
                 
                 nparr = np.frombuffer(jpg_buffer, np.uint8)
                 img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
