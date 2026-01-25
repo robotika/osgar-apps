@@ -62,7 +62,9 @@ class Click2Go(Node):
         pass
 
     def on_color(self, data):
-        self.last_h26x_image = data
+        if data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 460150')):
+            # I - key frame
+            self.last_h26x_image = data
 
     def on_cmd(self, data):
         print('New cmd:', data)
