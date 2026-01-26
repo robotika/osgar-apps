@@ -34,6 +34,7 @@ def start_cv_client(server_ip):
     cv2.namedWindow(window_name)
     cv2.setMouseCallback(window_name, mouse_callback)
 
+    pose2d = [0, 0, 0]
     print("Client started. Press 'q' to exit.")
 
     try:
@@ -42,7 +43,7 @@ def start_cv_client(server_ip):
                 # This will now only block for 1 second
 #                jpg_buffer = sub_socket.recv()
                 channel, raw = sub_socket.recv_multipart()
-                jpg_buffer = deserialize(raw)
+                pose2d, jpg_buffer = deserialize(raw)
                 print(f'Received {channel} {len(jpg_buffer)} data!')
                 
                 nparr = np.frombuffer(jpg_buffer, np.uint8)
@@ -70,7 +71,7 @@ def start_cv_client(server_ip):
             if pending_click:
 #                push_socket.send_string(pending_click)
                 data = pending_click.copy()
-                raw = serialize([x*DOWNSCALE for x in data])
+                raw = serialize([pose2d, [x*DOWNSCALE for x in data]])
                 push_socket.send_multipart([bytes('cmd', 'ascii'), raw])
                 pending_click = None
 

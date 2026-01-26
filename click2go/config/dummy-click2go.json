@@ -40,7 +40,7 @@
     "links": [
       ["timer.tick", "app.tick"],
 
-      ["app.image", "tobase.image"],
+      ["app.pose2dimg", "tobase.pose2dimg"],
       ["frombase.cmd", "app.cmd"]
     ]
   }

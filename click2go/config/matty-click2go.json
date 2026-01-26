@@ -77,7 +77,7 @@
       ["timer.tick", "platform.tick"],
 
       ["oak.color", "app.color"],
-      ["app.image", "tobase.image"],
+      ["app.pose2dimg", "tobase.pose2dimg"],
       ["frombase.cmd", "app.cmd"]
     ]
   }
