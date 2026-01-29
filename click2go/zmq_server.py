@@ -11,8 +11,10 @@ def start_broadcast_server(image_path):
     pub_socket.bind("tcp://*:5555")
 
     # 2. Click Collector (PULL) - Binds to 5556
-    pull_socket = context.socket(zmq.PULL)
+    pull_socket = context.socket(zmq.SUB)
     pull_socket.bind("tcp://*:5556")
+    pull_socket.setsockopt_string(zmq.SUBSCRIBE, "")
+
 
     img = cv2.imread(image_path)
     _, buffer = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 80])

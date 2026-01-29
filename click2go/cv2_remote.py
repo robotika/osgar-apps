@@ -27,7 +27,7 @@ def start_cv_client(server_ip):
     sub_socket.connect(f"tcp://{server_ip}:5555")
     sub_socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
-    push_socket = context.socket(zmq.PUSH)
+    push_socket = context.socket(zmq.PUB)
     push_socket.connect(f"tcp://{server_ip}:5556")
 
     window_name = "ZMQ Stream (with Timeout)"

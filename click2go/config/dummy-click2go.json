@@ -25,6 +25,7 @@
               "init": {
                 "endpoint": "tcp://*:5556",
                 "bind": true,
+                "pubsub": true,
                 "outputs": ["cmd"]
           }
       },
