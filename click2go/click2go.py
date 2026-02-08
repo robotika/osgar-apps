@@ -22,6 +22,7 @@ class Click2Go(Node):
         self.last_h26x_image = None
         self.last_cmd = None
         self.last_pose2d = [0, 0, 0]
+        self.remote_count = 0
 
     def send_speed_cmd(self, speed, steering_angle):
         self.publish('desired_steering', [round(speed*1000), round(math.degrees(steering_angle)*100)])
@@ -40,9 +41,10 @@ class Click2Go(Node):
         if self.last_cmd is None:
             self.send_speed_cmd(0, 0)
         else:
-            if self.last_cmd[-1][0] < 640:
+            base_index, my_old_index, my_old_pose, click_xy = self.last_cmd
+            if click_xy[0] < 640:
                 steering_angle = math.radians(20)
-            elif self.last_cmd[-1][0] > 2*640:
+            elif click_xy[0] > 2*640:
                 steering_angle = math.radians(-20)
             else:
                 steering_angle = 0
@@ -58,7 +60,8 @@ class Click2Go(Node):
         if data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 460150')):
             # I - key frame
             self.last_h26x_image = data
-            self.publish('pose2dimg', [self.last_pose2d, self.last_h26x_image])
+            self.publish('pose2dimg', [self.remote_count, self.time.total_seconds(), self.last_pose2d, self.last_h26x_image])
+            self.remote_count += 1
 
     def on_cmd(self, data):
         print('New cmd:', data)

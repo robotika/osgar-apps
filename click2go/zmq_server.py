@@ -23,10 +23,12 @@ def start_broadcast_server(image_path):
     print("Broadcasting on 5555, collecting clicks on 5556...")
     
     try:
+        count = 0
         while True:
             # Broadcast the frame to ALL subscribers
 #            pub_socket.send(jpg_bytes)
-            pub_socket.send_multipart([bytes('image', 'ascii'), serialize([[0, 10, 180], jpg_bytes])])
+            pub_socket.send_multipart([bytes('image', 'ascii'), serialize([count, 42.42, [0, 10, 180], jpg_bytes])])
+            count += 1
             
             # Check for clicks from ANY subscriber
             try:

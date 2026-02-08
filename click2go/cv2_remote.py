@@ -38,12 +38,14 @@ def start_cv_client(server_ip):
     print("Client started. Press 'q' to exit.")
 
     try:
+        index = 0
+        robot_index = None
         while True:
             try:
                 # This will now only block for 1 second
 #                jpg_buffer = sub_socket.recv()
                 channel, raw = sub_socket.recv_multipart()
-                pose2d, jpg_buffer = deserialize(raw)
+                robot_index, robot_time_sec, pose2d, jpg_buffer = deserialize(raw)
                 print(f'Received {channel} {len(jpg_buffer)} data!')
                 
                 nparr = np.frombuffer(jpg_buffer, np.uint8)
@@ -71,7 +73,8 @@ def start_cv_client(server_ip):
             if pending_click:
 #                push_socket.send_string(pending_click)
                 data = pending_click.copy()
-                raw = serialize([pose2d, [x*DOWNSCALE for x in data]])
+                raw = serialize([index, robot_index, pose2d, [x*DOWNSCALE for x in data]])
+                index += 1
                 push_socket.send_multipart([bytes('cmd', 'ascii'), raw])
                 pending_click = None
 
