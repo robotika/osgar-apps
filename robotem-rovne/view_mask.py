@@ -18,21 +18,23 @@ from log_info import get_time_and_dist
 
 
 def read_h264_image(data, i_frame_only=True):
-    assert data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 0930')), data[
-                                                                                                               :20].hex()
-    if data.startswith(bytes.fromhex('00000001 0950')):
+    is_h264 = data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 0930'))
+    is_h265 = data.startswith(bytes.fromhex('00000001 460150')) or data.startswith(bytes.fromhex('00000001 460130'))
+    assert is_h264 or is_h265, data[:20].hex()
+
+    if data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 460150')):
         # I - key frame
-        with open('tmp.h264', 'wb') as f:
+        with open('tmp.h26x', 'wb') as f:
             f.write(data)
-    elif data.startswith(bytes.fromhex('00000001 0930')):
+    elif data.startswith(bytes.fromhex('00000001 0930')) or data.startswith(bytes.fromhex('00000001 460130')):
         # P-frame}
         if i_frame_only:
             return None
-        with open('tmp.h264', 'ab') as f:
+        with open('tmp.h26x', 'ab') as f:
             f.write(data)
     else:
         assert 0, f'Unexpected data {data[:20].hex()}'
-    cap = cv2.VideoCapture('tmp.h264')
+    cap = cv2.VideoCapture('tmp.h26x')
     image = None
     ret = True
     while ret:
@@ -43,8 +45,11 @@ def read_h264_image(data, i_frame_only=True):
     return image
 
 
-def read_logfile(logfile, writer=None, add_time=True):
-    nn_mask_stream = lookup_stream_id(logfile, 'oak.nn_mask')
+def read_logfile(logfile, writer=None, add_time=True, threshold=None):
+    if threshold is None:
+        nn_mask_stream = lookup_stream_id(logfile, 'oak.nn_mask')
+    else:
+        nn_mask_stream = lookup_stream_id(logfile, 'oak.redroad')
     img_stream = lookup_stream_id(logfile, 'oak.color')
     pose2d_stream = lookup_stream_id(logfile, 'platform.pose2d')
     total_duration, total_dist = get_time_and_dist(logfile, 'platform.pose2d')
@@ -59,14 +64,17 @@ def read_logfile(logfile, writer=None, add_time=True):
                 if img is None:
                     continue
                 mask = deserialize(data)
-                assert mask.shape == (120, 160), mask.shape
-                mask[:60, :] = 0  # remove sky detections
+                if threshold is not None:
+                    mask = (mask > threshold).astype(np.uint8)
+                assert mask.shape in [(120, 160), (112,112)], mask.shape
+                orig_height, orig_width = mask.shape
+#                mask[:height//2, :] = 0  # remove sky detections
                 center_y, center_x = mask_center(mask)
-                scale = 12  # 160 -> 640 -> 1920
-                center_x *= scale
-                center_y *= 9  # scale
                 mask = cv2.resize(mask, (1920, 1080))
                 height, width = mask.shape
+                scale = width // orig_width  # 160 -> 640 -> 1920
+                center_x *= scale
+                center_y *= height // orig_height
                 colored_mask = np.zeros((height, width, 3), dtype=np.uint8)
                 colored_mask[mask == 1] = [0, 0, 255]
                 overlay = cv2.addWeighted(img, 1, colored_mask, 0.7, 0)
@@ -135,6 +143,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('logfile', nargs='+', help='recorded log file(s)')
     parser.add_argument('--create-video', help='filename of output video')
+    parser.add_argument('--threshold', '-t', type=int, help='threshold value for redroad detection')
     args = parser.parse_args()
 
     if args.create_video is not None:
@@ -148,7 +157,7 @@ def main():
         writer = None  # no video writer
 
     for logfile in args.logfile:
-        read_logfile(logfile, writer=writer)
+        read_logfile(logfile, writer=writer, threshold=args.threshold)
 
     if writer is not None:
         writer.release()
