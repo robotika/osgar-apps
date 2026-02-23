@@ -75,7 +75,7 @@
             },
             {
               "model": {
-                "blob": "models/yolov8n_coco_640x352.blob"
+                "blob": "../dtc-systems/models/yolov8n_coco_640x352.blob"
               },
               "nn_config": {
                 "output_format": "detection",
