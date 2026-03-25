@@ -4,7 +4,7 @@ This application allows a mobile robot to re-run a route recorded in a previous 
 
 ## Usage
 
-Update `rerun-route.json` with the path to your log file and the desired stream name:
+Update `config/matty-rerun-route.json` with the path to your log file and the desired stream name:
 
 ```json
 "init": {
@@ -17,7 +17,7 @@ Update `rerun-route.json` with the path to your log file and the desired stream 
 Run the application with OSGAR:
 
 ```bash
-python -m osgar.record rerun-route.json
+python -m osgar.record config/matty-rerun-route.json
 ```
 
 ## How it works
