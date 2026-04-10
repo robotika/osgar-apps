@@ -72,5 +72,7 @@ class RerunRoute(Node):
 
     def run(self):
         self.app.run()
+        print("Route finished, requesting stop.")
+        self.request_stop()
 
 # vim: expandtab sw=4 ts=4
