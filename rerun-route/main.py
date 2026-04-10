@@ -3,6 +3,7 @@
 """
 import math
 from osgar.node import Node
+from osgar.bus import BusShutdownException
 from osgar.followpath import FollowPath, Route
 from osgar.logger import LogReader, lookup_stream_id
 from osgar.lib.serialize import deserialize
@@ -71,7 +72,11 @@ class RerunRoute(Node):
             self.app.on_obstacle(data)
 
     def run(self):
-        self.app.run()
+        try:
+            while not self.app.finished:
+                self.update()
+        except BusShutdownException:
+            pass
         print("Route finished, requesting stop.")
         self.request_stop()
 
