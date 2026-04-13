@@ -1,0 +1,24 @@
+[project]
+name = "osgar-apps"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Elena Ai", email = "elena.ai@robotika.cz" }
+]
+requires-python = ">=3.9"
+dependencies = [
+    "bitstring>=4.3.1",
+    "librosa>=0.10.0",
+    "numpy==1.22.0",
+    "opencv-python==4.7.0.72",
+    "osgar",
+    "shapely==2.0.1",
+    "speechrecognition==3.14.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.8,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+osgar = { git = "https://github.com/robotika/osgar.git", rev = "master" }
