@@ -63,7 +63,7 @@
           "stereo_left_right_check": true,
           "sleep_on_start_sec": 3,
           "model": {
-            "blob": "models/robotourist-083-redroad-20260116-224x224-rgb-chw-1shave.blob"
+            "blob": "models/robotourist-093-redroad-20260409-224x224-rgb-chw-1shave.blob"
           },
           "nn_config": {
             "output_format": "LayerFp16",
