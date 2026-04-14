@@ -15,7 +15,9 @@ This document outlines the roadmap for the `rerun-route` application, moving fro
 ## Version 1: Robust Path Following & Sensor Integration
 *   **Goal:** Increase reliability and handle initial position offsets.
 *   **Key Features:**
-    *   **Starting Position Flexibility:** Implement logic to find the "nearest point" on the recorded route from the current starting position, allowing the robot to join the path even if not perfectly aligned at the start.
+    *   **Path Joining & Offset Handling:**
+        *   Implement a "Joining" state to navigate from the current position to the nearest point (or the start) of the recorded route.
+        *   Add a configurable threshold to determine whether to navigate back to the start or simply "snap" to the closest part of the route.
     *   **IMU Integration:** Use IMU data (Orientation/Heading) to supplement odometry, providing a more stable heading reference, especially during turns.
     *   **Visual Feature Tracking:**
         *   Incorporate camera data from the OAK-D Pro.
