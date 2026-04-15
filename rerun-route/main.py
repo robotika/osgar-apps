@@ -65,6 +65,7 @@ class RerunRoute(Node):
         self.debug_dir = config.get('debug_dir') # Optional: export images from log to dir
         self.min_brightness = config.get('min_brightness', 30.0)
         self.min_inliers = config.get('min_inliers', 20)
+        self.visualize_alignment = config.get('visualize_alignment', False)
         
         # Load path from log file
         self.path = self.extract_path(self.logfile, self.pose2d_stream)
@@ -187,6 +188,11 @@ class RerunRoute(Node):
         best_pose = None
         best_rot_rad = 0.0
 
+        best_mask = None
+        best_matches = None
+        best_ref_frame = None
+        best_ref_kp = None
+
         for ref in self.ref_data:
             matches = self.bf.match(des, ref['des'])
             # We use a simple distance threshold here for speed in live Node
@@ -202,11 +208,26 @@ class RerunRoute(Node):
                         best_inliers = inliers
                         best_pose = ref['pose']
                         best_rot_rad = -math.atan2(M[1,0], M[0,0])
+                        best_mask = mask
+                        best_matches = good
+                        best_ref_frame = ref.get('frame')
+                        best_ref_kp = ref.get('kp')
 
         if best_inliers >= self.min_inliers:
             # We assume for now that the reference log also started with heading 0
             # If not, we'd need to extract reference heading from the log as well.
             print(f"Match found! Inliers: {best_inliers}, Ref Pose: {best_pose}, Rot: {math.degrees(best_rot_rad):.1f} deg")
+            
+            if self.visualize_alignment and best_ref_frame is not None and best_ref_kp is not None:
+                draw_params = dict(matchColor = (0,255,0),
+                               singlePointColor = None,
+                               matchesMask = best_mask.flatten().tolist(),
+                               flags = 2)
+                vis_img = cv2.drawMatches(img, kp, best_ref_frame, best_ref_kp, best_matches, None, **draw_params)
+                out_path = "rerun-route/data/alignment_match.png"
+                cv2.imwrite(out_path, vis_img)
+                print(f"Saved alignment visualization to {out_path}")
+
             self.pose_offset = [best_pose[0], best_pose[1], best_rot_rad]
             self.state = self.STATE_DRIVING
             print(f"Switched to STATE_DRIVING with offset {self.pose_offset}")

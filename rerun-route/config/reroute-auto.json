@@ -13,6 +13,7 @@
             "max_speed": 0.5,
             "obstacle_stop_dist": 0.4,
             "min_inliers": 20,
+            "visualize_alignment": true,
             "timeout": 30
           }
       },
