@@ -18,6 +18,9 @@ This document outlines the roadmap for the `rerun-route` application, moving fro
     *   **Path Joining & Offset Handling:**
         *   Implement a "Joining" state to navigate from the current position to the nearest point (or the start) of the recorded route.
         *   Add a configurable threshold to determine whether to navigate back to the start or simply "snap" to the closest part of the route.
+    *   **Image Quality & Auto-Exposure Validation:**
+        *   Implement logic to wait for the camera's auto-exposure to stabilize.
+        *   Evaluate image quality (e.g., brightness, contrast, and feature count) before attempting visual alignment.
     *   **IMU Integration:** Use IMU data (Orientation/Heading) to supplement odometry, providing a more stable heading reference, especially during turns.
     *   **Visual Feature Tracking:**
         *   Incorporate camera data from the OAK-D Pro.
