@@ -37,9 +37,12 @@ def extract_reference_data(log_path, step_meters=0.2, min_brightness=30.0, orb=N
         tmp_name = tmp.name
     
     print(f"Extracting video from {log_path}...")
-    extract_cmd = f"uv run python -m osgar.logger {log_path} --raw --stream oak.color"
+    color_stream = lookup_stream_id(log_path, "oak.color")
     with open(tmp_name, 'wb') as f:
-        subprocess.run(extract_cmd, shell=True, stdout=f, stderr=subprocess.DEVNULL)
+        with LogReader(log_path, only_stream_id=color_stream) as log:
+            for timestamp, stream_id, data in log:
+                # data is already raw bytes for oak.color (h265)
+                f.write(data)
     
     cap = cv2.VideoCapture(tmp_name)
     if not cap.isOpened():
