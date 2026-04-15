@@ -41,8 +41,7 @@ def extract_reference_data(log_path, step_meters=0.2, min_brightness=30.0, orb=N
     with open(tmp_name, 'wb') as f:
         with LogReader(log_path, only_stream_id=color_stream) as log:
             for timestamp, stream_id, data in log:
-                # data is already raw bytes for oak.color (h265)
-                f.write(data)
+                f.write(deserialize(data))
     
     cap = cv2.VideoCapture(tmp_name)
     if not cap.isOpened():
