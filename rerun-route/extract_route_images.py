@@ -6,7 +6,22 @@ import tempfile
 from osgar.logger import LogReader, lookup_stream_id
 from osgar.lib.serialize import deserialize
 
-def extract_route_images(log_path, output_dir, step_meters=0.1):
+def get_closest_pose(ts, pose_history):
+    if not pose_history:
+        return None
+    # Simple linear search for the closest timestamp
+    best_pose = pose_history[0][1]
+    min_diff = abs((ts - pose_history[0][0]).total_seconds())
+    for p_ts, p_data in pose_history:
+        diff = abs((ts - p_ts).total_seconds())
+        if diff < min_diff:
+            min_diff = diff
+            best_pose = p_data
+        elif diff > min_diff: # Timestamps are monotonic
+            break
+    return best_pose
+
+def extract_route_images(log_path, output_dir, step_meters=0.1, min_brightness=30):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -37,27 +52,12 @@ def extract_route_images(log_path, output_dir, step_meters=0.1):
         for timestamp, stream_id, data in log:
             pose_history.append((timestamp, deserialize(data)))
 
-    def get_closest_pose(ts):
-        if not pose_history:
-            return None
-        # Simple linear search for the closest timestamp
-        # In a real run with many points, binary search would be better
-        best_pose = pose_history[0][1]
-        min_diff = abs((ts - pose_history[0][0]).total_seconds())
-        for p_ts, p_data in pose_history:
-            diff = abs((ts - p_ts).total_seconds())
-            if diff < min_diff:
-                min_diff = diff
-                best_pose = p_data
-            elif diff > min_diff: # Timestamps are monotonic
-                break
-        return best_pose
-
     # 3. Second pass: iterate through color stream to get message timestamps
     print("Correlating frames with poses and saving...")
     last_x, last_y = None, None
     saved_count = 0
     frame_idx = 0
+    skipped_dark = 0
     
     with LogReader(log_path, only_stream_id=color_stream) as log:
         for timestamp, stream_id, data in log:
@@ -65,7 +65,16 @@ def extract_route_images(log_path, output_dir, step_meters=0.1):
             if not ret:
                 break
             
-            pose = get_closest_pose(timestamp)
+            # Check brightness (mean of all pixels)
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            brightness = cv2.mean(gray)[0]
+            
+            if brightness < min_brightness:
+                skipped_dark += 1
+                frame_idx += 1
+                continue
+
+            pose = get_closest_pose(timestamp, pose_history)
             if pose:
                 x, y = pose[0]/1000.0, pose[1]/1000.0
                 if last_x is None or math.hypot(x - last_x, y - last_y) >= step_meters:
@@ -77,7 +86,7 @@ def extract_route_images(log_path, output_dir, step_meters=0.1):
 
     cap.release()
     os.unlink(tmp_name)
-    print(f"Done. Saved {saved_count} reference images to {output_dir}")
+    print(f"Done. Saved {saved_count} reference images to {output_dir} (skipped {skipped_dark} dark frames)")
 
 if __name__ == "__main__":
     import argparse
@@ -85,6 +94,7 @@ if __name__ == "__main__":
     parser.add_argument("logfile")
     parser.add_argument("--out", default="rerun-route/data/reference_frames")
     parser.add_argument("--step", type=float, default=0.1)
+    parser.add_argument("--min-brightness", type=float, default=30.0)
     args = parser.parse_args()
     
-    extract_route_images(args.logfile, args.out, args.step)
+    extract_route_images(args.logfile, args.out, args.step, args.min_brightness)
