@@ -47,6 +47,11 @@ def read_h264_image(data, i_frame_only=True):
     return image
 
 
+import sys
+# Ensure we can find local modules
+sys.path.append(os.path.dirname(__file__))
+from extract_route_images import extract_reference_data
+
 class RerunRoute(Node):
     STATE_WAIT_FOR_IMAGE = 0
     STATE_DRIVING = 1
@@ -56,9 +61,10 @@ class RerunRoute(Node):
         bus.register('desired_speed')
         self.logfile = config.get('logfile')
         self.pose2d_stream = config.get('pose2d_stream', 'platform.pose2d')
-        self.ref_dir = config.get('ref_dir')
+        self.ref_dir = config.get('ref_dir') # Optional: load from dir instead of log
+        self.debug_dir = config.get('debug_dir') # Optional: export images from log to dir
         self.min_brightness = config.get('min_brightness', 30.0)
-        self.min_inliers = config.get('min_inliers', 20) # Slightly higher for safety
+        self.min_inliers = config.get('min_inliers', 20)
         
         # Load path from log file
         self.path = self.extract_path(self.logfile, self.pose2d_stream)
@@ -67,12 +73,15 @@ class RerunRoute(Node):
         else:
             print(f"Extracted {len(self.path)} points from {self.logfile}")
 
-        self.ref_data = []
         self.orb = cv2.ORB_create(nfeatures=2000)
         self.bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+        self.ref_data = []
 
         if self.ref_dir:
             self.load_reference_images(self.ref_dir)
+        elif self.logfile:
+            print(f"Auto-extracting reference data from {self.logfile}...")
+            self.ref_data = extract_reference_data(self.logfile, orb=self.orb, debug_dir=self.debug_dir)
 
         self.app = FollowPath(config, bus)
         self.app.route = Route(pts=self.path)
@@ -82,7 +91,7 @@ class RerunRoute(Node):
         self.app.listen = self.my_listen
         self.app.update = self.my_update
 
-        self.state = self.STATE_WAIT_FOR_IMAGE if self.ref_dir else self.STATE_DRIVING
+        self.state = self.STATE_WAIT_FOR_IMAGE if (self.ref_dir or self.logfile) else self.STATE_DRIVING
         self.pose_offset = [0.0, 0.0, 0.0] # x, y, heading_rad
         print(f"Initial state: {self.state}")
 
