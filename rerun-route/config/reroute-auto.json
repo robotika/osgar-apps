@@ -70,6 +70,7 @@
     "links": [
       ["app.desired_speed", "platform.desired_steering"],
       ["platform.pose2d", "app.pose2d"],
+      ["platform.emergency_stop", "app.emergency_stop"],
       ["serial.raw", "platform.esp_data"],
       ["platform.esp_data", "serial.raw"],
       ["timer.tick", "platform.tick"],

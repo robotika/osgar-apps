@@ -10,6 +10,7 @@ import re
 
 from osgar.node import Node
 from osgar.bus import BusShutdownException
+from osgar.followme import EmergencyStopException
 from osgar.followpath import FollowPath, Route
 from osgar.logger import LogReader, lookup_stream_id
 from osgar.lib.serialize import deserialize
@@ -240,6 +241,9 @@ class RerunRoute(Node):
             print(f"Alignment failed (best inliers: {best_inliers})")
 
     def on_emergency_stop(self, data):
+        if data:
+            print("!!!Emergency STOP!!!")
+            raise EmergencyStopException()
         self.app.on_emergency_stop(data)
 
     def on_obstacle(self, data):
@@ -250,7 +254,7 @@ class RerunRoute(Node):
         try:
             while not self.app.finished:
                 self.update()
-        except BusShutdownException:
+        except (BusShutdownException, EmergencyStopException):
             pass
         print("Route finished, requesting stop.")
         self.request_stop()
