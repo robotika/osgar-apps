@@ -10,7 +10,7 @@
             "logfile": "rerun-route/data/m03-matty-redroad-260415_173111.log",
             "pose2d_stream": "platform.pose2d",
             "debug_dir": "rerun-route/data/auto_ref_debug",
-            "max_speed": 0.5,
+            "max_speed": 0.2,
             "obstacle_stop_dist": 0.4,
             "min_inliers": 20,
             "visualize_alignment": true,
