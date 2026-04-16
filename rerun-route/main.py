@@ -144,13 +144,10 @@ class RerunRoute(Node):
         x, y, heading = data
         
         # 1. Apply rotation first
-        # For simplicity, we only correct initial heading
         heading_rad = math.radians(heading / 100.0)
         corrected_heading_rad = heading_rad + self.pose_offset[2]
         
         # 2. Apply translation
-        # Robot's (x, y) are in its local coordinate system.
-        # We need to rotate them by initial heading offset and then add initial (x, y)
         c, s = math.cos(self.pose_offset[2]), math.sin(self.pose_offset[2])
         rel_x, rel_y = x / 1000.0, y / 1000.0
         
@@ -187,15 +184,15 @@ class RerunRoute(Node):
         best_inliers = 0
         best_pose = None
         best_rot_rad = 0.0
+        best_ref_idx = -1
 
         best_mask = None
         best_matches = None
         best_ref_frame = None
         best_ref_kp = None
 
-        for ref in self.ref_data:
+        for i, ref in enumerate(self.ref_data):
             matches = self.bf.match(des, ref['des'])
-            # We use a simple distance threshold here for speed in live Node
             good = [m for m in matches if m.distance < 50]
             
             if len(good) >= 10:
@@ -212,11 +209,19 @@ class RerunRoute(Node):
                         best_matches = good
                         best_ref_frame = ref.get('frame')
                         best_ref_kp = ref.get('kp')
+                        best_ref_idx = i
 
         if best_inliers >= self.min_inliers:
-            # We assume for now that the reference log also started with heading 0
-            # If not, we'd need to extract reference heading from the log as well.
-            print(f"Match found! Inliers: {best_inliers}, Ref Pose: {best_pose}, Rot: {math.degrees(best_rot_rad):.1f} deg")
+            # best_pose is (x, y, h) from master log
+            # best_rot_rad is rotation from query image to reference image
+            # query_heading + best_rot_rad = ref_heading
+            # query_heading = ref_heading - best_rot_rad
+            ref_heading = best_pose[2]
+            abs_query_heading = ref_heading - best_rot_rad
+            
+            print(f"Match found! Inliers: {best_inliers}, Ref Pose: {best_pose[:2]}, Ref Heading: {math.degrees(ref_heading):.1f} deg, Image Rot: {math.degrees(best_rot_rad):.1f} deg")
+            print(f"Calculated Absolute Query Heading: {math.degrees(abs_query_heading):.1f} deg")
+            print(f"DEBUG: best_ref_idx={best_ref_idx}, ref_data[idx]['pose']={self.ref_data[best_ref_idx]['pose']}")
             
             if self.visualize_alignment and best_ref_frame is not None and best_ref_kp is not None:
                 draw_params = dict(matchColor = (0,255,0),
@@ -228,7 +233,7 @@ class RerunRoute(Node):
                 cv2.imwrite(out_path, vis_img)
                 print(f"Saved alignment visualization to {out_path}")
 
-            self.pose_offset = [best_pose[0], best_pose[1], best_rot_rad]
+            self.pose_offset = [best_pose[0], best_pose[1], abs_query_heading]
             self.state = self.STATE_DRIVING
             print(f"Switched to STATE_DRIVING with offset {self.pose_offset}")
         else:

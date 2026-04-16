@@ -79,11 +79,12 @@ def extract_reference_data(log_path, step_meters=0.2, min_brightness=30.0, orb=N
 
             pose = get_closest_pose(timestamp, pose_history)
             if pose:
-                x, y = pose[0]/1000.0, pose[1]/1000.0
+                x, y, h = pose[0]/1000.0, pose[1]/1000.0, math.radians(pose[2]/100.0)
                 if last_x is None or math.hypot(x - last_x, y - last_y) >= step_meters:
                     kp, des = orb.detectAndCompute(frame, None)
                     if des is not None:
-                        ref_data.append({'kp': kp, 'des': des, 'pose': (x, y), 'frame': frame.copy()})
+                        ref_data.append({'kp': kp, 'des': des, 'pose': (x, y, h), 'frame': frame.copy()})
+
                         if debug_dir:
                             img_name = f"frame_{frame_idx:06d}_x{x:.2f}_y{y:.2f}.png"
                             cv2.imwrite(os.path.join(debug_dir, img_name), frame)
