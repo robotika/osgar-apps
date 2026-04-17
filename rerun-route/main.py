@@ -60,7 +60,6 @@ class RerunRoute(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
         bus.register('desired_speed')
-        self.root_path = config.get('root_path')
 
         self.logfile = self.resolve_path(config.get('logfile'))
         self.pose2d_stream = config.get('pose2d_stream', 'platform.pose2d')
