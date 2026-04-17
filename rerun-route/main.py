@@ -55,7 +55,8 @@ from extract_route_images import extract_reference_data
 
 class RerunRoute(Node):
     STATE_WAIT_FOR_IMAGE = 0
-    STATE_DRIVING = 1
+    STATE_JOINING = 1
+    STATE_DRIVING = 2
 
     def __init__(self, config, bus):
         super().__init__(config, bus)
@@ -69,7 +70,14 @@ class RerunRoute(Node):
         self.min_brightness = config.get('min_brightness', 30.0)
         self.min_inliers = config.get('min_inliers', 20)
         self.visualize_alignment = config.get('visualize_alignment', False)
+        self.join_threshold = config.get('join_threshold', 0.5)
         
+        # OAK-D THE_1080_P approximate intrinsics
+        self.camera_matrix = np.array([[1400.0, 0, 960.0],
+                                       [0, 1400.0, 540.0],
+                                       [0, 0, 1.0]], dtype=float)
+        self.dist_coeffs = np.zeros((4,1)) # Assuming no distortion for now
+
         # Load path from log file
         self.path = self.extract_path(self.logfile, self.pose2d_stream)
         if not self.path:
@@ -97,6 +105,7 @@ class RerunRoute(Node):
 
         self.state = self.STATE_WAIT_FOR_IMAGE if (self.ref_dir or self.logfile) else self.STATE_DRIVING
         self.pose_offset = [0.0, 0.0, 0.0] # x, y, heading_rad
+        self.last_depth = None
         print(f"Initial state: {self.state}")
 
     def resolve_path(self, path):
@@ -149,6 +158,9 @@ class RerunRoute(Node):
                     path.append((x, y))
         return path
 
+    def on_depth(self, data):
+        self.last_depth = data
+
     def on_pose2d(self, data):
         # Raw data from robot platform (starts at 0,0,0)
         x, y, heading = data
@@ -172,6 +184,39 @@ class RerunRoute(Node):
         
         if self.state == self.STATE_DRIVING:
             self.app.on_pose2d(corrected_data)
+        elif self.state == self.STATE_JOINING:
+            self.drive_to_path(abs_x, abs_y, corrected_heading_rad)
+
+    def drive_to_path(self, x, y, heading):
+        # Smooth curve joining: steer towards the nearest point on the route
+        # Find closest point
+        first, second = self.app.route.routeSplit((x, y))
+        if len(second) == 0:
+            print("Joining failed: no route points.")
+            self.state = self.STATE_DRIVING # Fallback
+            return
+
+        target_pt = second[0]
+        dist = math.hypot(target_pt[1] - y, target_pt[0] - x)
+        
+        if dist < self.join_threshold:
+            print(f"Joined path (dist {dist:.2f}m). Switching to STATE_DRIVING.")
+            self.state = self.STATE_DRIVING
+            return
+
+        # Target angle to the point
+        target_angle = math.atan2(target_pt[1] - y, target_pt[0] - x)
+        diff = target_angle - heading
+        # Normalize to -pi, pi
+        diff = (diff + math.pi) % (2 * math.pi) - math.pi
+        
+        # Proportional control for steering
+        max_angular = math.radians(45)
+        angular_speed = 1.0 * diff
+        angular_speed = max(min(angular_speed, max_angular), -max_angular)
+        
+        # Send speed command
+        self.publish('desired_speed', [round(self.app.max_speed * 1000), round(math.degrees(angular_speed) * 100)])
 
     def on_color(self, data):
         if self.state != self.STATE_WAIT_FOR_IMAGE:
@@ -193,73 +238,110 @@ class RerunRoute(Node):
 
         best_inliers = 0
         best_pose = None
-        best_rot_rad = 0.0
         best_ref_idx = -1
+        best_rvec = None
+        best_tvec = None
 
         best_mask = None
         best_matches = None
         best_ref_frame = None
         best_ref_kp = None
 
-        best_M = None
         for i, ref in enumerate(self.ref_data):
             matches = self.bf.match(des, ref['des'])
             good = [m for m in matches if m.distance < 50]
             
             if len(good) >= 10:
-                src_pts = np.float32([kp[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
-                dst_pts = np.float32([ref['kp'][m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
-                M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
-                if mask is not None:
-                    inliers = int(np.sum(mask))
-                    if inliers > best_inliers:
-                        best_inliers = inliers
-                        best_pose = ref['pose']
-                        best_rot_rad = -math.atan2(M[1,0], M[0,0])
-                        best_M = M
-                        best_mask = mask
-                        best_matches = good
-                        best_ref_frame = ref.get('frame')
-                        best_ref_kp = ref.get('kp')
-                        best_ref_idx = i
+                # Try PnP if we have 3D points
+                ref_kp3d = ref.get('kp_3d')
+                if ref_kp3d is not None:
+                    obj_pts = []
+                    img_pts = []
+                    for m in good:
+                        p3d = ref_kp3d[m.trainIdx]
+                        if p3d is not None:
+                            obj_pts.append(p3d)
+                            img_pts.append(kp[m.queryIdx].pt)
+                    
+                    if len(obj_pts) >= 10:
+                        obj_pts = np.array(obj_pts, dtype=float)
+                        img_pts = np.array(img_pts, dtype=float)
+                        ret, rvec, tvec, inliers_indices = cv2.solvePnPRansac(
+                            obj_pts, img_pts, self.camera_matrix, self.dist_coeffs,
+                            reprojectionError=5.0, iterationsCount=100)
+                        
+                        if ret:
+                            inliers = len(inliers_indices)
+                            if inliers > best_inliers:
+                                best_inliers = inliers
+                                best_pose = ref['pose']
+                                best_rvec = rvec
+                                best_tvec = tvec
+                                best_mask = np.zeros(len(good), dtype=bool)
+                                best_mask[inliers_indices] = True
+                                best_matches = good
+                                best_ref_frame = ref.get('frame')
+                                best_ref_kp = ref.get('kp')
+                                best_ref_idx = i
+                else:
+                    # Fallback to Homography if no 3D data
+                    src_pts = np.float32([kp[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
+                    dst_pts = np.float32([ref['kp'][m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
+                    M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+                    if mask is not None:
+                        inliers = int(np.sum(mask))
+                        if inliers > best_inliers:
+                            best_inliers = inliers
+                            best_pose = ref['pose']
+                            best_mask = mask
+                            best_matches = good
+                            best_ref_frame = ref.get('frame')
+                            best_ref_kp = ref.get('kp')
+                            best_ref_idx = i
+                            best_rvec = None # No 3D info
 
         if best_inliers >= self.min_inliers:
-            ref_heading = best_pose[2]
-            abs_query_heading = ref_heading - best_rot_rad
+            ref_x, ref_y, ref_heading = best_pose
             
-            # Simple translation estimation: M[0,2] and M[1,2] are tx, ty in pixels.
-            # Without depth, we can't accurately map pixels to meters, but we can
-            # at least log them for now or use a heuristic.
-            tx, ty = best_M[0,2], best_M[1,2]
-            
-            print(f"Match found! Inliers: {best_inliers}, Ref Pose: {best_pose[:2]}, Ref Heading: {math.degrees(ref_heading):.1f} deg, Image Rot: {math.degrees(best_rot_rad):.1f} deg")
-            print(f"Image translation tx: {tx:.1f}, ty: {ty:.1f} (pixels)")
-            
-            if self.visualize_alignment and best_ref_frame is not None and best_ref_kp is not None:
-                draw_params = dict(matchColor = (0,255,0),
-                               singlePointColor = None,
-                               matchesMask = best_mask.flatten().tolist(),
-                               flags = 2)
-                vis_img = cv2.drawMatches(img, kp, best_ref_frame, best_ref_kp, best_matches, None, **draw_params)
-                out_path = os.path.join(os.path.dirname(self.logfile), "alignment_match.png")
-                cv2.imwrite(out_path, vis_img)
-                print(f"Saved alignment visualization to {out_path}")
+            if best_rvec is not None:
+                # Calculate absolute pose from PnP result
+                R, _ = cv2.Rodrigues(best_rvec)
+                pos_in_ref = -R.T @ best_tvec
+                dx, dy = pos_in_ref[0,0], pos_in_ref[2,0]
+                yaw_diff = -best_rvec[1,0]
+                
+                c, s = math.cos(ref_heading), math.sin(ref_heading)
+                abs_x = ref_x + dx * c - dy * s
+                abs_y = ref_y + dx * s + dy * c
+                abs_heading = ref_heading + yaw_diff
+                
+                print(f"Match found (PnP)! Inliers: {best_inliers}, Ref Pose: {best_pose[:2]}, Offset: ({dx:.2f}, {dy:.2f})m, yaw: {math.degrees(yaw_diff):.1f} deg")
+            else:
+                # Fallback to simple snap
+                abs_x, abs_y, abs_heading = ref_x, ref_y, ref_heading
+                print(f"Match found (Snap)! Inliers: {best_inliers}, Ref Pose: {best_pose[:2]}")
 
-            self.pose_offset = [best_pose[0], best_pose[1], abs_query_heading]
-            self.state = self.STATE_DRIVING
-            print(f"Switched to STATE_DRIVING at {best_pose[:2]} with heading {math.degrees(abs_query_heading):.1f} deg")
+            self.pose_offset = [abs_x, abs_y, abs_heading]
             
-            # Important: We need to feed the CURRENT (corrected) pose to FollowPath immediately
-            # so it doesn't use the old [0,0,0] which might be far away.
-            # The on_pose2d will be called with next incoming data, but let's force an update.
-            # Actually, we don't have the raw 'data' here, but we know it's approx [0,0,0].
-            # Let's wait for the next on_pose2d call which will happen very soon.
+            # Transition to JOINING or DRIVING
+            first, second = self.app.route.routeSplit((abs_x, abs_y))
+            dist = 0.0
+            if len(second) > 0:
+                dist = math.hypot(second[0][1] - abs_y, second[0][0] - abs_x)
+            
+            if dist > self.join_threshold:
+                self.state = self.STATE_JOINING
+                print(f"State: STATE_JOINING (dist to path: {dist:.2f}m)")
+            else:
+                self.state = self.STATE_DRIVING
+                print(f"State: STATE_DRIVING (dist to path: {dist:.2f}m)")
         else:
             print(f"Alignment failed (best inliers: {best_inliers} at ref_idx {best_ref_idx})")
             if self.visualize_alignment and best_inliers > 5 and best_ref_frame is not None:
+                mask_list = best_mask.astype(int).flatten().tolist()
                 draw_params = dict(matchColor = (0,0,255),
                                singlePointColor = None,
-                               matchesMask = best_mask.flatten().tolist(),
+                               matchesMask = mask_list,
                                flags = 2)
                 vis_img = cv2.drawMatches(img, kp, best_ref_frame, best_ref_kp, best_matches, None, **draw_params)
                 out_path = os.path.join(os.path.dirname(self.logfile), "alignment_failed.png")

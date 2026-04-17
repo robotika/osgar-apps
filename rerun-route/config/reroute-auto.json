@@ -4,7 +4,7 @@
     "modules": {
       "app": {
           "driver": "rerun-route.main:RerunRoute",
-          "in": ["emergency_stop", "pose2d", "obstacle", "color", "desired_speed"],
+          "in": ["emergency_stop", "pose2d", "obstacle", "color", "depth", "desired_speed"],
           "out": ["desired_speed"],
           "init": {
             "logfile": "data/m03-matty-redroad-260415_173111.log",
@@ -14,6 +14,7 @@
             "obstacle_stop_dist": 0.4,
             "min_inliers": 20,
             "visualize_alignment": true,
+            "join_threshold": 0.5,
             "timeout": 30
           }
       },
@@ -75,6 +76,7 @@
       ["platform.esp_data", "serial.raw"],
       ["timer.tick", "platform.tick"],
       ["oak.depth", "obstdet3d.depth"],
+      ["oak.depth", "app.depth"],
       ["obstdet3d.obstacle", "app.obstacle"],
       ["oak.color", "app.color"]
     ]

@@ -17,9 +17,9 @@
     - [X] `m03-reroute-auto-260416_183513.log` - Short run
     - [X] `m03-reroute-auto-260416_183553.log` - Alignment failed (Narrow FOV/Robot facing wrong area)
     - [X] `m03-reroute-auto-260416_183742.log` - Longer run, matched OK
-- [ ] Improve translation (x, y) estimation from visual landmarks (currently "snaps" to ref pose)
+- [X] Improve translation (x, y) estimation from visual landmarks (solvePnP with Depth)
+- [X] Implement "Joining" state to navigate from current position to the nearest point on the route
 - [ ] Investigate 183742 replay assertion failure (why is it not 1:1?)
-- [ ] Implement "Joining" state to navigate from current position to the nearest point on the route
 
 ## Future Enhancements [ ]
 - [ ] Active "look around" search if initial alignment fails
