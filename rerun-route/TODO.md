@@ -9,7 +9,6 @@
 - [X] Integration of pose and heading correction into `main.py` control loop
 - [X] Emergency STOP termination logic (via `EmergencyStopException`)
 - [X] "Standard Development Procedure" documentation (`GEMINI.md`, `DEVELOPMENT.md`)
-- [X] Robust path resolution relative to `root_path` config
 
 ## Current Goals [ ]
 - [ ] Evaluate 2026-04-16 logs to analyze "slightly off" path behavior
@@ -21,3 +20,7 @@
 - [ ] Performance optimization (caching ORB descriptors for reference logs)
 - [ ] OAK-D Pro hardware offloading for feature tracking
 - [ ] Robustness to more significant lighting changes
+- [ ] Robust path resolution relative to `root_path` config (after OSGAR release)
+
+## OSGAR Improvements [ ]
+- [ ] Propose/Implement `resolve_path(config, path)` in OSGAR core to handle absolute/relative paths robustly across environments.

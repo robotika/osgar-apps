@@ -60,10 +60,13 @@ class RerunRoute(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
         bus.register('desired_speed')
-        self.logfile = config.get('logfile')
+        self.root_path = config.get('root_path')
+
+        self.logfile = self.resolve_path(config.get('logfile'))
         self.pose2d_stream = config.get('pose2d_stream', 'platform.pose2d')
-        self.ref_dir = config.get('ref_dir') # Optional: load from dir instead of log
-        self.debug_dir = config.get('debug_dir') # Optional: export images from log to dir
+        self.ref_dir = self.resolve_path(config.get('ref_dir'))
+        self.debug_dir = self.resolve_path(config.get('debug_dir'))
+
         self.min_brightness = config.get('min_brightness', 30.0)
         self.min_inliers = config.get('min_inliers', 20)
         self.visualize_alignment = config.get('visualize_alignment', False)
@@ -96,6 +99,13 @@ class RerunRoute(Node):
         self.state = self.STATE_WAIT_FOR_IMAGE if (self.ref_dir or self.logfile) else self.STATE_DRIVING
         self.pose_offset = [0.0, 0.0, 0.0] # x, y, heading_rad
         print(f"Initial state: {self.state}")
+
+    def resolve_path(self, path):
+        if path is None or os.path.isabs(path):
+            return path
+        if self.root_path:
+            return os.path.join(self.root_path, path)
+        return path
 
     def load_reference_images(self, ref_dir):
         print(f"Loading reference images from {ref_dir}...")
@@ -213,10 +223,6 @@ class RerunRoute(Node):
                         best_ref_idx = i
 
         if best_inliers >= self.min_inliers:
-            # best_pose is (x, y, h) from master log
-            # best_rot_rad is rotation from query image to reference image
-            # query_heading + best_rot_rad = ref_heading
-            # query_heading = ref_heading - best_rot_rad
             ref_heading = best_pose[2]
             abs_query_heading = ref_heading - best_rot_rad
             
@@ -238,7 +244,7 @@ class RerunRoute(Node):
             self.state = self.STATE_DRIVING
             print(f"Switched to STATE_DRIVING with offset {self.pose_offset}")
         else:
-            print(f"Alignment failed (best inliers: {best_inliers})")
+            print(f"Alignment failed (best inliers: {best_inliers} at ref_idx {best_ref_idx})")
 
     def on_emergency_stop(self, data):
         if data:
