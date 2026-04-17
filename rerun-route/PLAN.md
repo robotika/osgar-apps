@@ -12,27 +12,33 @@ This document outlines the roadmap for the `rerun-route` application, moving fro
     *   Susceptible to odometry drift.
     *   No correction from external sensors.
 
-## Version 1: Robust Path Following & Sensor Integration
-*   **Goal:** Increase reliability and handle initial position offsets.
-*   **Key Features:**
-    *   **Path Joining & Offset Handling:**
-        *   Implement a "Joining" state to navigate from the current position to the nearest point (or the start) of the recorded route.
-        *   Add a configurable threshold to determine whether to navigate back to the start or simply "snap" to the closest part of the route.
-    *   **Image Quality & Auto-Exposure Validation:**
-        *   Implement logic to wait for the camera's auto-exposure to stabilize.
-        *   Evaluate image quality (e.g., brightness, contrast, and feature count) before attempting visual alignment.
-    *   **IMU Integration:** Use IMU data (Orientation/Heading) to supplement odometry, providing a more stable heading reference, especially during turns.
-    *   **Visual Feature Tracking:**
-        *   Incorporate camera data from the OAK-D Pro.
-        *   Implement basic visual feature tracking (e.g., using OpenCV) to maintain alignment with the original run's visual environment.
-        *   Correct longitudinal and lateral drift using recognized landmarks or features.
+## Version 1: Robust Path Following & Sensor Integration (Current)
+*   **Goal:** Handle initial position offsets and refined translation.
+*   **Mechanism:**
+    *   **PnP Translation:** Use OAK-D depth data and `solvePnP` to calculate exact $(dx, dy)$ and heading offsets during initial alignment.
+    *   **Joining State:** Implement a smooth curve-based joining logic to navigate from the start position to the nearest point on the route.
+*   **Status:** Initial implementation complete.
 
-## Version 2+: Hardware-Accelerated Visual Navigation
+## Version 2: Continuous Visual Tracking & Modularization
+*   **Goal:** Maintain alignment over long routes and handle odometry drift in real-time.
+*   **Mechanism:**
+    *   **Landmark Index Tracking:** Monitor the closest reference landmark based on the current estimated pose.
+    *   **Throttled Local Matching:** 
+        *   Trigger visual checks every ~1.0m or ~2s.
+        *   Search only a small window of landmarks (e.g., current index $\pm 3$) to save CPU and reduce false positives.
+    *   **Incremental Pose Filtering:** Use an Alpha-filter or a simplified Kalman Filter to smoothly update `pose_offset` without causing jerky steering commands.
+    *   **Modular Architecture:** Split the application into specialized modules:
+        *   `AlignmentNode`: Handles ORB matching, PnP solving, and pose estimation.
+        *   `RerunApp`: Orchestrates the state machine (Wait, Join, Drive) and path following.
+        *   `RouteProvider`: Manages loading and indexing of reference landmarks and paths.
+*   **Benefits:** Reduces "snapping" artifacts, improves robustness against local feature changes, and allows for easier debugging of individual components.
+
+## Version 3+: Hardware-Accelerated Visual Navigation
 *   **Goal:** Offload processing and improve real-time performance.
 *   **Key Features:**
-    *   **OAK-D Pro Offloading:** Move feature detection and tracking logic directly onto the OAK-D Pro hardware (DepthAI) to reduce host CPU load and decrease latency.
-    *   **Advanced Visual Odometry/SLAM:** Potentially incorporate more sophisticated visual-inertial odometry (VIO) for high-precision tracking in challenging environments.
-    *   **Dynamic Obstacle Handling:** Improve the interaction between route following and real-time obstacle avoidance.
+    *   **OAK-D Pro Offloading:** Move feature detection and tracking logic directly onto the OAK-D Pro hardware (DepthAI).
+    *   **IMU Integration:** Use IMU data for stable heading reference during the run.
+    *   **Advanced VIO/SLAM:** Potentially incorporate more sophisticated visual-inertial odometry for high-precision tracking.
 
 ## Architecture Considerations
 *   **Modularity:** Keep the route extraction logic separate from the control loop to allow for different "planners" or "correctors."
