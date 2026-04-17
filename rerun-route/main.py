@@ -3,6 +3,7 @@
 """
 import math
 import os
+import av
 import cv2
 import numpy as np
 import glob
@@ -16,36 +17,38 @@ from osgar.logger import LogReader, lookup_stream_id
 from osgar.lib.serialize import deserialize
 
 
-def read_h264_image(data, i_frame_only=True):
-    # Decoding logic from robotem-rovne/view_mask.py
-    # Note: This creates a temporary file 'tmp.h26x' in the current directory.
-    is_h264 = data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 0930'))
-    is_h265 = data.startswith(bytes.fromhex('00000001 460150')) or data.startswith(bytes.fromhex('00000001 460130'))
-    if not (is_h264 or is_h265):
-        return None
+class VideoDecoder:
+    def __init__(self, codec_name='hevc'):
+        # Use 'hevc' for H.265 or 'h264' for H.264
+        self.codec = av.CodecContext.create(codec_name, 'r')
 
-    if data.startswith(bytes.fromhex('00000001 0950')) or data.startswith(bytes.fromhex('00000001 460150')):
-        # I - key frame
-        with open('tmp.h26x', 'wb') as f:
-            f.write(data)
-    elif data.startswith(bytes.fromhex('00000001 0930')) or data.startswith(bytes.fromhex('00000001 460130')):
-        # P-frame
-        if i_frame_only:
+    def decode(self, data: bytes):
+        """
+        Takes raw H.264/H.265 bytes and returns the decoded OpenCV image (BGR).
+        Returns None if the packet didn't contain enough data to form a full frame yet.
+        """
+        # Parse the raw bytes into FFmpeg Packets
+        try:
+            packets = self.codec.parse(data)
+        except av.AVError as e:
+            print(f"Warning: Failed to parse video packet: {e}")
             return None
-        with open('tmp.h26x', 'ab') as f:
-            f.write(data)
-    else:
-        return None
 
-    cap = cv2.VideoCapture('tmp.h26x')
-    image = None
-    ret = True
-    while ret:
-        ret, frame = cap.read()
-        if ret:
-            image = frame
-    cap.release()
-    return image
+        frames = []
+        for packet in packets:
+            try:
+                # Decode the packet into VideoFrames
+                frames.extend(self.codec.decode(packet))
+            except av.AVError as e:
+                print(f"Warning: Failed to decode video packet: {e}")
+                continue
+        
+        if frames:
+            # We return the last frame decoded in this batch
+            # Convert it directly to a numpy array in OpenCV's BGR format
+            return frames[-1].to_ndarray(format='bgr24')
+        
+        return None
 
 
 import sys
@@ -109,6 +112,7 @@ class RerunRoute(Node):
         self.state = self.STATE_WAIT_FOR_IMAGE if (self.ref_dir or self.logfile) else self.STATE_DRIVING
         self.pose_offset = [0.0, 0.0, 0.0] # x, y, heading_rad
         self.last_depth = None
+        self.decoder = VideoDecoder(codec_name='hevc')
         print(f"Initial state: {self.state}")
 
     def resolve_path(self, path):
@@ -225,7 +229,7 @@ class RerunRoute(Node):
         if self.state != self.STATE_WAIT_FOR_IMAGE:
             return
 
-        img = read_h264_image(data)
+        img = self.decoder.decode(data)
         if img is None:
             return
 
