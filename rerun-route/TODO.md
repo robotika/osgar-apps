@@ -11,16 +11,18 @@
 - [X] "Standard Development Procedure" documentation (`GEMINI.md`, `DEVELOPMENT.md`)
 
 ## Current Goals [ ]
-- [ ] Evaluate 2026-04-16 logs to analyze "slightly off" path behavior:
-    - [ ] `m03-reroute-auto-260416_183343.log` - Short run, matched OK
-    - [ ] `m03-reroute-auto-260416_183423.log` - Short run
-    - [ ] `m03-reroute-auto-260416_183513.log` - Short run
-    - [ ] `m03-reroute-auto-260416_183553.log` - Longer run, alignment failed
-    - [ ] `m03-reroute-auto-260416_183742.log` - Longer run, matched OK
-- [ ] Improve translation (x, y) estimation from visual landmarks (current estimation is "nearest landmark" only)
+- [X] Evaluate 2026-04-16 logs to analyze "slightly off" path behavior:
+    - [X] `m03-reroute-auto-260416_183343.log` - Short run, matched OK
+    - [X] `m03-reroute-auto-260416_183423.log` - Short run
+    - [X] `m03-reroute-auto-260416_183513.log` - Short run
+    - [X] `m03-reroute-auto-260416_183553.log` - Alignment failed (Narrow FOV/Robot facing wrong area)
+    - [X] `m03-reroute-auto-260416_183742.log` - Longer run, matched OK
+- [ ] Improve translation (x, y) estimation from visual landmarks (currently "snaps" to ref pose)
+- [ ] Investigate 183742 replay assertion failure (why is it not 1:1?)
 - [ ] Implement "Joining" state to navigate from current position to the nearest point on the route
 
 ## Future Enhancements [ ]
+- [ ] Active "look around" search if initial alignment fails
 - [ ] Performance optimization (caching ORB descriptors for reference logs)
 - [ ] OAK-D Pro hardware offloading for feature tracking
 - [ ] Robustness to more significant lighting changes

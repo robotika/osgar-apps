@@ -2,13 +2,15 @@ import cv2
 import os
 import subprocess
 import tempfile
+import sys
 
 def extract_first_frame(log_path, output_name):
     with tempfile.NamedTemporaryFile(suffix='.h265', delete=False) as tmp:
         tmp_name = tmp.name
     
     # Extract raw stream using osgar.logger
-    cmd = f"uv run python -m osgar.logger {log_path} --raw --stream oak.color"
+    # Use sys.executable to ensure we use the same python interpreter
+    cmd = f'"{sys.executable}" -m osgar.logger {log_path} --raw --stream oak.color'
     with open(tmp_name, 'wb') as f:
         subprocess.run(cmd, shell=True, stdout=f, stderr=subprocess.DEVNULL)
     
@@ -25,13 +27,13 @@ def extract_first_frame(log_path, output_name):
     os.unlink(tmp_name)
     return ret
 
-logs = [
-    ("rerun-route/data/m03-matty-go-cam-260330_180834.log", "rerun-route/data/m03-180834.png"),
-    ("rerun-route/data/m03-matty-go-cam-260330_180950.log", "rerun-route/data/m03-180950.png"),
-    ("rerun-route/data/m03-matty-go-cam-260330_181028.log", "rerun-route/data/m03-181028.png")
-]
-
-for log, out in logs:
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print("Usage: extract_first_frame.py <logfile> <output_image>")
+        sys.exit(1)
+    
+    log = sys.argv[1]
+    out = sys.argv[2]
     if extract_first_frame(log, out):
         print(f"Extracted first frame from {log} to {out}")
     else:

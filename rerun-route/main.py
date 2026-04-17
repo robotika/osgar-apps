@@ -201,6 +201,7 @@ class RerunRoute(Node):
         best_ref_frame = None
         best_ref_kp = None
 
+        best_M = None
         for i, ref in enumerate(self.ref_data):
             matches = self.bf.match(des, ref['des'])
             good = [m for m in matches if m.distance < 50]
@@ -215,6 +216,7 @@ class RerunRoute(Node):
                         best_inliers = inliers
                         best_pose = ref['pose']
                         best_rot_rad = -math.atan2(M[1,0], M[0,0])
+                        best_M = M
                         best_mask = mask
                         best_matches = good
                         best_ref_frame = ref.get('frame')
@@ -225,9 +227,13 @@ class RerunRoute(Node):
             ref_heading = best_pose[2]
             abs_query_heading = ref_heading - best_rot_rad
             
+            # Simple translation estimation: M[0,2] and M[1,2] are tx, ty in pixels.
+            # Without depth, we can't accurately map pixels to meters, but we can
+            # at least log them for now or use a heuristic.
+            tx, ty = best_M[0,2], best_M[1,2]
+            
             print(f"Match found! Inliers: {best_inliers}, Ref Pose: {best_pose[:2]}, Ref Heading: {math.degrees(ref_heading):.1f} deg, Image Rot: {math.degrees(best_rot_rad):.1f} deg")
-            print(f"Calculated Absolute Query Heading: {math.degrees(abs_query_heading):.1f} deg")
-            print(f"DEBUG: best_ref_idx={best_ref_idx}, ref_data[idx]['pose']={self.ref_data[best_ref_idx]['pose']}")
+            print(f"Image translation tx: {tx:.1f}, ty: {ty:.1f} (pixels)")
             
             if self.visualize_alignment and best_ref_frame is not None and best_ref_kp is not None:
                 draw_params = dict(matchColor = (0,255,0),
@@ -235,15 +241,30 @@ class RerunRoute(Node):
                                matchesMask = best_mask.flatten().tolist(),
                                flags = 2)
                 vis_img = cv2.drawMatches(img, kp, best_ref_frame, best_ref_kp, best_matches, None, **draw_params)
-                out_path = "rerun-route/data/alignment_match.png"
+                out_path = os.path.join(os.path.dirname(self.logfile), "alignment_match.png")
                 cv2.imwrite(out_path, vis_img)
                 print(f"Saved alignment visualization to {out_path}")
 
             self.pose_offset = [best_pose[0], best_pose[1], abs_query_heading]
             self.state = self.STATE_DRIVING
-            print(f"Switched to STATE_DRIVING with offset {self.pose_offset}")
+            print(f"Switched to STATE_DRIVING at {best_pose[:2]} with heading {math.degrees(abs_query_heading):.1f} deg")
+            
+            # Important: We need to feed the CURRENT (corrected) pose to FollowPath immediately
+            # so it doesn't use the old [0,0,0] which might be far away.
+            # The on_pose2d will be called with next incoming data, but let's force an update.
+            # Actually, we don't have the raw 'data' here, but we know it's approx [0,0,0].
+            # Let's wait for the next on_pose2d call which will happen very soon.
         else:
             print(f"Alignment failed (best inliers: {best_inliers} at ref_idx {best_ref_idx})")
+            if self.visualize_alignment and best_inliers > 5 and best_ref_frame is not None:
+                draw_params = dict(matchColor = (0,0,255),
+                               singlePointColor = None,
+                               matchesMask = best_mask.flatten().tolist(),
+                               flags = 2)
+                vis_img = cv2.drawMatches(img, kp, best_ref_frame, best_ref_kp, best_matches, None, **draw_params)
+                out_path = os.path.join(os.path.dirname(self.logfile), "alignment_failed.png")
+                cv2.imwrite(out_path, vis_img)
+                print(f"Saved failed alignment visualization to {out_path}")
 
     def on_emergency_stop(self, data):
         if data:
