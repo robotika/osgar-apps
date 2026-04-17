@@ -103,9 +103,9 @@ class RerunRoute(Node):
     def resolve_path(self, path):
         if path is None or os.path.isabs(path):
             return path
-        if self.root_path:
-            return os.path.join(self.root_path, path)
-        return path
+        # Always use the directory of main.py as the single base for relative paths
+        app_dir = os.path.dirname(__file__)
+        return os.path.join(app_dir, path)
 
     def load_reference_images(self, ref_dir):
         print(f"Loading reference images from {ref_dir}...")
