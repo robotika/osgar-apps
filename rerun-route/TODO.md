@@ -14,13 +14,13 @@
 - [ ] Evaluate 2026-04-16 logs to analyze "slightly off" path behavior
 - [ ] Improve translation (x, y) estimation from visual landmarks (current estimation is "nearest landmark" only)
 - [ ] Implement "Joining" state to navigate from current position to the nearest point on the route
-- [ ] IMU integration for stable heading correction during the run
 
 ## Future Enhancements [ ]
 - [ ] Performance optimization (caching ORB descriptors for reference logs)
 - [ ] OAK-D Pro hardware offloading for feature tracking
 - [ ] Robustness to more significant lighting changes
 - [ ] Robust path resolution relative to `root_path` config (after OSGAR release)
+- [ ] IMU integration for stable heading correction during the run
 
 ## OSGAR Improvements [ ]
 - [ ] Propose/Implement `resolve_path(config, path)` in OSGAR core to handle absolute/relative paths robustly across environments.
