@@ -73,8 +73,11 @@ class RerunRoute(Node):
         self.join_threshold = config.get('join_threshold', 0.5)
         
         # OAK-D THE_1080_P approximate intrinsics
-        self.camera_matrix = np.array([[1400.0, 0, 960.0],
-                                       [0, 1400.0, 540.0],
+        # TODO: These should be provided by the camera driver or calibrated for the specific resolution.
+        # Currently, they assume 1920x1080 (THE_1080_P).
+        intrinsics = config.get('intrinsics', [1400.0, 1400.0, 960.0, 540.0]) # fx, fy, cx, cy
+        self.camera_matrix = np.array([[intrinsics[0], 0, intrinsics[2]],
+                                       [0, intrinsics[1], intrinsics[3]],
                                        [0, 0, 1.0]], dtype=float)
         self.dist_coeffs = np.zeros((4,1)) # Assuming no distortion for now
 
