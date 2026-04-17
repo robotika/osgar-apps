@@ -36,27 +36,12 @@ def extract_reference_data(log_path, step_meters=0.2, min_brightness=30.0, orb=N
     fx, fy = 1400.0, 1400.0
     cx, cy = 960.0, 540.0
 
-    # 1. Get raw video for processing
-    with tempfile.NamedTemporaryFile(suffix='.h265', delete=False) as tmp:
-        tmp_name = tmp.name
-    
     print(f"Extracting video from {log_path}...")
     color_stream = lookup_stream_id(log_path, "oak.color")
-    with open(tmp_name, 'wb') as f:
-        with LogReader(log_path, only_stream_id=color_stream) as log:
-            for timestamp, stream_id, data in log:
-                f.write(deserialize(data))
-    
-    cap = cv2.VideoCapture(tmp_name)
-    if not cap.isOpened():
-        print("Failed to open video stream.")
-        os.unlink(tmp_name)
-        return []
-
-    # 2. Extract pose2d and depth data with timestamps
     pose_stream = lookup_stream_id(log_path, "platform.pose2d")
     depth_stream = lookup_stream_id(log_path, "oak.depth")
-    
+
+    # 1. Extract pose2d and depth data with timestamps
     pose_history = []
     with LogReader(log_path, only_stream_id=pose_stream) as log:
         for timestamp, stream_id, data in log:
@@ -70,18 +55,35 @@ def extract_reference_data(log_path, step_meters=0.2, min_brightness=30.0, orb=N
     except Exception as e:
         print(f"Warning: No depth stream found ({e}). Translation refinement will be limited.")
 
-    # 3. Second pass: correlate and extract features
+    # 2. Correlate and extract features via in-memory decoding
     print("Extracting visual landmarks...")
+    import av
+    codec = av.CodecContext.create('hevc', 'r')
+
     ref_data = []
     last_x, last_y = None, None
     frame_idx = 0
-    
+
     with LogReader(log_path, only_stream_id=color_stream) as log:
         for timestamp, stream_id, data in log:
-            ret, frame = cap.read()
-            if not ret:
-                break
-            
+            raw_data = deserialize(data)
+            try:
+                packets = codec.parse(raw_data)
+            except av.AVError:
+                continue
+
+            frame = None
+            for packet in packets:
+                try:
+                    frames = codec.decode(packet)
+                    if frames:
+                        frame = frames[-1].to_ndarray(format='bgr24')
+                except av.AVError:
+                    continue
+
+            if frame is None:
+                continue
+
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             brightness = cv2.mean(gray)[0]
             
@@ -127,8 +129,6 @@ def extract_reference_data(log_path, step_meters=0.2, min_brightness=30.0, orb=N
                     last_x, last_y = x, y
             frame_idx += 1
 
-    cap.release()
-    os.unlink(tmp_name)
     print(f"Extracted {len(ref_data)} visual landmarks.")
     return ref_data
 
