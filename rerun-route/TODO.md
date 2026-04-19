@@ -10,7 +10,7 @@
 - [X] Emergency STOP termination logic (via `EmergencyStopException`)
 - [X] "Standard Development Procedure" documentation (`GEMINI.md`, `DEVELOPMENT.md`)
 
-## Current Goals [ ]
+## Current Goals [X]
 - [X] Evaluate 2026-04-16 logs to analyze "slightly off" path behavior:
     - [X] `m03-reroute-auto-260416_183343.log` - Short run, matched OK
     - [X] `m03-reroute-auto-260416_183423.log` - Short run
@@ -19,7 +19,6 @@
     - [X] `m03-reroute-auto-260416_183742.log` - Longer run, matched OK
 - [X] Improve translation (x, y) estimation from visual landmarks (solvePnP with Depth)
 - [X] Implement "Joining" state to navigate from current position to the nearest point on the route
-- [ ] Investigate 183742 replay assertion failure (why is it not 1:1?)
 
 ## Future Enhancements [ ]
 - [ ] Active "look around" search if initial alignment fails

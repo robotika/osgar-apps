@@ -2,7 +2,7 @@
 
 This document outlines the roadmap for the `rerun-route` application, moving from simple odometry-based path following to a robust, sensor-fused navigation system.
 
-## Version 0: Odometry-based Following (Current)
+## Version 0: Odometry-based Following
 *   **Goal:** Basic path following using recorded `pose2d` data.
 *   **Mechanism:**
     *   Extract `(x, y)` coordinates from an OSGAR log file.
