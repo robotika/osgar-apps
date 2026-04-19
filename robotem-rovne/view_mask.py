@@ -45,7 +45,7 @@ def read_h264_image(data, i_frame_only=True):
     return image
 
 
-def read_logfile(logfile, writer=None, add_time=True, threshold=None):
+def read_logfile(logfile, writer=None, add_time=True, threshold=None, downscale=1, fast=False):
     if threshold is None:
         nn_mask_stream = lookup_stream_id(logfile, 'oak.nn_mask')
     else:
@@ -70,7 +70,7 @@ def read_logfile(logfile, writer=None, add_time=True, threshold=None):
                 orig_height, orig_width = mask.shape
 #                mask[:height//2, :] = 0  # remove sky detections
                 center_y, center_x = mask_center(mask)
-                mask = cv2.resize(mask, (1920, 1080))
+                mask = cv2.resize(mask, (1920//downscale, 1080//downscale))
                 height, width = mask.shape
                 scale = width // orig_width  # 160 -> 640 -> 1920
                 center_x *= scale
@@ -125,7 +125,9 @@ def read_logfile(logfile, writer=None, add_time=True, threshold=None):
                     break
 
             elif stream_id == img_stream:
-                img = read_h264_image(deserialize(data), i_frame_only=not mear_the_end)
+                img = read_h264_image(deserialize(data), i_frame_only=fast and not mear_the_end)
+                if img is not None:
+                    img = cv2.resize(img, (1920//downscale, 1080//downscale))
             elif stream_id == pose2d_stream:
                 pose2d = deserialize(data)
                 dist += math.hypot((pose2d[0] - prev[0]) / 1000.0, (pose2d[1] - prev[1]) / 1000.0)
@@ -144,11 +146,13 @@ def main():
     parser.add_argument('logfile', nargs='+', help='recorded log file(s)')
     parser.add_argument('--create-video', help='filename of output video')
     parser.add_argument('--threshold', '-t', type=int, help='threshold value for redroad detection')
+    parser.add_argument('--fast', help='faster video except near end', action='store_true')
+    parser.add_argument('--downscale', type=int, help='downscale image with given factor', default=2)
     args = parser.parse_args()
 
     if args.create_video is not None:
-        fps = 20
-        width, height = 1920, 1080
+        fps = 20 if args.fast else 10
+        width, height = 1920//args.downscale, 1080//args.downscale
         writer = cv2.VideoWriter(args.create_video,
                                  cv2.VideoWriter_fourcc(*"mp4v"),
                                  fps,
@@ -157,7 +161,7 @@ def main():
         writer = None  # no video writer
 
     for logfile in args.logfile:
-        read_logfile(logfile, writer=writer, threshold=args.threshold)
+        read_logfile(logfile, writer=writer, threshold=args.threshold, downscale=args.downscale, fast=args.fast)
 
     if writer is not None:
         writer.release()
