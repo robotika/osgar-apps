@@ -13,6 +13,7 @@ dependencies = [
     "numpy==1.22.0",
     "opencv-python==4.7.0.72",
     "osgar",
+    "ruff>=0.15.11",
     "setuptools<70",
     "shapely==2.0.1",
     "speechrecognition==3.14.3",
@@ -27,3 +28,11 @@ package = false
 
 [tool.uv.sources]
 osgar = { git = "https://github.com/robotika/osgar.git", rev = "master" }
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = []
