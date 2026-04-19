@@ -13,6 +13,7 @@ dependencies = [
     "numpy==1.22.0",
     "opencv-python==4.7.0.72",
     "osgar",
+    "setuptools<70",
     "shapely==2.0.1",
     "speechrecognition==3.14.3",
 ]
