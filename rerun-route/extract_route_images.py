@@ -1,11 +1,10 @@
-import cv2
-import os
 import math
-import subprocess
-import tempfile
-import re
-from osgar.logger import LogReader, lookup_stream_id
+import os
+
+import cv2
 from osgar.lib.serialize import deserialize
+from osgar.logger import LogReader, lookup_stream_id
+
 
 def get_closest_data(ts, history):
     if not history:
@@ -86,7 +85,7 @@ def extract_reference_data(log_path, step_meters=0.2, min_brightness=30.0, orb=N
 
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             brightness = cv2.mean(gray)[0]
-            
+
             if brightness < min_brightness:
                 frame_idx += 1
                 continue
@@ -114,11 +113,11 @@ def extract_reference_data(log_path, step_meters=0.2, min_brightness=30.0, orb=N
                                     kp_3d.append((xc, yc, z))
                                 else:
                                     kp_3d.append(None)
-                        
+
                         ref_data.append({
-                            'kp': kp, 
-                            'des': des, 
-                            'pose': (x, y, h), 
+                            'kp': kp,
+                            'des': des,
+                            'pose': (x, y, h),
                             'kp_3d': kp_3d,
                             'frame': frame.copy()
                         })
@@ -144,5 +143,5 @@ if __name__ == "__main__":
     parser.add_argument("--step", type=float, default=0.1)
     parser.add_argument("--min-brightness", type=float, default=30.0)
     args = parser.parse_args()
-    
+
     extract_route_images(args.logfile, args.out, args.step, args.min_brightness)
