@@ -1,20 +1,26 @@
 """
   Rerun Route from OSGAR log with Visual Alignment
 """
+import glob
 import math
 import os
+import re
+import sys
+
+# Ensure we can find local modules
+if os.path.dirname(__file__) not in sys.path:
+    sys.path.append(os.path.dirname(__file__))
+
 import av
 import cv2
 import numpy as np
-import glob
-import re
-
-from osgar.node import Node
+from extract_route_images import extract_reference_data
 from osgar.bus import BusShutdownException
 from osgar.followme import EmergencyStopException
 from osgar.followpath import FollowPath, Route
-from osgar.logger import LogReader, lookup_stream_id
 from osgar.lib.serialize import deserialize
+from osgar.logger import LogReader, lookup_stream_id
+from osgar.node import Node
 
 
 class VideoDecoder:
@@ -42,19 +48,14 @@ class VideoDecoder:
             except av.AVError as e:
                 print(f"Warning: Failed to decode video packet: {e}")
                 continue
-        
+
         if frames:
             # We return the last frame decoded in this batch
             # Convert it directly to a numpy array in OpenCV's BGR format
             return frames[-1].to_ndarray(format='bgr24')
-        
+
         return None
 
-
-import sys
-# Ensure we can find local modules
-sys.path.append(os.path.dirname(__file__))
-from extract_route_images import extract_reference_data
 
 class RerunRoute(Node):
     STATE_WAIT_FOR_IMAGE = 0
@@ -74,7 +75,7 @@ class RerunRoute(Node):
         self.min_inliers = config.get('min_inliers', 20)
         self.visualize_alignment = config.get('visualize_alignment', False)
         self.join_threshold = config.get('join_threshold', 0.5)
-        
+
         # OAK-D THE_1080_P approximate intrinsics
         # TODO: These should be provided by the camera driver or calibrated for the specific resolution.
         # Currently, they assume 1920x1080 (THE_1080_P).
@@ -103,7 +104,7 @@ class RerunRoute(Node):
 
         self.app = FollowPath(config, bus)
         self.app.route = Route(pts=self.path)
-        
+
         # Override app methods to use this node's bus
         self.app.publish = self.my_publish
         self.app.listen = self.my_listen
@@ -171,24 +172,24 @@ class RerunRoute(Node):
     def on_pose2d(self, data):
         # Raw data from robot platform (starts at 0,0,0)
         x, y, heading = data
-        
+
         # 1. Apply rotation first
         heading_rad = math.radians(heading / 100.0)
         corrected_heading_rad = heading_rad + self.pose_offset[2]
-        
+
         # 2. Apply translation
         c, s = math.cos(self.pose_offset[2]), math.sin(self.pose_offset[2])
         rel_x, rel_y = x / 1000.0, y / 1000.0
-        
+
         abs_x = self.pose_offset[0] + rel_x * c - rel_y * s
         abs_y = self.pose_offset[1] + rel_x * s + rel_y * c
-        
+
         corrected_data = [
             int(abs_x * 1000),
             int(abs_y * 1000),
             int(math.degrees(corrected_heading_rad) * 100)
         ]
-        
+
         if self.state == self.STATE_DRIVING:
             self.app.on_pose2d(corrected_data)
         elif self.state == self.STATE_JOINING:
@@ -205,7 +206,7 @@ class RerunRoute(Node):
 
         target_pt = second[0]
         dist = math.hypot(target_pt[1] - y, target_pt[0] - x)
-        
+
         if dist < self.join_threshold:
             print(f"Joined path (dist {dist:.2f}m). Switching to STATE_DRIVING.")
             self.state = self.STATE_DRIVING
@@ -216,12 +217,12 @@ class RerunRoute(Node):
         diff = target_angle - heading
         # Normalize to -pi, pi
         diff = (diff + math.pi) % (2 * math.pi) - math.pi
-        
+
         # Proportional control for steering
         max_angular = math.radians(45)
         angular_speed = 1.0 * diff
         angular_speed = max(min(angular_speed, max_angular), -max_angular)
-        
+
         # Send speed command
         self.publish('desired_speed', [round(self.app.max_speed * 1000), round(math.degrees(angular_speed) * 100)])
 
@@ -257,7 +258,7 @@ class RerunRoute(Node):
         for i, ref in enumerate(self.ref_data):
             matches = self.bf.match(des, ref['des'])
             good = [m for m in matches if m.distance < 50]
-            
+
             if len(good) >= 10:
                 # Try PnP if we have 3D points
                 ref_kp3d = ref.get('kp_3d')
@@ -269,14 +270,14 @@ class RerunRoute(Node):
                         if p3d is not None:
                             obj_pts.append(p3d)
                             img_pts.append(kp[m.queryIdx].pt)
-                    
+
                     if len(obj_pts) >= 10:
                         obj_pts = np.array(obj_pts, dtype=float)
                         img_pts = np.array(img_pts, dtype=float)
                         ret, rvec, tvec, inliers_indices = cv2.solvePnPRansac(
                             obj_pts, img_pts, self.camera_matrix, self.dist_coeffs,
                             reprojectionError=5.0, iterationsCount=100)
-                        
+
                         if ret:
                             inliers = len(inliers_indices)
                             if inliers > best_inliers:
@@ -309,33 +310,36 @@ class RerunRoute(Node):
 
         if best_inliers >= self.min_inliers:
             ref_x, ref_y, ref_heading = best_pose
-            
+
             if best_rvec is not None:
                 # Calculate absolute pose from PnP result
                 R, _ = cv2.Rodrigues(best_rvec)
                 pos_in_ref = -R.T @ best_tvec
                 dx, dy = pos_in_ref[0,0], pos_in_ref[2,0]
                 yaw_diff = -best_rvec[1,0]
-                
+
                 c, s = math.cos(ref_heading), math.sin(ref_heading)
                 abs_x = ref_x + dx * c - dy * s
                 abs_y = ref_y + dx * s + dy * c
                 abs_heading = ref_heading + yaw_diff
-                
-                print(f"Match found (PnP)! Inliers: {best_inliers}, Ref Pose: {best_pose[:2]}, Offset: ({dx:.2f}, {dy:.2f})m, yaw: {math.degrees(yaw_diff):.1f} deg")
+
+                print(f"Match found (PnP)! Inliers: {best_inliers}, "
+                      f"Ref Pose: {best_pose[:2]}, "
+                      f"Offset: ({dx:.2f}, {dy:.2f})m, "
+                      f"yaw: {math.degrees(yaw_diff):.1f} deg")
             else:
                 # Fallback to simple snap
                 abs_x, abs_y, abs_heading = ref_x, ref_y, ref_heading
                 print(f"Match found (Snap)! Inliers: {best_inliers}, Ref Pose: {best_pose[:2]}")
 
             self.pose_offset = [abs_x, abs_y, abs_heading]
-            
+
             # Transition to JOINING or DRIVING
             first, second = self.app.route.routeSplit((abs_x, abs_y))
             dist = 0.0
             if len(second) > 0:
                 dist = math.hypot(second[0][1] - abs_y, second[0][0] - abs_x)
-            
+
             if dist > self.join_threshold:
                 self.state = self.STATE_JOINING
                 print(f"State: STATE_JOINING (dist to path: {dist:.2f}m)")
