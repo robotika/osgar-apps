@@ -239,7 +239,7 @@ class RerunRoute(Node):
         if brightness < self.min_brightness:
             return
 
-        print(f"Image quality OK (brightness {brightness:.1f}). Aligning...")
+        print(self.time, f"Image quality OK (brightness {brightness:.1f}). Aligning...")
         kp, des = self.orb.detectAndCompute(img, None)
         if des is None or len(des) < 10:
             return
@@ -323,14 +323,14 @@ class RerunRoute(Node):
                 abs_y = ref_y + dx * s + dy * c
                 abs_heading = ref_heading + yaw_diff
 
-                print(f"Match found (PnP)! Inliers: {best_inliers}, "
+                print(self.time, f"Match found (PnP)! Inliers: {best_inliers}, "
                       f"Ref Pose: {best_pose[:2]}, "
                       f"Offset: ({dx:.2f}, {dy:.2f})m, "
                       f"yaw: {math.degrees(yaw_diff):.1f} deg")
             else:
                 # Fallback to simple snap
                 abs_x, abs_y, abs_heading = ref_x, ref_y, ref_heading
-                print(f"Match found (Snap)! Inliers: {best_inliers}, Ref Pose: {best_pose[:2]}")
+                print(self.time, f"Match found (Snap)! Inliers: {best_inliers}, Ref Pose: {best_pose[:2]}")
 
             self.pose_offset = [abs_x, abs_y, abs_heading]
 
@@ -342,12 +342,12 @@ class RerunRoute(Node):
 
             if dist > self.join_threshold:
                 self.state = self.STATE_JOINING
-                print(f"State: STATE_JOINING (dist to path: {dist:.2f}m)")
+                print(self.time, f"State: STATE_JOINING (dist to path: {dist:.2f}m)")
             else:
                 self.state = self.STATE_DRIVING
-                print(f"State: STATE_DRIVING (dist to path: {dist:.2f}m)")
+                print(self.time, f"State: STATE_DRIVING (dist to path: {dist:.2f}m)")
         else:
-            print(f"Alignment failed (best inliers: {best_inliers} at ref_idx {best_ref_idx})")
+            print(self.time, f"Alignment failed (best inliers: {best_inliers} at ref_idx {best_ref_idx})")
             if self.visualize_alignment and best_inliers > 5 and best_ref_frame is not None:
                 mask_list = best_mask.astype(int).flatten().tolist()
                 draw_params = dict(matchColor = (0,0,255),
@@ -361,7 +361,7 @@ class RerunRoute(Node):
 
     def on_emergency_stop(self, data):
         if data:
-            print("!!!Emergency STOP!!!")
+            print(self.time, "!!!Emergency STOP!!!")
             raise EmergencyStopException()
         self.app.on_emergency_stop(data)
 
