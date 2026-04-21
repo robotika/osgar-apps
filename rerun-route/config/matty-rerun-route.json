@@ -4,7 +4,7 @@
     "modules": {
       "app": {
           "driver": "rerun-route.main:RerunRoute",
-          "in": ["emergency_stop", "pose2d", "obstacle", "color", "depth", "desired_speed"],
+          "in": ["emergency_stop", "pose2d", "obstacle", "color", "depth"],
           "out": ["desired_speed"],
           "init": {
             "logfile": "data/m03-matty-redroad-260415_173111.log",
