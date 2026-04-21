@@ -1,6 +1,7 @@
 import math
 import os
 
+import av
 import cv2
 from osgar.lib.serialize import deserialize
 from osgar.logger import LogReader, lookup_stream_id
@@ -56,7 +57,6 @@ def extract_reference_data(log_path, step_meters=0.2, min_brightness=30.0, orb=N
 
     # 2. Correlate and extract features via in-memory decoding
     print("Extracting visual landmarks...")
-    import av
     codec = av.CodecContext.create('hevc', 'r')
 
     ref_data = []
