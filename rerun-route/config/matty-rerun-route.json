@@ -4,13 +4,17 @@
     "modules": {
       "app": {
           "driver": "rerun-route.main:RerunRoute",
-          "in": ["emergency_stop", "pose2d", "obstacle"],
+          "in": ["emergency_stop", "pose2d", "obstacle", "color", "depth", "desired_speed"],
           "out": ["desired_speed"],
           "init": {
-            "logfile": "last-run.log",
+            "logfile": "data/m03-matty-redroad-260415_173111.log",
             "pose2d_stream": "platform.pose2d",
-            "max_speed": 0.5,
+            "debug_dir": "data/auto_ref_debug",
+            "max_speed": 0.2,
             "obstacle_stop_dist": 0.4,
+            "min_inliers": 20,
+            "visualize_alignment": true,
+            "join_threshold": 0.5,
             "timeout": 30
           }
       },
@@ -67,11 +71,14 @@
     "links": [
       ["app.desired_speed", "platform.desired_steering"],
       ["platform.pose2d", "app.pose2d"],
+      ["platform.emergency_stop", "app.emergency_stop"],
       ["serial.raw", "platform.esp_data"],
       ["platform.esp_data", "serial.raw"],
       ["timer.tick", "platform.tick"],
       ["oak.depth", "obstdet3d.depth"],
-      ["obstdet3d.obstacle", "app.obstacle"]
+      ["oak.depth", "app.depth"],
+      ["obstdet3d.obstacle", "app.obstacle"],
+      ["oak.color", "app.color"]
     ]
   }
 }
