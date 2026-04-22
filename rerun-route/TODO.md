@@ -23,6 +23,7 @@
 ## Future Enhancements [ ]
 - [ ] Handle situation when start pose does not match
 - [ ] Use only the latest image if processing is slow
+- [ ] Visualize original pose2d path with new path (offline)
 - [ ] Active "look around" search if initial alignment fails
 - [ ] Performance optimization (caching ORB descriptors for reference logs)
 - [ ] OAK-D Pro hardware offloading for feature tracking
