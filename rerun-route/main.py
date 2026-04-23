@@ -76,6 +76,12 @@ class RerunRoute(Node):
         self.visualize_alignment = config.get('visualize_alignment', False)
         self.join_threshold = config.get('join_threshold', 0.5)
 
+        # Continuous drift correction parameters
+        self.match_distance_step = config.get('match_distance_step', 1.0)
+        self.match_time_step = config.get('match_time_step', 2.0)
+        self.match_window_size = config.get('match_window_size', 3)
+        self.pose_filter_alpha = config.get('pose_filter_alpha', 0.1)
+
         # OAK-D THE_1080_P approximate intrinsics
         # TODO: These should be provided by the camera driver or calibrated for the specific resolution.
         # Currently, they assume 1920x1080 (THE_1080_P).
@@ -114,6 +120,13 @@ class RerunRoute(Node):
         self.pose_offset = [0.0, 0.0, 0.0] # x, y, heading_rad
         self.last_depth = None
         self.decoder = VideoDecoder(codec_name='hevc')
+
+        # Continuous tracking state
+        self.last_match_time = None
+        self.last_match_pose = None
+        self.last_raw_pose = (0.0, 0.0, 0.0)
+        self.current_ref_idx = -1
+
         print(f"Initial state: {self.state}")
 
     def resolve_path(self, path):
@@ -172,9 +185,10 @@ class RerunRoute(Node):
     def on_pose2d(self, data):
         # Raw data from robot platform (starts at 0,0,0)
         x, y, heading = data
+        heading_rad = math.radians(heading / 100.0)
+        self.last_raw_pose = (x / 1000.0, y / 1000.0, heading_rad)
 
         # 1. Apply rotation first
-        heading_rad = math.radians(heading / 100.0)
         corrected_heading_rad = heading_rad + self.pose_offset[2]
 
         # 2. Apply translation
@@ -183,6 +197,9 @@ class RerunRoute(Node):
 
         abs_x = self.pose_offset[0] + rel_x * c - rel_y * s
         abs_y = self.pose_offset[1] + rel_x * s + rel_y * c
+
+        if self.state != self.STATE_WAIT_FOR_IMAGE:
+             print(self.time, f"Pose: raw({rel_x:.2f}, {rel_y:.2f}, {math.degrees(heading_rad):.1f}) -> corr({abs_x:.2f}, {abs_y:.2f}, {math.degrees(corrected_heading_rad):.1f})")
 
         corrected_data = [
             int(abs_x * 1000),
@@ -227,22 +244,41 @@ class RerunRoute(Node):
         self.publish('desired_speed', [round(self.app.max_speed * 1000), round(math.degrees(angular_speed) * 100)])
 
     def on_color(self, data):
-        if self.state != self.STATE_WAIT_FOR_IMAGE:
-            return
-
         img = self.decoder.decode(data)
         if img is None:
             return
+
+        # Throttling for continuous tracking
+        if self.state == self.STATE_DRIVING:
+            if self.last_match_time is not None:
+                time_passed = (self.time - self.last_match_time).total_seconds()
+                dist_passed = 0.0
+                if self.last_match_pose is not None:
+                    raw_x, raw_y, _ = self.last_raw_pose
+                    c, s = math.cos(self.pose_offset[2]), math.sin(self.pose_offset[2])
+                    abs_x = self.pose_offset[0] + raw_x * c - raw_y * s
+                    abs_y = self.pose_offset[1] + raw_x * s + raw_y * c
+                    dist_passed = math.hypot(abs_x - self.last_match_pose[0], abs_y - self.last_match_pose[1])
+                
+                if time_passed < self.match_time_step and dist_passed < self.match_distance_step:
+                    return
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         brightness = cv2.mean(gray)[0]
         if brightness < self.min_brightness:
             return
 
-        print(self.time, f"Image quality OK (brightness {brightness:.1f}). Aligning...")
         kp, des = self.orb.detectAndCompute(img, None)
         if des is None or len(des) < 10:
             return
+
+        # Determine search window
+        if self.current_ref_idx == -1:
+            search_indices = range(len(self.ref_data))
+        else:
+            start = max(0, self.current_ref_idx - self.match_window_size)
+            end = min(len(self.ref_data), self.current_ref_idx + self.match_window_size + 1)
+            search_indices = range(start, end)
 
         best_inliers = 0
         best_pose = None
@@ -255,7 +291,8 @@ class RerunRoute(Node):
         best_ref_frame = None
         best_ref_kp = None
 
-        for i, ref in enumerate(self.ref_data):
+        for i in search_indices:
+            ref = self.ref_data[i]
             matches = self.bf.match(des, ref['des'])
             good = [m for m in matches if m.distance < 50]
 
@@ -332,22 +369,44 @@ class RerunRoute(Node):
                 abs_x, abs_y, abs_heading = ref_x, ref_y, ref_heading
                 print(self.time, f"Match found (Snap)! Inliers: {best_inliers}, Ref Pose: {best_pose[:2]}")
 
-            self.pose_offset = [abs_x, abs_y, abs_heading]
+            # Calculate the origin offset relative to raw (0,0,0) odometry
+            raw_x, raw_y, raw_heading = self.last_raw_pose
+            h_off = abs_heading - raw_heading
+            c, s = math.cos(h_off), math.sin(h_off)
+            target_x_off = abs_x - (raw_x * c - raw_y * s)
+            target_y_off = abs_y - (raw_x * s + raw_y * c)
+            target_offset = [target_x_off, target_y_off, h_off]
 
-            # Transition to JOINING or DRIVING
-            first, second = self.app.route.routeSplit((abs_x, abs_y))
-            dist = 0.0
-            if len(second) > 0:
-                dist = math.hypot(second[0][1] - abs_y, second[0][0] - abs_x)
+            if self.state == self.STATE_WAIT_FOR_IMAGE:
+                self.pose_offset = target_offset
+                # Transition to JOINING or DRIVING
+                first, second = self.app.route.routeSplit((abs_x, abs_y))
+                dist = 0.0
+                if len(second) > 0:
+                    dist = math.hypot(second[0][1] - abs_y, second[0][0] - abs_x)
 
-            if dist > self.join_threshold:
-                self.state = self.STATE_JOINING
-                print(self.time, f"State: STATE_JOINING (dist to path: {dist:.2f}m)")
+                if dist > self.join_threshold:
+                    self.state = self.STATE_JOINING
+                    print(self.time, f"State: STATE_JOINING (dist to path: {dist:.2f}m)")
+                else:
+                    self.state = self.STATE_DRIVING
+                    print(self.time, f"State: STATE_DRIVING (dist to path: {dist:.2f}m)")
             else:
-                self.state = self.STATE_DRIVING
-                print(self.time, f"State: STATE_DRIVING (dist to path: {dist:.2f}m)")
+                # Smoothly update offset during driving
+                alpha = self.pose_filter_alpha
+                self.pose_offset[0] = (1 - alpha) * self.pose_offset[0] + alpha * target_offset[0]
+                self.pose_offset[1] = (1 - alpha) * self.pose_offset[1] + alpha * target_offset[1]
+                # Heading smoothing with wrap-around
+                diff = target_offset[2] - self.pose_offset[2]
+                diff = (diff + math.pi) % (2 * math.pi) - math.pi
+                self.pose_offset[2] += alpha * diff
+
+            self.last_match_time = self.time
+            self.last_match_pose = (abs_x, abs_y)
+            self.current_ref_idx = best_ref_idx
         else:
-            print(self.time, f"Alignment failed (best inliers: {best_inliers} at ref_idx {best_ref_idx})")
+            if self.state == self.STATE_WAIT_FOR_IMAGE:
+                print(self.time, f"Alignment failed (best inliers: {best_inliers} at ref_idx {best_ref_idx})")
             if self.visualize_alignment and best_inliers > 5 and best_ref_frame is not None:
                 mask_list = best_mask.astype(int).flatten().tolist()
                 draw_params = dict(matchColor = (0,0,255),
