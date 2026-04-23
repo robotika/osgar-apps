@@ -33,6 +33,9 @@ This document tracks research and implementation efforts for validating and impr
 ### 4. Offline Analysis Workflow
 *   **Log Batch Processing:** Script to iterate through a folder of logs, extract features, and report alignment statistics.
 *   **Relative Consistency:** Since high-precision GPS or LIDAR is unavailable, "ground truth" must be established through relative metrics. This involves checking visual consistency (loop closure, feature persistence) against "relatively good" odometry.
+*   **Area-Based Consistency & Cross-Log Validation:** Many recordings are likely from the same physical area (e.g., "redroad"). 
+    *   **Systematic Bias:** By analyzing multiple logs from the same area, we can identify if calibration errors are consistent across runs, helping distinguish between sensor noise and systematic misalignment.
+    *   **Cross-Log Matching:** Attempt to match ORB features and 3D points between different logs of the same area to verify that our projections remain stable across different time-of-day or lighting conditions.
 
 ## Implementation Plan
 
