@@ -55,3 +55,27 @@ This document tracks research and implementation efforts for validating and impr
 *   **Depth-on-Color Overlay:** Semi-transparent colorization of the RGB image based on depth values.
 *   **3D Feature Plot:** 3D scatter plot of matched features to see if they form a coherent structure.
 *   **Re-projection Viz:** Draw circles for original 2D keypoints and crosses for projected 3D points.
+
+## Alternative Approaches
+
+### 1. Stereo-First Approach (Bypassing RGB-Depth Alignment)
+Instead of matching ORB features on the RGB image and then looking up depth, perform feature detection and matching directly on the synchronized Left and Right mono streams. 
+*   **Goal:** Calculate 3D positions from stereo disparity of features.
+*   **Advantage:** Bypasses RGB-to-Depth alignment and FOV matching issues.
+
+### 2. Edge-Based Alignment (Geometric Consistency)
+Detect edges in the Color image (Canny/Sobel) and compare them with "depth edges" (where depth jumps occur).
+*   **Goal:** Use correlation between edge maps to calculate a dynamic translation or scaling factor to "snap" the depth map to the color frame.
+*   **Advantage:** Corrects based on actual data rather than relying solely on static factory intrinsics.
+
+### 3. Structure from Motion (SfM) Refinement
+Use a sequence of Color frames to build a sparse 3D point cloud using SfM (color only).
+*   **Goal:** Compare the scale and structure of this cloud with the OAK-D Depth data to identify systematic warping or scale issues.
+
+### 4. Mutual Information Alignment
+Treat color and depth images as two different modalities and maximize the "Statistical Mutual Information" between them by adjusting camera parameters.
+*   **Advantage:** Robust to lighting changes and noisy depth data.
+
+### 5. Multi-Frame Depth Averaging (Temporal Filter)
+Aggregate depth data over several frames (especially when moving slowly) to fill "holes" and reduce noise in the 3D points used for `solvePnP`.
+*   **Advantage:** Improves reliability of the 3D matching component without needing better single-frame calibration.
