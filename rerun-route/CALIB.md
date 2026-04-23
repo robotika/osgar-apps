@@ -32,7 +32,7 @@ This document tracks research and implementation efforts for validating and impr
 
 ### 4. Offline Analysis Workflow
 *   **Log Batch Processing:** Script to iterate through a folder of logs, extract features, and report alignment statistics.
-*   **Ground Truth Comparison:** If GPS or high-quality SLAM data is available, compare the PnP estimated pose against it.
+*   **Relative Consistency:** Since high-precision GPS or LIDAR is unavailable, "ground truth" must be established through relative metrics. This involves checking visual consistency (loop closure, feature persistence) against "relatively good" odometry.
 
 ## Implementation Plan
 
@@ -43,9 +43,10 @@ This document tracks research and implementation efforts for validating and impr
     *   Generates a depth-overlay video/image series.
     *   Calculates reprojection error for a set of ORB matches.
 
-### Phase 2: Calibration Extraction
-*   [ ] Update OAK-D driver (in OSGAR) to log calibration data.
-*   [ ] Update `rerun-route` to read this data from the log.
+### Phase 2: Calibration Source & Strategy
+*   **Calibration via Configuration:** Store resolution-specific and robot-specific intrinsics in the application configuration. Follow the pattern used in the DTC project where parameters are prefixed by robot names (e.g., `"m03-intrinsics"`). This allows for easy overrides when factory data is unavailable in the log.
+*   [ ] Update `rerun-route` to search for these robot-specific calibration keys.
+*   [ ] Update OAK-D driver (in OSGAR) to log calibration data for future recordings.
 
 ### Phase 3: Advanced Alignment
 *   [ ] Implement 3D-to-2D projection using full camera models (including distortion).
@@ -62,6 +63,7 @@ This document tracks research and implementation efforts for validating and impr
 Instead of matching ORB features on the RGB image and then looking up depth, perform feature detection and matching directly on the synchronized Left and Right mono streams. 
 *   **Goal:** Calculate 3D positions from stereo disparity of features.
 *   **Advantage:** Bypasses RGB-to-Depth alignment and FOV matching issues.
+*   **Caveat:** Current recordings do not include separate Left and Right mono streams. This approach is reserved for future data collections where these streams are enabled.
 
 ### 2. Edge-Based Alignment (Geometric Consistency)
 Detect edges in the Color image (Canny/Sobel) and compare them with "depth edges" (where depth jumps occur).
