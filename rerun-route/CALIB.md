@@ -84,3 +84,31 @@ Treat color and depth images as two different modalities and maximize the "Stati
 ### 5. Multi-Frame Depth Averaging (Temporal Filter)
 Aggregate depth data over several frames (especially when moving slowly) to fill "holes" and reduce noise in the 3D points used for `solvePnP`.
 *   **Advantage:** Improves reliability of the 3D matching component without needing better single-frame calibration.
+
+## Test Variants for Individual Traces
+
+These variants are proposed for validating calibration on a single logfile (trace) containing `platform.pose2d`, `oak.color`, and `oak.depth`.
+
+### Variant 1: Reprojection Error Consistency (Point-based)
+Focuses on the mathematical stability of the 3D-to-2D projection.
+*   **Method:** Extract ORB features from `color`, look up 3D coordinates in `depth`, and use `solvePnPRansac` between frames.
+*   **Validation Metric:**
+    1.  **Average Reprojection Error:** Target < 1.5-2.0 pixels.
+    2.  **Inlier Ratio:** High rejection suggests depth-color misalignment.
+*   **Target:** Detecting incorrect focal length or principal point.
+
+### Variant 2: Depth-to-Color Edge Displacement (Edge-based)
+Tests the spatial "sync" between the RGB sensor and the Depth sensor.
+*   **Method:** Cross-correlation between `color` edges (Canny) and `depth` gradients.
+*   **Validation Metric:**
+    1.  **Alignment Offset (dx, dy):** Pixel shift required to maximize correlation.
+    2.  **Correlation Strength:** Low strength indicates FOV mismatch or warping.
+*   **Target:** Identifying physical extrinsics and FOV mismatches.
+
+### Variant 3: 3D Plane Stability (Surface-based)
+Uses robot movement to check if the 3D world stays "solid."
+*   **Method:** Project dominant planes (ground/walls) into a global 3D system using `pose2d`.
+*   **Validation Metric:**
+    1.  **Planarity Error:** Flat surfaces should not appear curved or tilted as the robot moves.
+    2.  **Texture Bleeding:** Texture projected onto 3D planes should not "slide" when viewing angles change.
+*   **Target:** Validating depth scaling and odometry consistency.
