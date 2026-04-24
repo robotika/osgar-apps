@@ -97,10 +97,12 @@ def validate_calibration(log_path, num_plots=5):
             depth = get_closest_data(timestamp, depth_history)
             
             if pose is None or depth is None:
+                # print(f"  [{timestamp}] Missing pose or depth")
                 continue
                 
             kp, des = orb.detectAndCompute(frame, None)
             if des is None or len(des) < 10:
+                # print(f"  [{timestamp}] Not enough features")
                 continue
                 
             current_frame_data = {
@@ -118,8 +120,9 @@ def validate_calibration(log_path, num_plots=5):
                 x2, y2, _ = current_frame_data['pose']
                 dist_moved = math.hypot(x2 - x1, y2 - y1) / 1000.0
                 
-                if dist_moved > 0.1: # At least 10cm movement
+                if dist_moved > 0.05: # Reduced threshold to 5cm
                     matches = bf.match(last_frame_data['des'], current_frame_data['des'])
+                    # print(f"  [{timestamp}] dist_moved: {dist_moved:.3f}m, matches: {len(matches)}")
                     
                     if len(matches) > 20:
                         obj_pts = []
@@ -140,6 +143,8 @@ def validate_calibration(log_path, num_plots=5):
                                 yc = (v - cy) * z / fy
                                 obj_pts.append([xc, yc, z])
                                 img_pts.append(current_frame_data['kp'][m.trainIdx].pt)
+                        
+                        # print(f"  [{timestamp}] Valid 3D points: {len(obj_pts)}")
                                 
                         if len(obj_pts) >= 15:
                             obj_pts = np.array(obj_pts, dtype=float)
