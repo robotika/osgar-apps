@@ -61,29 +61,30 @@ def get_rotation_matrix(yaw, pitch=0, roll=0):
     
     return Rz @ Ry @ Rx
 
-def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05, use_pose=False, mount_offset=(0,0,0), mount_pitch=0, joint_offset=0):
+def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05, use_pose=False, mount_offset=(0,0,0), mount_pitch=0, joint_offset=0, debug_frame=-1):
     # Hardcoded intrinsics from main.py
     fx, fy = 1400.0, 1400.0
     cx, cy = 960.0, 540.0
     camera_matrix = np.array([[fx, 0, cx],
-                               [0, fy, cy],
-                               [0, 0, 1.0]], dtype=float)
-    dist_coeffs = np.zeros((4,1))
+                              [0, fy, cy],
+                              [0, 0, 1.0]], dtype=float)
+    dist_coeffs = np.zeros((4, 1))
 
     # Camera coord system: Z forward, X right, Y down
     # Robot coord system: X forward, Y left, Z up
     # Rotation from Robot Front-Section to Camera (assuming pointing straight forward)
     # Cx = -Ry, Cy = -Rz, Cz = Rx
     R_front_to_cam_base = np.array([
-        [ 0, -1,  0],
-        [ 0,  0, -1],
-        [ 1,  0,  0]
+        [0, -1, 0],
+        [0, 0, -1],
+        [1, 0, 0]
     ])
-    
+
     # Add mounting pitch (rotation around robot's Y-axis)
+    R_front_to_cam_base = np.array([[0, -1, 0], [0, 0, -1], [1, 0, 0]])
     R_pitch = np.array([
-        [ math.cos(mount_pitch), 0, math.sin(mount_pitch)],
-        [ 0, 1, 0],
+        [math.cos(mount_pitch), 0, math.sin(mount_pitch)],
+        [0, 1, 0],
         [-math.sin(mount_pitch), 0, math.cos(mount_pitch)]
     ])
     R_front_to_cam = R_front_to_cam_base @ R_pitch
@@ -100,7 +101,7 @@ def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05, use_pos
         depth_stream = lookup_stream_id(log_path, "oak.depth")
         joint_stream = lookup_stream_id(log_path, "platform.joint_angle")
     except Exception as e:
-        print(f"Error: Required streams not found in log: {e}")
+        print(f"Error: Required streams not found: {e}")
         return
 
     print("Reading history streams...")
@@ -126,22 +127,18 @@ def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05, use_pos
     last_frame_data = None
     errors = []
     plot_count = 0
-    
-    stats = {
-        'total_frames': 0,
-        'no_pose_depth': 0,
-        'no_descriptors': 0,
-        'stationary': 0,
-        'low_matches': 0,
-        'insufficient_3d': 0,
-        'pnp_failed': 0,
-        'valid_samples': 0
-    }
+    stats = {'total_frames': 0, 'no_pose_depth': 0, 'no_descriptors': 0, 'stationary': 0, 
+             'low_matches': 0, 'insufficient_3d': 0, 'pnp_failed': 0, 'valid_samples': 0}
     
     print("Processing frames...")
     with LogReader(log_path, only_stream_id=color_stream) as log:
         for timestamp, stream_id, data in log:
             stats['total_frames'] += 1
+            idx = stats['total_frames']
+            
+            if debug_frame != -1 and idx > debug_frame:
+                break
+
             raw_data = deserialize(data)
             frame = decoder.decode(raw_data)
             if frame is None:
@@ -160,31 +157,30 @@ def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05, use_pos
                 stats['no_descriptors'] += 1
                 continue
                 
-            current_frame_data = {
-                'frame': frame,
-                'kp': kp,
-                'des': des,
-                'pose': pose,
-                'depth': depth,
-                'joint': joint,
-                'timestamp': timestamp
-            }
-            
+            current_frame_data = {'frame': frame, 'kp': kp, 'des': des, 'pose': pose, 'depth': depth, 'joint': joint, 'timestamp': timestamp}
+            is_debug = (idx == debug_frame)
+
             if last_frame_data is not None:
                 # Robot pose: x, y in mm, heading in hundredths of degree
                 x1, y1, h1 = last_frame_data['pose']
                 x2, y2, h2 = current_frame_data['pose']
                 dist_moved = math.hypot(x2 - x1, y2 - y1) / 1000.0
                 
-                if dist_moved >= min_dist:
+                if is_debug:
+                    print(f"\n--- DEBUG FRAME {idx} ---")
+                    print(f"Timestamp: {timestamp}")
+                    print(f"Pose2d:    {pose}")
+                    print(f"Joint:     {joint}")
+                    print(f"Dist Moved: {dist_moved:.4f}m (threshold {min_dist}m)")
+
+                if dist_moved >= min_dist or is_debug:
                     matches = bf.match(last_frame_data['des'], current_frame_data['des'])
+                    if is_debug: print(f"ORB Matches: {len(matches)}")
                     
                     if len(matches) <= 20:
                         stats['low_matches'] += 1
                     else:
-                        obj_pts = []
-                        img_pts = []
-                        
+                        obj_pts, img_pts = [], []
                         d_h, d_w = last_frame_data['depth'].shape
                         f_h, f_w = last_frame_data['frame'].shape[:2]
                         
@@ -193,105 +189,97 @@ def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05, use_pos
                             u, v = int(kp_prev.pt[0]), int(kp_prev.pt[1])
                             ud, vd = int(u * d_w / f_w), int(v * d_h / f_h)
                             d = last_frame_data['depth'][vd, ud] if (0 <= vd < d_h and 0 <= ud < d_w) else 0
-                            
                             if d > 0:
                                 z = d / 1000.0
-                                xc = (u - cx) * z / fx
-                                yc = (v - cy) * z / fy
-                                obj_pts.append([xc, yc, z])
+                                obj_pts.append([(u-cx)*z/fx, (v-cy)*z/fy, z])
                                 img_pts.append(current_frame_data['kp'][m.trainIdx].pt)
                                 
+                        if is_debug: print(f"Valid 3D Points: {len(obj_pts)}")
+
                         if len(obj_pts) < 15:
                             stats['insufficient_3d'] += 1
                         else:
-                            obj_pts = np.array(obj_pts, dtype=float)
-                            img_pts = np.array(img_pts, dtype=float)
-                            
-                            rvec, tvec = None, None
-                            ret = False
+                            obj_pts, img_pts = np.array(obj_pts, dtype=float), np.array(img_pts, dtype=float)
+                            rvec, tvec, ret = None, None, False
                             
                             if use_pose:
-                                # Articulated kinematics
                                 yaw1, yaw2 = math.radians(h1/100.0), math.radians(h2/100.0)
                                 j1, j2 = math.radians(last_frame_data['joint'][0]/100.0) + joint_offset, math.radians(current_frame_data['joint'][0]/100.0) + joint_offset
-                                
-                                p1_w = np.array([x1/1000.0, y1/1000.0, 0])
-                                p2_w = np.array([x2/1000.0, y2/1000.0, 0])
-                                
+
+                                p1_w = np.array([x1 / 1000.0, y1 / 1000.0, 0])
+                                p2_w = np.array([x2 / 1000.0, y2 / 1000.0, 0])
+
                                 # World to Joint rotation
                                 R_w_j1 = get_rotation_matrix(yaw1)
                                 R_w_j2 = get_rotation_matrix(yaw2)
-                                
+
                                 # Joint to Front rotation
                                 R_j_f1 = get_rotation_matrix(j1)
                                 R_j_f2 = get_rotation_matrix(j2)
-                                
+
                                 # Combined World to Front rotation
                                 R_w_f1 = R_w_j1 @ R_j_f1
                                 R_w_f2 = R_w_j2 @ R_j_f2
-                                
+
                                 # Camera World Position
                                 # P_cam = P_joint + R_world_to_front @ MountOffset
                                 P_c1_w = p1_w + R_w_f1 @ np.array(mount_offset)
                                 P_c2_w = p2_w + R_w_f2 @ np.array(mount_offset)
-                                
+
                                 # Camera World Rotation
                                 R_c1_w = R_w_f1 @ R_front_to_cam
                                 R_c2_w = R_w_f2 @ R_front_to_cam
-                                
+
                                 # Relative transformation: Frame 1 to Frame 2 in Camera 2 coords
                                 R_rel = R_c2_w.T @ R_c1_w
                                 t_rel = R_c2_w.T @ (P_c1_w - P_c2_w)
-                                
+
                                 rvec, _ = cv2.Rodrigues(R_rel)
                                 tvec = t_rel.reshape(3, 1)
                                 ret = True
+                                if is_debug:
+                                    print(f"Rel Translation (Cam Coords): {t_rel.flatten()}")
+                                    angle = np.linalg.norm(rvec)
+                                    print(f"Rel Rotation: {math.degrees(angle):.2f} deg")
                             else:
-                                # solvePnPRansac mode
-                                ret, rvec, tvec, inliers_indices = cv2.solvePnPRansac(
-                                    obj_pts, img_pts, camera_matrix, dist_coeffs,
-                                    reprojectionError=5.0, iterationsCount=100)
-                                if ret:
-                                    inliers = inliers_indices
+                                ret, rvec, tvec, inliers_indices = cv2.solvePnPRansac(obj_pts, img_pts, camera_matrix, dist_coeffs, reprojectionError=5.0, iterationsCount=100)
+                                if ret: inliers = inliers_indices
                             
                             if not ret:
                                 stats['pnp_failed'] += 1
                             else:
                                 stats['valid_samples'] += 1
-                                if use_pose:
-                                    inliers = np.arange(len(obj_pts))
-                                
+                                if use_pose: inliers = np.arange(len(obj_pts))
                                 projected_pts, _ = cv2.projectPoints(obj_pts[inliers], rvec, tvec, camera_matrix, dist_coeffs)
-                                projected_pts = projected_pts.reshape(-1, 2)
-                                actual_pts = img_pts[inliers].reshape(-1, 2)
-                                
+                                projected_pts, actual_pts = projected_pts.reshape(-1, 2), img_pts[inliers].reshape(-1, 2)
                                 err = np.linalg.norm(projected_pts - actual_pts, axis=1)
                                 mean_err = np.mean(err)
                                 errors.append(mean_err)
                                 
-                                if plot_count < num_plots:
+                                if is_debug: print(f"Mean Reprojection Error: {mean_err:.2f} pixels")
+
+                                if plot_count < num_plots or is_debug:
                                     vis_img = current_frame_data['frame'].copy()
                                     for i in range(len(actual_pts)):
                                         cv2.circle(vis_img, (int(actual_pts[i][0]), int(actual_pts[i][1])), 4, (0, 255, 0), 1)
                                         px, py = int(projected_pts[i][0]), int(projected_pts[i][1])
                                         cv2.line(vis_img, (px-4, py-4), (px+4, py+4), (0, 0, 255), 1)
                                         cv2.line(vis_img, (px+4, py-4), (px-4, py+4), (0, 0, 255), 1)
-                                    
-                                    out_name = f"debug_calib_{plot_count:02d}.png"
+                                    out_name = f"debug_frame_{idx:03d}.png" if is_debug else f"debug_calib_{plot_count:02d}.png"
                                     cv2.imwrite(out_name, vis_img)
-                                    print(f"Saved {out_name} (Mean Error: {mean_err:.2f} px, Samples: {len(actual_pts)})")
-                                    plot_count += 1
+                                    print(f"Saved {out_name} (Error: {mean_err:.2f} px)")
+                                    if not is_debug: plot_count += 1
                     
+                    if is_debug: return # Exit after debug
                     last_frame_data = current_frame_data
                 else:
                     stats['stationary'] += 1
             else:
                 last_frame_data = current_frame_data
                 
-            if limit > 0 and len(errors) >= limit:
-                break
+            if limit > 0 and len(errors) >= limit: break
                 
-    if errors:
+    if debug_frame == -1 and errors:
         print(f"\nResults for {os.path.basename(log_path)} (dist threshold {min_dist}m):")
         print(f"  Total frames in log:    {stats['total_frames']}")
         print(f"  - No Data (Pose/Joint): {stats['no_pose_depth']}")
@@ -306,6 +294,7 @@ def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05, use_pos
     else:
         print("No matches found to calculate error.")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("logfile")
@@ -318,10 +307,10 @@ if __name__ == "__main__":
     parser.add_argument("--mount-z", type=float, default=0.0, help="Camera mounting Z offset (meters, up)")
     parser.add_argument("--mount-pitch", type=float, default=0.0, help="Camera mounting pitch (degrees, down is positive)")
     parser.add_argument("--joint-offset", type=float, default=0.0, help="Joint angle calibration offset (degrees)")
+    parser.add_argument("--debug-frame", type=int, default=-1)
     args = parser.parse_args()
-    
-    validate_calibration(args.logfile, args.plots, args.limit, args.dist, 
-                         use_pose=args.use_pose, 
+    validate_calibration(args.logfile, args.plots, args.limit, args.dist, use_pose=args.use_pose, 
                          mount_offset=(args.mount_x, args.mount_y, args.mount_z),
                          mount_pitch=math.radians(args.mount_pitch),
-                         joint_offset=math.radians(args.joint_offset))
+                         joint_offset=math.radians(args.joint_offset),
+                         debug_frame=args.debug_frame)
