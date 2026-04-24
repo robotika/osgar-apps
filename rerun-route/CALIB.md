@@ -85,6 +85,50 @@ Treat color and depth images as two different modalities and maximize the "Stati
 Aggregate depth data over several frames (especially when moving slowly) to fill "holes" and reduce noise in the 3D points used for `solvePnP`.
 *   **Advantage:** Improves reliability of the 3D matching component without needing better single-frame calibration.
 
+## OAK-D API for Calibration Retrieval
+
+To retrieve factory calibration data from an OAK-D Pro device, use the `depthai` Python API. The key class is `CalibrationHandler`, which can be accessed from a connected `Device`.
+
+### 1. Basic Retrieval Example
+```python
+import depthai as dai
+import numpy as np
+
+with dai.Device() as device:
+    calibData = device.readCalibration()
+    
+    # Cameras: CAM_A (RGB), CAM_B (Left), CAM_C (Right)
+    # Note: Older API used CameraBoardSocket.RGB, LEFT, RIGHT
+    rgb_socket = dai.CameraBoardSocket.CAM_A
+    left_socket = dai.CameraBoardSocket.CAM_B
+    
+    # Intrinsics (3x3 Matrix)
+    # Providing width/height scales the matrix to that resolution
+    intrinsics = calibData.getCameraIntrinsics(rgb_socket, 1920, 1080)
+    
+    # Extrinsics (4x4 Transformation Matrix)
+    # From RGB to Left camera
+    extrinsics = calibData.getCameraExtrinsics(rgb_socket, left_socket)
+    
+    # Distortion (typically first 5 values for OpenCV)
+    distortion = calibData.getDistortionCoefficients(rgb_socket)
+```
+
+### 2. Key Methods & Parameters
+*   **`getCameraIntrinsics(socket, width, height)`**: Returns the 3x3 camera matrix. Scaling is critical because OSGAR often records at different resolutions (e.g., THE_1080_P vs THE_400_P) than the sensor's native resolution.
+*   **`getCameraExtrinsics(src, dst)`**: Returns a 4x4 matrix representing the rotation and translation between two sensors. This is essential for projecting Depth (from stereo cameras) into the RGB coordinate system if they are not aligned in hardware.
+*   **`getDistortionCoefficients(socket)`**: Returns distortion coefficients. For standard `cv2.undistort`, use the first 5 values `[k1, k2, p1, p2, k3]`.
+*   **`getFov(socket)`**: Returns Horizontal FOV, useful for quick FOV matching checks.
+
+### 3. Hardware Alignment (On-Device)
+To simplify software alignment, OAK-D can perform RGB-Depth alignment on-the-fly:
+```python
+# During pipeline configuration:
+stereo = pipeline.create(dai.node.StereoDepth)
+stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A) # Align depth to RGB
+```
+*   **Verification:** If `setDepthAlign` was used during recording, the depth frame will already be in the RGB coordinate system, and `extrinsics` should not be applied manually.
+
 ## Test Variants for Individual Traces
 
 These variants are proposed for validating calibration on a single logfile (trace) containing `platform.pose2d`, `oak.color`, and `oak.depth`.
