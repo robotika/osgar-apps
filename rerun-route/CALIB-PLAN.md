@@ -1,54 +1,29 @@
-# Calibration Improvement Plan (CALIB-PLAN.md)
+# Calibration Assessment Plan (CALIB-PLAN.md)
 
-This document outlines the strategy for improving camera-to-robot alignment and intrinsic calibration for the `rerun-route` project, as researched in `CALIB.md`.
+This document outlines the strategy for assessing the current state of camera-to-robot alignment and intrinsic calibration for the `rerun-route` project.
 
-## 1. Objectives
-*   **Quantify Error:** Establish a baseline reprojection error using existing logs.
-*   **Improve Alignment:** Reduce the systematic shift between OAK-D color and depth data.
-*   **Refine Intrinsics:** Replace hardcoded "approximate" values with calibrated ones.
-*   **Articulated Kinematics:** (If applicable) Account for the center pivot joint in camera pose calculations.
+## 1. Primary Objective: "Know Where We Are"
+Establish a baseline for calibration quality using existing hardcoded values and identify the nature of any alignment errors (systematic shift, scaling, or noise).
 
 ## 2. Acceptance Criteria (AC)
-*   **AC1:** Reprojection error of ORB features matched between frames is $< 2.0$ pixels (average).
-*   **AC2:** Visual verification (Circle/Cross plot) shows no systematic pixel shift across the image.
-*   **AC3:** Inlier ratio for `solvePnPRansac` remains $> 60\%$ during typical driving.
-*   **AC4:** A validation script exists that can process any `.log` file and output a calibration report.
+*   **AC1:** A diagnostic tool `validate_calibration.py` exists that can process an OSGAR `.log` file.
+*   **AC2:** The tool calculates and prints the **Average Reprojection Error** (in pixels) for matched ORB features.
+*   **AC3:** The tool generates a **Visual Verification Plot** (Circle/Cross) for at least 5 representative frames in the log to allow human inspection of systematic shifts.
 
-## 3. Implementation Options
+## 3. Implementation Steps
 
-### Option A: Manual Refinement & Validation (Low Effort)
-Focus on verifying and manually tuning the hardcoded parameters in `main.py`.
-*   **Pros:** Quick to implement; requires no new complex algorithms.
-*   **Cons:** Not scalable; might miss non-obvious alignment issues.
-*   **Tasks:**
-    1.  Create `validate_calibration.py` to calculate reprojection error on a log.
-    2.  Manually adjust `fx, fy, cx, cy` to minimize error.
-    3.  Add a fixed extrinsic offset $(dx, dy)$ between color and depth if a shift is detected.
+### Step 1: Diagnostic Tool Development
+Create `rerun-route/validate_calibration.py`. This tool will:
+1.  Read `oak.color`, `oak.depth`, and `platform.pose2d` from a log.
+2.  Extract ORB features and match them between consecutive frames.
+3.  Use the current hardcoded intrinsics ($f_x, f_y, c_x, c_y$) and depth data to project 3D points from Frame N to Frame N+1.
+4.  Calculate the distance (error) between the projected points and the actual detected features in Frame N+1.
 
-### Option B: Automated Optimization (Medium Effort)
-Use optimization (e.g., `scipy.optimize.minimize`) to find the best camera parameters.
-*   **Pros:** More accurate; adapts to different OAK-D units.
-*   **Cons:** Requires clean logs with good feature coverage.
-*   **Tasks:**
-    1.  Implement a cost function that takes `(fx, fy, cx, cy, extrinsics)` and returns total reprojection error.
-    2.  Run optimization on selected reference logs.
-    3.  Update `main.py` to optionally load these parameters from a JSON config.
+### Step 2: Baseline Assessment
+Run the tool against a set of representative logs and document:
+1.  Mean reprojection error.
+2.  Visual observations: Do crosses consistently land to the left/right of circles? Do they scale incorrectly towards the edges?
 
-### Option C: Kinematic-Aware Calibration (High Effort)
-Integrate the robot's articulation (`joint_angle`) into the pose estimation.
-*   **Pros:** Essential for articulated robots like Matty/m03 to maintain accuracy during turns.
-*   **Cons:** Higher complexity; requires precise physical measurements of the robot.
-*   **Tasks:**
-    1.  Define the transformation chain: $T_{world \to camera} = T_{world \to joint} \times T_{joint \to front}(\phi) \times T_{front \to camera}$.
-    2.  Measure/Calibrate the "lever arm" from joint to camera.
-    3.  Implement kinematic-aware projection in the validation tool.
-
-## 4. Proposed Workflow
-1.  **Phase 1 (Diagnostic):** Build the `validate_calibration.py` tool. It should produce the Circle/Cross visualization mentioned in `CALIB.md`.
-2.  **Phase 2 (Optimization):** Use Option B to find better constants.
-3.  **Phase 3 (Integration):** Update `RerunRoute` in `main.py` to use the new parameters and optionally the kinematic model.
-
-## 5. Tools to be Created/Modified
-*   `rerun-route/validate_calibration.py`: New diagnostic tool.
-*   `rerun-route/config/calibration.json`: New storage for optimized parameters.
-*   `rerun-route/main.py`: Updated to use external calibration and handle joint angles.
+## 4. Deliverables
+*   `rerun-route/validate_calibration.py`: The assessment script.
+*   A brief summary of the findings (Baseline Error & Error Type).
