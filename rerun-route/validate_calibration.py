@@ -48,7 +48,7 @@ def get_closest_data(ts, history):
             break
     return best_data
 
-def validate_calibration(log_path, num_plots=5, limit=50):
+def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05):
     # Hardcoded intrinsics from main.py
     fx, fy = 1400.0, 1400.0
     cx, cy = 960.0, 540.0
@@ -132,7 +132,7 @@ def validate_calibration(log_path, num_plots=5, limit=50):
                 x2, y2, _ = current_frame_data['pose']
                 dist_moved = math.hypot(x2 - x1, y2 - y1) / 1000.0
                 
-                if dist_moved > 0.05: # Reduced threshold to 5cm
+                if dist_moved >= min_dist:
                     matches = bf.match(last_frame_data['des'], current_frame_data['des'])
                     
                     if len(matches) <= 20:
@@ -207,11 +207,11 @@ def validate_calibration(log_path, num_plots=5, limit=50):
                 break
                 
     if errors:
-        print(f"\nResults for {os.path.basename(log_path)}:")
+        print(f"\nResults for {os.path.basename(log_path)} (dist threshold {min_dist}m):")
         print(f"  Total frames in log:    {stats['total_frames']}")
         print(f"  - No Pose/Depth Data:   {stats['no_pose_depth']}")
         print(f"  - No Descriptors:       {stats['no_descriptors']}")
-        print(f"  - Stationary (<5cm):    {stats['stationary']}")
+        print(f"  - Stationary (<{min_dist}m):   {stats['stationary']}")
         print(f"  - Low ORB Matches:      {stats['low_matches']}")
         print(f"  - Insufficient Depth:   {stats['insufficient_3d']}")
         print(f"  - PnP Math Failed:      {stats['pnp_failed']}")
@@ -226,5 +226,6 @@ if __name__ == "__main__":
     parser.add_argument("logfile")
     parser.add_argument("--plots", type=int, default=5, help="Number of visual plots to generate")
     parser.add_argument("--limit", type=int, default=50, help="Max number of samples to process (0 for all)")
+    parser.add_argument("--dist", type=float, default=0.05, help="Min distance between frames (meters)")
     args = parser.parse_args()
-    validate_calibration(args.logfile, args.plots, args.limit)
+    validate_calibration(args.logfile, args.plots, args.limit, args.dist)
