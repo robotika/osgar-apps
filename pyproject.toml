@@ -36,3 +36,13 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
 ignore = []
+
+[tool.ruff.format]
+# use double quotes for strings.
+quote-style = "single"
+# indent with spaces, rather than tabs.
+indent-style = "space"
+# automatically detect the appropriate line ending.
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
