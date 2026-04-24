@@ -129,6 +129,31 @@ stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A) # Align depth to RGB
 ```
 *   **Verification:** If `setDepthAlign` was used during recording, the depth frame will already be in the RGB coordinate system, and `extrinsics` should not be applied manually.
 
+## Articulated Kinematics & Front-Part Extrinsics
+
+Articulated robots (like Matty/m03) have a center pivot joint. Since the OAK-D camera is mounted on the front section, its world pose depends on both the platform pose and the steering joint angle.
+
+### 1. The Kinematic Challenge
+*   **Variable Offset:** Even at a fixed $(x, y, \theta)$, changing the `platform.joint_angle` $(\phi)$ swings the camera in a physical arc.
+*   **Transformation Chain:**
+    $$T_{world \to camera} = T_{world \to joint} \times T_{joint \to front}(\phi) \times T_{front \to camera}$$
+*   **Calibration Requirement:** We must precisely measure the fixed transform from the joint pivot to the camera optical center ($T_{front \to camera}$).
+
+### 2. Proposed Extrinsic Calibration Methods
+
+#### Method A: Kinematic Circle Fitting (Motion-based)
+*   **Concept:** Drive the robot in a circle at a constant joint angle.
+*   **Execution:** Fit the visual motion of features to the expected circular path. The deviation allows us to solve for the camera's radial and tangential offset from the joint.
+*   **Benefit:** Accounts for actual mechanical play and "as-built" mounting.
+
+#### Method B: Stationary Joint-Sweep (Geometric)
+*   **Concept:** Observe a static ground target while sweeping the joint angle from max-left to max-right.
+*   **Execution:** The target's path in the 3D depth space forms an arc. The radius of this arc is the horizontal distance from the joint to the target. By intersecting multiple arcs, we locate the joint center relative to the camera.
+
+#### Method C: Re-localization Nulling (Global)
+*   **Concept:** Move the joint, then manually reposition the robot base to restore the original camera view.
+*   **Execution:** Use the difference in $(x, y, \theta)$ between the two visually identical states to solve for the $L_{joint \to cam}$ lever arm.
+
 ## Test Variants for Individual Traces
 
 These variants are proposed for validating calibration on a single logfile (trace) containing `platform.pose2d`, `oak.color`, and `oak.depth`.
