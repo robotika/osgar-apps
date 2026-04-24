@@ -85,9 +85,21 @@ def validate_calibration(log_path, num_plots=5, limit=50):
     errors = []
     plot_count = 0
     
+    stats = {
+        'total_frames': 0,
+        'no_pose_depth': 0,
+        'no_descriptors': 0,
+        'stationary': 0,
+        'low_matches': 0,
+        'insufficient_3d': 0,
+        'pnp_failed': 0,
+        'valid_samples': 0
+    }
+    
     print("Processing frames...")
     with LogReader(log_path, only_stream_id=color_stream) as log:
         for timestamp, stream_id, data in log:
+            stats['total_frames'] += 1
             raw_data = deserialize(data)
             frame = decoder.decode(raw_data)
             if frame is None:
@@ -97,12 +109,12 @@ def validate_calibration(log_path, num_plots=5, limit=50):
             depth = get_closest_data(timestamp, depth_history)
             
             if pose is None or depth is None:
-                # print(f"  [{timestamp}] Missing pose or depth")
+                stats['no_pose_depth'] += 1
                 continue
                 
             kp, des = orb.detectAndCompute(frame, None)
             if des is None or len(des) < 10:
-                # print(f"  [{timestamp}] Not enough features")
+                stats['no_descriptors'] += 1
                 continue
                 
             current_frame_data = {
@@ -122,9 +134,10 @@ def validate_calibration(log_path, num_plots=5, limit=50):
                 
                 if dist_moved > 0.05: # Reduced threshold to 5cm
                     matches = bf.match(last_frame_data['des'], current_frame_data['des'])
-                    # print(f"  [{timestamp}] dist_moved: {dist_moved:.3f}m, matches: {len(matches)}")
                     
-                    if len(matches) > 20:
+                    if len(matches) <= 20:
+                        stats['low_matches'] += 1
+                    else:
                         obj_pts = []
                         img_pts = []
                         
@@ -143,10 +156,10 @@ def validate_calibration(log_path, num_plots=5, limit=50):
                                 yc = (v - cy) * z / fy
                                 obj_pts.append([xc, yc, z])
                                 img_pts.append(current_frame_data['kp'][m.trainIdx].pt)
-                        
-                        # print(f"  [{timestamp}] Valid 3D points: {len(obj_pts)}")
                                 
-                        if len(obj_pts) >= 15:
+                        if len(obj_pts) < 15:
+                            stats['insufficient_3d'] += 1
+                        else:
                             obj_pts = np.array(obj_pts, dtype=float)
                             img_pts = np.array(img_pts, dtype=float)
                             
@@ -155,7 +168,10 @@ def validate_calibration(log_path, num_plots=5, limit=50):
                                 obj_pts, img_pts, camera_matrix, dist_coeffs,
                                 reprojectionError=5.0, iterationsCount=100)
                             
-                            if ret and inliers is not None:
+                            if not ret or inliers is None:
+                                stats['pnp_failed'] += 1
+                            else:
+                                stats['valid_samples'] += 1
                                 # Calculate reprojection error for inliers
                                 projected_pts, _ = cv2.projectPoints(obj_pts[inliers], rvec, tvec, camera_matrix, dist_coeffs)
                                 projected_pts = projected_pts.reshape(-1, 2)
@@ -181,6 +197,8 @@ def validate_calibration(log_path, num_plots=5, limit=50):
                                     plot_count += 1
                     
                     last_frame_data = current_frame_data
+                else:
+                    stats['stationary'] += 1
                 
             else:
                 last_frame_data = current_frame_data
@@ -190,8 +208,15 @@ def validate_calibration(log_path, num_plots=5, limit=50):
                 
     if errors:
         print(f"\nResults for {os.path.basename(log_path)}:")
-        print(f"  Samples: {len(errors)}")
-        print(f"  Average Reprojection Error: {np.mean(errors):.2f} pixels")
+        print(f"  Total frames in log:    {stats['total_frames']}")
+        print(f"  - No Pose/Depth Data:   {stats['no_pose_depth']}")
+        print(f"  - No Descriptors:       {stats['no_descriptors']}")
+        print(f"  - Stationary (<5cm):    {stats['stationary']}")
+        print(f"  - Low ORB Matches:      {stats['low_matches']}")
+        print(f"  - Insufficient Depth:   {stats['insufficient_3d']}")
+        print(f"  - PnP Math Failed:      {stats['pnp_failed']}")
+        print(f"  = Valid Samples Used:   {stats['valid_samples']}")
+        print(f"\n  Average Reprojection Error: {np.mean(errors):.2f} pixels")
         print(f"  Std Dev: {np.std(errors):.2f} pixels")
     else:
         print("No matches found to calculate error.")
