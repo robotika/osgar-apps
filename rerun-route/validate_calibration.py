@@ -48,7 +48,7 @@ def get_closest_data(ts, history):
             break
     return best_data
 
-def validate_calibration(log_path, num_plots=5):
+def validate_calibration(log_path, num_plots=5, limit=50):
     # Hardcoded intrinsics from main.py
     fx, fy = 1400.0, 1400.0
     cx, cy = 960.0, 540.0
@@ -185,7 +185,7 @@ def validate_calibration(log_path, num_plots=5):
             else:
                 last_frame_data = current_frame_data
                 
-            if len(errors) >= 50:
+            if limit > 0 and len(errors) >= limit:
                 break
                 
     if errors:
@@ -200,5 +200,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("logfile")
     parser.add_argument("--plots", type=int, default=5, help="Number of visual plots to generate")
+    parser.add_argument("--limit", type=int, default=50, help="Max number of samples to process (0 for all)")
     args = parser.parse_args()
-    validate_calibration(args.logfile, args.plots)
+    validate_calibration(args.logfile, args.plots, args.limit)
