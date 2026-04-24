@@ -48,7 +48,20 @@ def get_closest_data(ts, history):
             break
     return best_data
 
-def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05):
+def get_rotation_matrix(yaw, pitch=0, roll=0):
+    # Standard ZYX rotation (Yaw, Pitch, Roll)
+    # Yaw: around Z, Pitch: around Y, Roll: around X
+    cy, sy = math.cos(yaw), math.sin(yaw)
+    cp, sp = math.cos(pitch), math.sin(pitch)
+    cr, sr = math.cos(roll), math.sin(roll)
+    
+    Rz = np.array([[cy, -sy, 0], [sy, cy, 0], [0, 0, 1]])
+    Ry = np.array([[cp, 0, sp], [0, 1, 0], [-sp, 0, cp]])
+    Rx = np.array([[1, 0, 0], [0, cr, -sr], [0, sr, cr]])
+    
+    return Rz @ Ry @ Rx
+
+def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05, use_pose=False, mount_offset=(0,0,0), mount_pitch=0):
     # Hardcoded intrinsics from main.py
     fx, fy = 1400.0, 1400.0
     cx, cy = 960.0, 540.0
@@ -57,7 +70,30 @@ def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05):
                                [0, 0, 1.0]], dtype=float)
     dist_coeffs = np.zeros((4,1))
 
+    # Camera coord system: Z forward, X right, Y down
+    # Robot coord system: X forward, Y left, Z up
+    # Rotation from Robot to Camera (assuming pointing straight forward)
+    # Cx = -Ry, Cy = -Rz, Cz = Rx
+    R_robot_to_cam_base = np.array([
+        [ 0, -1,  0],
+        [ 0,  0, -1],
+        [ 1,  0,  0]
+    ])
+    
+    # Add mounting pitch (rotation around robot's Y-axis)
+    R_pitch = np.array([
+        [ math.cos(mount_pitch), 0, math.sin(mount_pitch)],
+        [ 0, 1, 0],
+        [-math.sin(mount_pitch), 0, math.cos(mount_pitch)]
+    ])
+    R_mount = R_robot_to_cam_base @ R_pitch
+
     print(f"Analyzing {log_path}...")
+    if use_pose:
+        print(f"  Mode: ROBOT POSE (Mount: {mount_offset}m, Pitch: {math.degrees(mount_pitch):.1f} deg)")
+    else:
+        print("  Mode: solvePnPRansac (Estimated Pose)")
+
     try:
         color_stream = lookup_stream_id(log_path, "oak.color")
         pose_stream = lookup_stream_id(log_path, "platform.pose2d")
@@ -127,9 +163,9 @@ def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05):
             }
             
             if last_frame_data is not None:
-                # Check if there was significant movement to avoid degenerate cases
-                x1, y1, _ = last_frame_data['pose']
-                x2, y2, _ = current_frame_data['pose']
+                # Robot pose: x, y in mm, heading in hundredths of degree
+                x1, y1, h1 = last_frame_data['pose']
+                x2, y2, h2 = current_frame_data['pose']
                 dist_moved = math.hypot(x2 - x1, y2 - y1) / 1000.0
                 
                 if dist_moved >= min_dist:
@@ -163,16 +199,53 @@ def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05):
                             obj_pts = np.array(obj_pts, dtype=float)
                             img_pts = np.array(img_pts, dtype=float)
                             
-                            # Using solvePnPRansac to validate intrinsics/depth-color alignment
-                            ret, rvec, tvec, inliers = cv2.solvePnPRansac(
-                                obj_pts, img_pts, camera_matrix, dist_coeffs,
-                                reprojectionError=5.0, iterationsCount=100)
+                            rvec, tvec = None, None
+                            ret = False
                             
-                            if not ret or inliers is None:
+                            if use_pose:
+                                # Calculate relative motion between camera poses
+                                yaw1, yaw2 = math.radians(h1/100.0), math.radians(h2/100.0)
+                                p1 = np.array([x1/1000.0, y1/1000.0, 0])
+                                p2 = np.array([x2/1000.0, y2/1000.0, 0])
+                                
+                                R_w1 = get_rotation_matrix(yaw1)
+                                R_w2 = get_rotation_matrix(yaw2)
+                                
+                                # World to Camera Pose
+                                # P_cam_world = P_robot_world + R_robot_world @ MountOffset
+                                P_c1 = p1 + R_w1 @ np.array(mount_offset)
+                                P_c2 = p2 + R_w2 @ np.array(mount_offset)
+                                
+                                # World to Camera Rotation
+                                R_c1 = R_w1 @ R_mount
+                                R_c2 = R_w2 @ R_mount
+                                
+                                # Relative transformation: P_c2 = R_rel @ P_c1 + T_rel
+                                # P_w = R_c1 @ P_c1 + P_c1_w = R_c2 @ P_c2 + P_c2_w
+                                # P_c2 = R_c2.T @ (R_c1 @ P_c1 + P_c1_w - P_c2_w)
+                                R_rel = R_c2.T @ R_c1
+                                t_rel = R_c2.T @ (P_c1 - P_c2)
+                                
+                                rvec, _ = cv2.Rodrigues(R_rel)
+                                tvec = t_rel.reshape(3, 1)
+                                ret = True
+                            else:
+                                # Using solvePnPRansac to validate intrinsics/depth-color alignment
+                                ret, rvec, tvec, inliers_indices = cv2.solvePnPRansac(
+                                    obj_pts, img_pts, camera_matrix, dist_coeffs,
+                                    reprojectionError=5.0, iterationsCount=100)
+                                if ret:
+                                    inliers = inliers_indices
+                            
+                            if not ret:
                                 stats['pnp_failed'] += 1
                             else:
                                 stats['valid_samples'] += 1
-                                # Calculate reprojection error for inliers
+                                # If using pose, we don't have PnP inliers, use all matches
+                                if use_pose:
+                                    inliers = np.arange(len(obj_pts))
+                                
+                                # Calculate reprojection error
                                 projected_pts, _ = cv2.projectPoints(obj_pts[inliers], rvec, tvec, camera_matrix, dist_coeffs)
                                 projected_pts = projected_pts.reshape(-1, 2)
                                 actual_pts = img_pts[inliers].reshape(-1, 2)
@@ -185,15 +258,15 @@ def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05):
                                     vis_img = current_frame_data['frame'].copy()
                                     for i in range(len(actual_pts)):
                                         # Circle for observation (Actual)
-                                        cv2.circle(vis_img, (int(actual_pts[i][0]), int(actual_pts[i][1])), 6, (0, 255, 0), 2)
+                                        cv2.circle(vis_img, (int(actual_pts[i][0]), int(actual_pts[i][1])), 4, (0, 255, 0), 1)
                                         # Cross for projection (Predicted)
                                         px, py = int(projected_pts[i][0]), int(projected_pts[i][1])
-                                        cv2.line(vis_img, (px-6, py-6), (px+6, py+6), (0, 0, 255), 2)
-                                        cv2.line(vis_img, (px+6, py-6), (px-6, py+6), (0, 0, 255), 2)
+                                        cv2.line(vis_img, (px-4, py-4), (px+4, py+4), (0, 0, 255), 1)
+                                        cv2.line(vis_img, (px+4, py-4), (px-4, py+4), (0, 0, 255), 1)
                                     
                                     out_name = f"debug_calib_{plot_count:02d}.png"
                                     cv2.imwrite(out_name, vis_img)
-                                    print(f"Saved {out_name} (Mean Error: {mean_err:.2f} px, Inliers: {len(inliers)})")
+                                    print(f"Saved {out_name} (Mean Error: {mean_err:.2f} px, Samples: {len(actual_pts)})")
                                     plot_count += 1
                     
                     last_frame_data = current_frame_data
@@ -227,5 +300,14 @@ if __name__ == "__main__":
     parser.add_argument("--plots", type=int, default=5, help="Number of visual plots to generate")
     parser.add_argument("--limit", type=int, default=50, help="Max number of samples to process (0 for all)")
     parser.add_argument("--dist", type=float, default=0.05, help="Min distance between frames (meters)")
+    parser.add_argument("--use-pose", action="store_true", help="Use robot pose instead of solvePnPRansac")
+    parser.add_argument("--mount-x", type=float, default=0.0, help="Camera mounting X offset (meters, forward)")
+    parser.add_argument("--mount-y", type=float, default=0.0, help="Camera mounting Y offset (meters, left)")
+    parser.add_argument("--mount-z", type=float, default=0.0, help="Camera mounting Z offset (meters, up)")
+    parser.add_argument("--mount-pitch", type=float, default=0.0, help="Camera mounting pitch (degrees, down is positive)")
     args = parser.parse_args()
-    validate_calibration(args.logfile, args.plots, args.limit, args.dist)
+    
+    validate_calibration(args.logfile, args.plots, args.limit, args.dist, 
+                         use_pose=args.use_pose, 
+                         mount_offset=(args.mount_x, args.mount_y, args.mount_z),
+                         mount_pitch=math.radians(args.mount_pitch))
