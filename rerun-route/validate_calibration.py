@@ -213,7 +213,7 @@ def validate_calibration(log_path, num_plots=5, limit=50, min_dist=0.05, use_pos
                             if use_pose:
                                 # Articulated kinematics
                                 yaw1, yaw2 = math.radians(h1/100.0), math.radians(h2/100.0)
-                                j1, j2 = math.radians(last_frame_data['joint']/100.0) + joint_offset, math.radians(current_frame_data['joint']/100.0) + joint_offset
+                                j1, j2 = math.radians(last_frame_data['joint'][0]/100.0) + joint_offset, math.radians(current_frame_data['joint'][0]/100.0) + joint_offset
                                 
                                 p1_w = np.array([x1/1000.0, y1/1000.0, 0])
                                 p2_w = np.array([x2/1000.0, y2/1000.0, 0])
