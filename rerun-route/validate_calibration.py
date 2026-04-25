@@ -71,6 +71,7 @@ def validate_calibration(
     mount_pitch=0,
     joint_offset=0,
     debug_frame=-1,
+    codec_name='hevc',
 ):
     # Hardcoded intrinsics from main.py
     fx, fy = 1400.0, 1400.0
@@ -131,7 +132,7 @@ def validate_calibration(
 
     orb = cv2.ORB_create(nfeatures=2000)
     bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-    decoder = VideoDecoder('hevc')
+    decoder = VideoDecoder(codec_name)
 
     last_frame_data = None
     errors = []
@@ -335,20 +336,24 @@ def validate_calibration(
             if limit > 0 and len(errors) >= limit:
                 break
 
-    if debug_frame == -1 and errors:
-        print(f'\nResults for {os.path.basename(log_path)} (dist threshold {min_dist}m):')
-        print(f'  Total frames in log:    {stats["total_frames"]}')
-        print(f'  - No Data (Pose/Joint): {stats["no_pose_depth"]}')
-        print(f'  - No Descriptors:       {stats["no_descriptors"]}')
-        print(f'  - Stationary (<{min_dist}m):   {stats["stationary"]}')
-        print(f'  - Low ORB Matches:      {stats["low_matches"]}')
-        print(f'  - Insufficient Depth:   {stats["insufficient_3d"]}')
-        print(f'  - Math/PnP Failed:      {stats["pnp_failed"]}')
-        print(f'  = Valid Samples Used:   {stats["valid_samples"]}')
-        print(f'\n  Average Reprojection Error: {np.mean(errors):.2f} pixels')
-        print(f'  Std Dev: {np.std(errors):.2f} pixels')
-    else:
-        print('No matches found to calculate error.')
+    if debug_frame == -1:
+        if errors:
+            print(f'\nResults for {os.path.basename(log_path)} (dist threshold {min_dist}m):')
+            print(f'  Total frames in log:    {stats["total_frames"]}')
+            print(f'  - No Data (Pose/Joint): {stats["no_pose_depth"]}')
+            print(f'  - No Descriptors:       {stats["no_descriptors"]}')
+            print(f'  - Stationary (<{min_dist}m):   {stats["stationary"]}')
+            print(f'  - Low ORB Matches:      {stats["low_matches"]}')
+            print(f'  - Insufficient Depth:   {stats["insufficient_3d"]}')
+            print(f'  - Math/PnP Failed:      {stats["pnp_failed"]}')
+            print(f'  = Valid Samples Used:   {stats["valid_samples"]}')
+            print(f'\n  Average Reprojection Error: {np.mean(errors):.2f} pixels')
+            print(f'  Std Dev: {np.std(errors):.2f} pixels')
+        else:
+            print(f'\nNo matches found to calculate error for {os.path.basename(log_path)}.')
+            print(f'Stats:')
+            for k, v in stats.items():
+                print(f'  {k}: {v}')
 
 
 if __name__ == '__main__':
@@ -368,6 +373,7 @@ if __name__ == '__main__':
     )
     parser.add_argument('--joint-offset', type=float, default=0.0, help='Joint angle calibration offset (degrees)')
     parser.add_argument('--debug-frame', type=int, default=-1)
+    parser.add_argument('--codec', default='h264', help='Video codec (h264, hevc, etc.)')
     args = parser.parse_args()
     validate_calibration(
         args.logfile,
@@ -379,4 +385,5 @@ if __name__ == '__main__':
         mount_pitch=math.radians(args.mount_pitch),
         joint_offset=math.radians(args.joint_offset),
         debug_frame=args.debug_frame,
+        codec_name=args.codec,
     )
