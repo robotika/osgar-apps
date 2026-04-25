@@ -2,13 +2,7 @@ import json
 import argparse
 import sys
 
-try:
-    import depthai as dai
-    import numpy as np
-except ImportError:
-    print("Error: 'depthai' or 'numpy' module not found.")
-    print("Please install them using: pip install depthai numpy")
-    sys.exit(1)
+import depthai as dai
 
 
 def get_calibration(output_file):
