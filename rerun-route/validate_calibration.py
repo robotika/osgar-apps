@@ -1,15 +1,12 @@
 import argparse
 import math
 import os
+import pathlib
 import sys
 
 import av
 import cv2
 import numpy as np
-
-# Ensure we can find local modules
-if os.path.dirname(__file__) not in sys.path:
-    sys.path.append(os.path.dirname(__file__))
 
 from osgar.lib.serialize import deserialize
 from osgar.logger import LogReader, lookup_stream_id
@@ -320,7 +317,9 @@ def validate_calibration(
                                         if is_debug
                                         else f'debug_calib_{plot_count:02d}.png'
                                     )
-                                    cv2.imwrite(out_name, vis_img)
+                                    out_dir = pathlib.Path(__file__).parent / 'debug'
+                                    out_dir.mkdir(parents=True, exist_ok=True)
+                                    cv2.imwrite(str(out_dir / out_name), vis_img)
                                     print(f'Saved {out_name} (Error: {mean_err:.2f} px)')
                                     if not is_debug:
                                         plot_count += 1
