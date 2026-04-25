@@ -9,6 +9,7 @@ requires-python = ">=3.9"
 dependencies = [
     "av>=15.1.0",
     "bitstring>=4.3.1",
+    "depthai>=3.5.0",
     "librosa>=0.10.0",
     "numpy==1.22.0",
     "opencv-python==4.7.0.72",
