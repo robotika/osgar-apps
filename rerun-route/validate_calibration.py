@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 from osgar.lib.serialize import deserialize
-from osgar.logger import LogReader, lookup_stream_id
+from osgar.logger import LogReader, lookup_stream_id, lookup_config
 
 
 class VideoDecoder:
@@ -59,6 +59,19 @@ def get_rotation_matrix(yaw, pitch=0, roll=0):
     Rx = np.array([[1, 0, 0], [0, cr, -sr], [0, sr, cr]])
 
     return Rz @ Ry @ Rx
+
+
+def autodetect_codec(log_path):
+    config = lookup_config(log_path)
+    if config:
+        modules = config.get('robot', {}).get('modules', {})
+        oak_config = modules.get('oak', {}).get('init', {})
+        encoder = oak_config.get('video_encoder')
+        if encoder == 'h265':
+            return 'hevc'
+        elif encoder == 'h264':
+            return 'h264'
+    return None
 
 
 def validate_calibration(
@@ -373,8 +386,16 @@ if __name__ == '__main__':
     )
     parser.add_argument('--joint-offset', type=float, default=0.0, help='Joint angle calibration offset (degrees)')
     parser.add_argument('--debug-frame', type=int, default=-1)
-    parser.add_argument('--codec', default='h264', help='Video codec (h264, hevc, etc.)')
+    parser.add_argument('--codec', default=None, help='Video codec (h264, hevc, etc.)')
     args = parser.parse_args()
+
+    codec = args.codec
+    if codec is None:
+        codec = autodetect_codec(args.logfile)
+    if codec is None:
+        codec = 'h264'  # Fallback
+    print(f"Using codec: {codec}")
+
     validate_calibration(
         args.logfile,
         args.plots,
@@ -385,5 +406,5 @@ if __name__ == '__main__':
         mount_pitch=math.radians(args.mount_pitch),
         joint_offset=math.radians(args.joint_offset),
         debug_frame=args.debug_frame,
-        codec_name=args.codec,
+        codec_name=codec,
     )
