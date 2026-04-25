@@ -8,17 +8,14 @@ import depthai as dai
 def get_calibration(output_file):
     print("Connecting to OAK device...")
     try:
-        # Create pipeline
-        pipeline = dai.Pipeline()
-        
-        # Connect to device and start pipeline
-        with dai.Device(pipeline) as device:
+        # Connect to device
+        with dai.Device() as device:
             print(f"Connected to {device.getDeviceName()}")
             calibData = device.readCalibration()
             
             data = {
                 "deviceName": device.getDeviceName(),
-                "mxSerial": device.getMxId(),
+                "mxSerial": device.getDeviceId(),
                 "cameras": {}
             }
             
