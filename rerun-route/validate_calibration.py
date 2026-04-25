@@ -1,4 +1,5 @@
 import argparse
+import json
 import math
 import os
 import pathlib
@@ -74,6 +75,11 @@ def autodetect_codec(log_path):
     return None
 
 
+def load_calibration(calib_file):
+    with open(calib_file, 'r') as f:
+        return json.load(f)
+
+
 def validate_calibration(
     log_path,
     num_plots=5,
@@ -85,12 +91,16 @@ def validate_calibration(
     joint_offset=0,
     debug_frame=-1,
     codec_name='hevc',
+    calib_data=None,
 ):
-    # Hardcoded intrinsics from main.py
+    # Hardcoded defaults
     fx, fy = 1400.0, 1400.0
     cx, cy = 960.0, 540.0
     camera_matrix = np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1.0]], dtype=float)
     dist_coeffs = np.zeros((4, 1))
+
+    if calib_data:
+        print(f"Using calibration from {calib_data.get('deviceName', 'unknown')}")
 
     # Camera coord system: Z forward, X right, Y down
     # Robot coord system: X forward, Y left, Z up
@@ -174,6 +184,33 @@ def validate_calibration(
             frame = decoder.decode(raw_data)
             if frame is None:
                 continue
+
+            f_h, f_w = frame.shape[:2]
+            if calib_data:
+                res_key = f"{f_w}x{f_h}"
+                intrinsics = calib_data['cameras']['rgb']['intrinsics'].get(res_key)
+                if intrinsics:
+                    camera_matrix = np.array(intrinsics, dtype=float)
+                else:
+                    # Scale default if resolution doesn't match
+                    scale_x = f_w / 1920.0
+                    scale_y = f_h / 1080.0
+                    camera_matrix = np.array([
+                        [fx * scale_x, 0, cx * scale_x],
+                        [0, fy * scale_y, cy * scale_y],
+                        [0, 0, 1.0]
+                    ], dtype=float)
+                dist_coeffs = np.array(calib_data['cameras']['rgb']['distortion'], dtype=float)
+            else:
+                # Default scaling if not 1080p
+                if (f_w, f_h) != (1920, 1080):
+                    scale_x = f_w / 1920.0
+                    scale_y = f_h / 1080.0
+                    camera_matrix = np.array([
+                        [fx * scale_x, 0, cx * scale_x],
+                        [0, fy * scale_y, cy * scale_y],
+                        [0, 0, 1.0]
+                    ], dtype=float)
 
             pose = get_closest_data(timestamp, pose_history)
             depth = get_closest_data(timestamp, depth_history)
@@ -387,6 +424,7 @@ if __name__ == '__main__':
     parser.add_argument('--joint-offset', type=float, default=0.0, help='Joint angle calibration offset (degrees)')
     parser.add_argument('--debug-frame', type=int, default=-1)
     parser.add_argument('--codec', default=None, help='Video codec (h264, hevc, etc.)')
+    parser.add_argument('--calib', help='Path to OAK calibration JSON file')
     args = parser.parse_args()
 
     codec = args.codec
@@ -395,6 +433,10 @@ if __name__ == '__main__':
     if codec is None:
         codec = 'h264'  # Fallback
     print(f"Using codec: {codec}")
+
+    calib_data = None
+    if args.calib:
+        calib_data = load_calibration(args.calib)
 
     validate_calibration(
         args.logfile,
@@ -407,4 +449,5 @@ if __name__ == '__main__':
         joint_offset=math.radians(args.joint_offset),
         debug_frame=args.debug_frame,
         codec_name=codec,
+        calib_data=calib_data,
     )
