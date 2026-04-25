@@ -360,10 +360,10 @@ if __name__ == '__main__':
     parser.add_argument('--dist', type=float, default=0.05, help='Min distance between frames (meters)')
     parser.add_argument('--use-pose', action='store_true', help='Use robot pose + joint instead of solvePnPRansac')
     parser.add_argument(
-        '--mount-x', type=float, default=0.0, help='Camera mounting X offset from joint (meters, forward)'
+        '--mount-x', type=float, default=0.205, help='Camera mounting X offset from joint (meters, forward)'
     )
     parser.add_argument('--mount-y', type=float, default=0.0, help='Camera mounting Y offset (meters, left)')
-    parser.add_argument('--mount-z', type=float, default=0.0, help='Camera mounting Z offset (meters, up)')
+    parser.add_argument('--mount-z', type=float, default=0.285, help='Camera mounting Z offset (meters, up)')
     parser.add_argument(
         '--mount-pitch', type=float, default=0.0, help='Camera mounting pitch (degrees, down is positive)'
     )
