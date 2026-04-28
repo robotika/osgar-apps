@@ -44,7 +44,8 @@ class ConquerCastle(Node):
     def on_emergency_stop(self, data):
         self.emergency_stop = data
 
-    def on_nmea_data(self, data):        # Basic GPS tracking (simplified, might need more robust parsing)
+    def on_nmea_data(self, data):
+        # Basic GPS tracking (simplified, might need more robust parsing)
         if data.startswith('$GNGGA') or data.startswith('$GPGGA'):
             parts = data.split(',')
             if len(parts) > 4 and parts[2] and parts[4]:
@@ -56,6 +57,9 @@ class ConquerCastle(Node):
                     lon = -lon
                 self.last_gps = (lat, lon)
 
+    def on_tick(self, data):
+        pass
+
     def on_detections(self, data):
         self.last_detections = data
 
@@ -64,6 +68,7 @@ class ConquerCastle(Node):
             return
 
         w, h = 640, 400
+
         def frameNorm(w, h, bbox):
             normVals = np.full(len(bbox), w)
             normVals[::2] = h
@@ -72,9 +77,9 @@ class ConquerCastle(Node):
         self.last_cones_distances = []
         for detection in self.last_detections:
             a, b, c, d = frameNorm(h, h, detection[2]).tolist()
-            _name, x, y, width, height = detection[0], a + (w - h) // 2, b, c - a, d - b
+            x, y, width, height = a + (w - h) // 2, b, c - a, d - b
 
-            cone_depth = data[y:y+height, x:x+width]
+            cone_depth = data[y:y + height, x:x + width]
             mask = cone_depth > 0
             if mask.max():
                 dist = np.percentile(cone_depth[mask], 50) / 1000
@@ -83,11 +88,7 @@ class ConquerCastle(Node):
             self.last_cones_distances.append(dist)
 
     def update(self):
-        channel = super().update()
-        handler = getattr(self, "on_" + channel, None)
-        if handler:
-            handler(self.bus.listen()[1])
-
+        super().update()
         # Main state machine logic
         self.run_logic()
 

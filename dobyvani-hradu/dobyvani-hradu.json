@@ -4,7 +4,7 @@
     "modules": {
       "app": {
         "driver": "dobyvani-hradu.main:ConquerCastle",
-        "in": ["emergency_stop", "pose2d", "nmea_data", "depth", "detections"],
+        "in": ["emergency_stop", "pose2d", "nmea_data", "depth", "detections", "tick"],
         "out": ["desired_steering"],
         "init": {
           "geofence": [
