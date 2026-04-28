@@ -6,7 +6,6 @@ import math
 
 import numpy as np
 from osgar.bus import BusShutdownException
-from osgar.lib.mathtools import Move2D
 from osgar.node import Node
 
 from .geofence import Geofence  # We will copy/adapt geofence.py
@@ -16,7 +15,7 @@ class ConquerCastle(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
         bus.register('desired_steering')
-        self.pose2d = Move2D()
+        self.pose2d = [0, 0, 0]  # x, y, heading
         self.last_detections = None
         self.last_cones_distances = []
         self.verbose = config.get('verbose', False)
@@ -40,7 +39,7 @@ class ConquerCastle(Node):
         )
 
     def on_pose2d(self, data):
-        self.pose2d = Move2D(*data)
+        self.pose2d = data[:]
 
     def on_emergency_stop(self, data):
         self.emergency_stop = data
