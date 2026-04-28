@@ -2,14 +2,13 @@
   Dobyvání hradu (Conquer the Castle)
   Autonomous mobile robot competition
 """
-import math
 import numpy as np
-
-from osgar.node import Node
 from osgar.bus import BusShutdownException
 from osgar.lib.mathtools import Move2D
+from osgar.node import Node
 
 from .geofence import Geofence  # We will copy/adapt geofence.py
+
 
 class ConquerCastle(Node):
     def __init__(self, config, bus):
@@ -22,7 +21,7 @@ class ConquerCastle(Node):
         self.geofence = None
         if 'geofence' in config:
             self.geofence = Geofence(config['geofence'])
-        
+
         self.visited_cones = []  # list of (lat, lon)
         self.min_cone_dist_diff = config.get('min_cone_dist_diff', 2.0)  # meters
         self.wait_time = config.get('wait_time', 5.0)  # seconds
@@ -39,9 +38,11 @@ class ConquerCastle(Node):
             parts = data.split(',')
             if len(parts) > 4 and parts[2] and parts[4]:
                 lat = float(parts[2][:2]) + float(parts[2][2:]) / 60.0
-                if parts[3] == 'S': lat = -lat
+                if parts[3] == 'S':
+                    lat = -lat
                 lon = float(parts[4][:3]) + float(parts[4][3:]) / 60.0
-                if parts[5] == 'W': lon = -lon
+                if parts[5] == 'W':
+                    lon = -lon
                 self.last_gps = (lat, lon)
 
     def on_detections(self, data):
@@ -60,7 +61,7 @@ class ConquerCastle(Node):
         self.last_cones_distances = []
         for detection in self.last_detections:
             a, b, c, d = frameNorm(h, h, detection[2]).tolist()
-            name, x, y, width, height = detection[0], a + (w - h) // 2, b, c - a, d - b
+            _name, x, y, width, height = detection[0], a + (w - h) // 2, b, c - a, d - b
 
             cone_depth = data[y:y+height, x:x+width]
             mask = cone_depth > 0
@@ -75,7 +76,7 @@ class ConquerCastle(Node):
         handler = getattr(self, "on_" + channel, None)
         if handler:
             handler(self.bus.listen()[1])
-        
+
         # Main state machine logic
         self.run_logic()
 
@@ -87,7 +88,7 @@ class ConquerCastle(Node):
                 # TODO: Filter by distance
                 # self.state = 'APPROACHING'
                 pass
-            
+
             # 2. Stay within geofence
             if self.geofence and self.last_gps:
                 dist = self.geofence.border_dist(self.last_gps)
@@ -97,7 +98,7 @@ class ConquerCastle(Node):
 
         elif self.state == 'APPROACHING':
             pass
-        
+
         elif self.state == 'WAITING':
             if self.time - self.state_start_time > self.wait_time:
                 self.state = 'SEARCHING'

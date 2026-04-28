@@ -1,14 +1,14 @@
 import math
 from random import Random
 
-import numpy as np
 from shapely.geometry import Point, Polygon
 from shapely.ops import nearest_points
+
 
 class Geofence:
     """
     A class to represent a geofence polygon and calculate distances to its border.
-    
+
     This version uses a self-contained Haversine formula for distance calculation,
     removing the dependency on the geopy library.
     """
@@ -61,7 +61,7 @@ class Geofence:
         # Haversine formula
         a = math.sin(dlat / 2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2)**2
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-        
+
         distance = Geofence.EARTH_RADIUS_METERS * c
         return distance
 
@@ -87,7 +87,7 @@ class Geofence:
 
         # Use the internal Haversine distance calculation
         distance_meters = self._haversine_distance((point_lat, point_lon), (nearest_lat, nearest_lon))
-        
+
         is_inside = self.geofence_poly.contains(point_geom)
 
         return distance_meters if is_inside else -distance_meters
