@@ -2,6 +2,8 @@
   Dobyvání hradu (Conquer the Castle)
   Autonomous mobile robot competition
 """
+import math
+
 import numpy as np
 from osgar.bus import BusShutdownException
 from osgar.lib.mathtools import Move2D
@@ -13,7 +15,7 @@ from .geofence import Geofence  # We will copy/adapt geofence.py
 class ConquerCastle(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('desired_speed')
+        bus.register('desired_steering')
         self.pose2d = Move2D()
         self.last_detections = None
         self.last_cones_distances = []
@@ -25,15 +27,25 @@ class ConquerCastle(Node):
         self.visited_cones = []  # list of (lat, lon)
         self.min_cone_dist_diff = config.get('min_cone_dist_diff', 2.0)  # meters
         self.wait_time = config.get('wait_time', 5.0)  # seconds
+        self.max_speed = config.get('max_speed', 0.5)
         self.state = 'SEARCHING'
         self.state_start_time = None
         self.last_gps = None
+        self.emergency_stop = False
+
+    def send_speed_cmd(self, speed, steering_angle):
+        return self.bus.publish(
+            'desired_steering',
+            [round(speed * 1000), round(math.degrees(steering_angle) * 100)]
+        )
 
     def on_pose2d(self, data):
         self.pose2d = Move2D(*data)
 
-    def on_nmea_data(self, data):
-        # Basic GPS tracking (simplified, might need more robust parsing)
+    def on_emergency_stop(self, data):
+        self.emergency_stop = data
+
+    def on_nmea_data(self, data):        # Basic GPS tracking (simplified, might need more robust parsing)
         if data.startswith('$GNGGA') or data.startswith('$GPGGA'):
             parts = data.split(',')
             if len(parts) > 4 and parts[2] and parts[4]:
