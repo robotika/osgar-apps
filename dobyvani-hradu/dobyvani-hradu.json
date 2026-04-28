@@ -1,0 +1,66 @@
+{
+  "version": 2,
+  "robot": {
+    "modules": {
+      "app": {
+        "driver": "dobyvani-hradu.main:ConquerCastle",
+        "init": {
+          "geofence": [
+            [50.0, 14.0],
+            [50.0, 14.1],
+            [50.1, 14.1],
+            [50.1, 14.0]
+          ],
+          "wait_time": 5.0,
+          "min_cone_dist_diff": 2.0
+        }
+      },
+      "oak": {
+        "driver": "osgar.drivers.oak_camera:OakCamera",
+        "init": {
+          "fps": 10,
+          "is_color": true,
+          "is_depth": true,
+          "model": {
+            "blob": "../cones-challenge/coneslayer_openvino_2022.1_6shave.blob"
+          },
+          "nn_config": {
+            "output_format": "detection",
+            "NN_family": "YOLO",
+            "input_size": "416x416",
+            "NN_specific_metadata": {
+              "classes": 1,
+              "coordinates": 4,
+              "anchors": [
+                2.896484375, 5.90234375, 4.6875, 9.09375, 7.75390625, 14.59375,
+                12.8359375, 22.84375, 28.59375, 48.25, 53.875, 109.6875,
+                109.5625, 155.375, 142.25, 243.75, 209.375, 383.0
+              ],
+              "anchor_masks": {
+                "side52": [0, 1, 2],
+                "side26": [3, 4, 5],
+                "side13": [6, 7, 8]
+              },
+              "iou_threshold": 0.5,
+              "confidence_threshold": 0.54
+            }
+          },
+          "mappings": {
+            "labels": ["cone"]
+          }
+        }
+      },
+      "timer": {
+        "driver": "osgar.drivers.timer:Timer",
+        "init": {
+          "sleep": 0.1
+        }
+      }
+    },
+    "links": [
+      ["oak.depth", "app.depth"],
+      ["oak.detections", "app.detections"],
+      ["timer.tick", "app.tick"]
+    ]
+  }
+}
