@@ -1,0 +1,38 @@
+[project]
+name = "osgar-apps"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Elena Ai", email = "elena.ai@robotika.cz" }
+]
+requires-python = ">=3.9"
+dependencies = [
+    "av>=15.1.0",
+    "bitstring>=4.3.1",
+    "librosa>=0.10.0",
+    "numpy==1.22.0",
+    "opencv-python==4.7.0.72",
+    "osgar",
+    "ruff>=0.15.11",
+    "setuptools<70",
+    "shapely==2.0.1",
+    "speechrecognition==3.14.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.8,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+osgar = { git = "https://github.com/robotika/osgar.git", rev = "master" }
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = []
