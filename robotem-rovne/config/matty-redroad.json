@@ -4,11 +4,12 @@
     "modules": {
       "app": {
           "driver": "robotem-rovne.main:RobotemRovne",
-          "in": ["emergency_stop", "pose2d", "nn_mask", "nmea_data", "orientation_list"],
+          "in": ["emergency_stop", "pose2d", "nn_mask", "nmea_data", "orientation_list", "depth"],
           "out": ["desired_steering"],
           "init": {
             "max_speed": 0.5,
             "stop_dist": -1,
+            "min_safe_dist": 2.0,
             "terminate_on_stop": true
           }
       },
@@ -85,6 +86,7 @@
       ["gps.nmea_data", "app.nmea_data"],
 
       ["oak.nn_mask", "app.nn_mask"],
+      ["oak.depth", "app.depth"],
       ["oak.orientation_list", "app.orientation_list"]
     ]
   }

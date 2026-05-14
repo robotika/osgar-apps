@@ -28,11 +28,13 @@ class RobotemRovne(Node):
         bus.register('desired_steering')
         self.max_speed = config.get('max_speed', 0.2)
         self.stop_dist = config.get('stop_dist', 1.0)
+        self.min_safe_dist = config.get('min_safe_dist', 2.0)  # meters
         self.limit_dist = config.get('dist_limit', None)
         self.verbose = False
         self.last_position = None  # not defined, probably should be 0, 0, 0
         self.last_obstacle = 0
         self.last_nn_mask = None
+        self.last_depth = None
         self.last_dir = 0  # straight
         self.start_lon_lat = None
         self.raise_exception_on_stop = config.get('terminate_on_stop', False)
@@ -40,7 +42,9 @@ class RobotemRovne(Node):
     def on_pose2d(self, data):
         x, y, heading = data
         self.last_position = [x / 1000.0, y / 1000.0, math.radians(heading / 100.0)]
-        if self.last_obstacle < self.stop_dist or self.last_nn_mask is None:  # meters
+        if self.last_nn_mask is None:
+            speed, steering_angle = 0, 0
+        elif self.stop_dist > 0 and self.last_obstacle < self.stop_dist:
             speed, steering_angle = 0, 0
         else:
             speed, steering_angle = self.max_speed, self.last_dir
@@ -65,7 +69,7 @@ class RobotemRovne(Node):
         pass
 
     def on_depth(self, data):
-        pass
+        self.last_depth = data
 
     def on_nmea_data(self, data):
         if ('lat' in data and 'lon' in data) and (data['lat'] is not None and data['lon'] is not None):
@@ -83,6 +87,16 @@ class RobotemRovne(Node):
 #        assert self.last_nn_mask.shape == (120, 160), self.last_nn_mask.shape
         height, width = self.last_nn_mask.shape
         self.last_nn_mask[:height//2, :] = 0  # remove sky detections
+
+        if self.last_depth is not None:
+            # Resize depth to mask size for fusion
+            depth_resized = cv2.resize(self.last_depth, (width, height), interpolation=cv2.INTER_NEAREST)
+            # Filter road mask by depth: keep only road where depth is far enough
+            # Depth is in mm, min_safe_dist is in meters
+            safe_dist_mm = self.min_safe_dist * 1000
+            # Also ignore 0 values (often invalid or too close)
+            obstacle_mask = (depth_resized < safe_dist_mm) & (depth_resized > 0)
+            self.last_nn_mask[obstacle_mask] = 0
 
         center_y, center_x = mask_center(self.last_nn_mask)
         dead = width//16 # was 10
