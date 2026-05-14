@@ -12,7 +12,9 @@ This plan outlines the steps to integrate OAK-D depth data into the `robotem-rov
     - The road segmentation mask.
     - The depth map (as a heatmap).
     - Obstacles detected within a certain safety distance.
-- **Bird's Eye View (BEV)**: Project depth and road mask into a top-down view to better plan steering.
+- **Bird's Eye View (BEV)**:
+    - *Phase 1 (Reactive, Single Frame)*: Project current depth and road mask into a top-down view to identify obstacles immediately ahead. This provides a direct, low-latency fusion.
+    - *Phase 2 (Mapping, Multi-frame)*: If single-frame reactive steering is insufficient (e.g. if the obstacle falls into a blind spot close to the camera), accumulate BEV projections into a local map using the `platform.pose2d` stream to maintain temporal memory of obstacles.
 
 ## 3. Algorithm Development (Depth-NN Fusion)
 - **Depth-based Obstacle Mask**:
