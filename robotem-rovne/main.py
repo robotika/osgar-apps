@@ -4,6 +4,7 @@
 import datetime
 import math
 
+import cv2
 import numpy as np
 
 from osgar.lib.route import Convertor
@@ -91,11 +92,46 @@ class RobotemRovne(Node):
         if self.last_depth is not None:
             # Resize depth to mask size for fusion
             depth_resized = cv2.resize(self.last_depth, (width, height), interpolation=cv2.INTER_NEAREST)
-            # Filter road mask by depth: keep only road where depth is far enough
+            
+            # 1. Emergency stop if ANYTHING is too close (e.g. 1.0m) in the bottom part of FOV
+            # Depth is in mm
+            emergency_dist_mm = 1000 
+            # Focus on the central bottom part for emergency stop 
+            # ROI: rows from 60% to 90%, columns from 20% to 80%
+            # Split it into 3 columns (left, center, right) to see if any is blocked
+            roi_y_start, roi_y_end = int(height*0.6), int(height*0.9)
+            roi_x_start, roi_x_end = int(width*0.2), int(width*0.8)
+            num_cols = 3
+            col_width = (roi_x_end - roi_x_start) // num_cols
+            
+            is_blocked = False
+            for i in range(num_cols):
+                c_start = roi_x_start + i * col_width
+                c_end = c_start + col_width
+                strip = depth_resized[roi_y_start:roi_y_end, c_start:c_end]
+                valid_strip = strip[strip > 0]
+                if len(valid_strip) > 0 and np.percentile(valid_strip, 10) < emergency_dist_mm:
+                    is_blocked = True
+                    break
+            
+            if is_blocked:
+                if self.verbose:
+                    print(f"{self.time} EMERGENCY: Obstacle detected within 1.0m in strip {i}!")
+                self.last_dir = 0
+                self.send_speed_cmd(0, 0)
+                self.last_nn_mask[:] = 0
+                return
+
+            # 2. Filter road mask by depth: keep only road where depth is far enough
             # Depth is in mm, min_safe_dist is in meters
             safe_dist_mm = self.min_safe_dist * 1000
             # Also ignore 0 values (often invalid or too close)
             obstacle_mask = (depth_resized < safe_dist_mm) & (depth_resized > 0)
+            
+            num_obstacles = np.sum(obstacle_mask & (data == 1))
+            if num_obstacles > 0 and self.verbose:
+                print(f"{self.time} Filtering {num_obstacles} road pixels due to depth < {self.min_safe_dist}m")
+            
             self.last_nn_mask[obstacle_mask] = 0
 
         center_y, center_x = mask_center(self.last_nn_mask)
@@ -107,6 +143,9 @@ class RobotemRovne(Node):
             self.last_dir = turn_angle
         else:
             self.last_dir = 0  # straight
+        
+        if self.verbose:
+            print(f"{self.time} Steering: {math.degrees(self.last_dir):.1f} deg (center_x: {center_x})")
 
     def on_orientation_list(self, data):
         if self.verbose:
