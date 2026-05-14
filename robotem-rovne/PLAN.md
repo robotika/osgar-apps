@@ -30,10 +30,26 @@ This plan outlines the steps to integrate OAK-D depth data into the `robotem-rov
 - **State Management**: Track the latest depth and NN mask to compute navigation commands.
 - **Config Update**: Update `matty-redroad.json` to link `oak.depth` to `app.depth`.
 
-## 5. Verification and Testing
-- **Reproduce Failure**: Run `osgar.replay` on the original log to confirm the baseline behavior (collision).
-- **Verify Logic Change**: Run `osgar.replay` without `-F` and expect failure due to changed behavior.
-- **Validate Solution**: Run `osgar.replay -F` and verify that the robot now avoids the tree while staying on the road.
+## 5. Verification and Testing (Standard Development Procedure)
+
+### Step 5a: Local Replay Verification
+Run `osgar.replay` on the robot's log locally. Verify that the behavior matches what was seen on the robot.
+```bash
+uv run python -m osgar.replay robotem-rovne/data/m04-matty-redroad-260501_105531.log --module app
+```
+*Note: `osgar.exceptions.EmergencyStopException` at the end is **expected**; it confirms the replay reached the end of the recording where the emergency button was pressed.*
+
+### Step 5b: Verification of Change (Expect Failure)
+Run replay *without* the `-F` (force) flag. The replay **SHOULD FAIL** because the robot's behavior (outputs) has changed.
+```bash
+uv run python -m osgar.replay robotem-rovne/data/m04-matty-redroad-260501_105531.log --module app
+```
+
+### Step 5c: Force Replay for Validation
+Run `osgar.replay -F` to process the old log's inputs through the *new* logic and validate the solution.
+```bash
+uv run python -m osgar.replay robotem-rovne/data/m04-matty-redroad-260501_105531.log --module app -F
+```
 
 ## 6. Refinement
 - Tune `stop_dist` and `turn_angle` based on replay results.
