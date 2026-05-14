@@ -12,15 +12,18 @@ This plan outlines the steps to integrate OAK-D depth data into the `robotem-rov
     - The road segmentation mask.
     - The depth map (as a heatmap).
     - Obstacles detected within a certain safety distance.
-- **Bird's Eye View (BEV)**: (Optional but recommended) Project depth and road mask into a top-down view to better plan steering.
+- **Bird's Eye View (BEV)**: Project depth and road mask into a top-down view to better plan steering.
 
-## 3. Algorithm Development
-- **Depth-based Obstacle Mask**: Generate an obstacle mask from the depth data by filtering for points closer than a threshold (e.g., `stop_dist`).
-- **Safe Road Extraction**: Combine the `nn_mask` (road) with the depth-based obstacle mask.
-    - `safe_road = road_mask AND (NOT obstacle_mask)`
-- **Dynamic Steering**:
-    - Calculate the desired direction based on the `safe_road` mask.
-    - Implement an emergency stop or aggressive turn if an obstacle is detected directly in the path, even if the NN thinks it's a road.
+## 3. Algorithm Development (Depth-NN Fusion)
+- **Depth-based Obstacle Mask**:
+    - Filter depth data for points closer than `stop_dist` or `warning_dist`.
+    - Handle "noise" in depth data (e.g., median filter or min-pooling).
+- **Safe Road Extraction**:
+    - Project the NN mask and Depth data into the same coordinate space.
+    - `safe_mask = nn_mask & (depth > safety_threshold)`.
+- **Steering Strategy**:
+    - Use `safe_mask` for `mask_center` calculation.
+    - If `safe_mask` is too small (no path), set speed to 0.
 
 ## 4. Implementation in `RobotemRovne` Node
 - **Update `on_depth`**: Implement the `on_depth` handler in `robotem-rovne/main.py`.
