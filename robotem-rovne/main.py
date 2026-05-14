@@ -1,21 +1,20 @@
 """
-  Robotem Rovne 2024
+Robotem Rovne 2024
 """
-import datetime
+
 import math
 
 import cv2
 import numpy as np
-
-from osgar.lib.route import Convertor
-from osgar.node import Node
 from osgar.followme import EmergencyStopException
 from osgar.lib import quaternion
+from osgar.lib.route import Convertor
+from osgar.node import Node
 
 
 def mask_center(mask):
     if mask.max() == 0:
-        return mask.shape[0]//2, mask.shape[1]//2
+        return mask.shape[0] // 2, mask.shape[1] // 2
     assert mask.max() == 1, mask.max()
     indices = np.argwhere(mask == 1)  # shape (num_points, 2)
 
@@ -30,7 +29,7 @@ class RobotemRovne(Node):
         self.max_speed = config.get('max_speed', 0.2)
         self.stop_dist = config.get('stop_dist', 1.0)
         self.min_safe_dist = config.get('min_safe_dist', 2.0)  # meters, steering filter
-        self.danger_dist = config.get('danger_dist', 1.2)      # meters, speed stop
+        self.danger_dist = config.get('danger_dist', 1.2)  # meters, speed stop
         self.limit_dist = config.get('dist_limit', None)
         self.verbose = False
         self.last_position = None
@@ -57,9 +56,9 @@ class RobotemRovne(Node):
             speed, steering_angle = self.max_speed / 2.0, self.last_dir
         else:
             speed, steering_angle = self.max_speed, self.last_dir
-        
+
         if self.verbose:
-            print(f"{speed} {steering_angle}")
+            print(f'{speed} {steering_angle}')
         self.send_speed_cmd(speed, steering_angle)
 
     def on_emergency_stop(self, data):
@@ -67,10 +66,7 @@ class RobotemRovne(Node):
             raise EmergencyStopException()
 
     def send_speed_cmd(self, speed, steering_angle):
-        return self.bus.publish(
-            'desired_steering',
-            [round(speed*1000), round(math.degrees(steering_angle)*100)]
-        )
+        return self.bus.publish('desired_steering', [round(speed * 1000), round(math.degrees(steering_angle) * 100)])
 
     def on_obstacle(self, data):
         self.last_obstacle = data
@@ -95,19 +91,19 @@ class RobotemRovne(Node):
     def on_nn_mask(self, data):
         self.last_nn_mask = data.copy()
         height, width = self.last_nn_mask.shape
-        self.last_nn_mask[:height//2, :] = 0  # remove sky detections
+        self.last_nn_mask[: height // 2, :] = 0  # remove sky detections
 
         if self.last_depth is not None:
             # Resize depth to mask size for fusion
             depth_resized = cv2.resize(self.last_depth, (width, height), interpolation=cv2.INTER_NEAREST)
-            
+
             # 1. Check for immediate danger in central path (Narrow ROI)
-            roi_y_start, roi_y_end = int(height*0.4), int(height*0.7)
-            roi_x_start, roi_x_end = int(width*0.4), int(width*0.6)
-            
+            roi_y_start, roi_y_end = int(height * 0.4), int(height * 0.7)
+            roi_x_start, roi_x_end = int(width * 0.4), int(width * 0.6)
+
             danger_zone = depth_resized[roi_y_start:roi_y_end, roi_x_start:roi_x_end]
             valid_danger = danger_zone[danger_zone > 0]
-            
+
             if len(valid_danger) > 0 and np.percentile(valid_danger, 10) < self.danger_dist * 1000:
                 self.blocked_count += 1
             else:
@@ -119,21 +115,22 @@ class RobotemRovne(Node):
             self.last_nn_mask[obstacle_mask] = 0
 
         center_y, center_x = mask_center(self.last_nn_mask)
-        dead = width//16
+        dead = width // 16
         turn_angle = math.radians(20)
-        if center_x > width//2 + dead:
+        if center_x > width // 2 + dead:
             self.last_dir = -turn_angle
-        elif center_x < width//2 - dead:
+        elif center_x < width // 2 - dead:
             self.last_dir = turn_angle
         else:
             self.last_dir = 0
-        
+
         if self.verbose:
-            print(f"{self.time} center_x: {center_x}, blocked: {self.blocked_count}")
+            print(f'{self.time} center_x: {center_x}, blocked: {self.blocked_count}')
 
     def on_orientation_list(self, data):
         if self.verbose:
             for quat in data:
                 print(self.last_position, quaternion.heading(quat[2:]))
+
 
 # vim: expandtab sw=4 ts=4
