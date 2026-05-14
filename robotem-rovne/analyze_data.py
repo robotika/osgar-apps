@@ -5,7 +5,7 @@ from osgar.logger import LogReaderEx
 def analyze_log(logfile):
     streams = ['oak.depth', 'oak.nn_mask']
     
-    with LogReaderEx(logfile, only_stream_id=streams) as log:
+    with LogReaderEx(logfile, names=streams) as log:
         for timestamp, stream_id, data in log:
             if stream_id == 'oak.depth':
                 print(f"[{timestamp}] Depth shape: {data.shape if hasattr(data, 'shape') else len(data)}, dtype: {data.dtype if hasattr(data, 'dtype') else 'N/A'}")
