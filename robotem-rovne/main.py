@@ -29,16 +29,18 @@ class RobotemRovne(Node):
         bus.register('desired_steering')
         self.max_speed = config.get('max_speed', 0.2)
         self.stop_dist = config.get('stop_dist', 1.0)
-        self.min_safe_dist = config.get('min_safe_dist', 2.0)  # meters
+        self.min_safe_dist = config.get('min_safe_dist', 2.0)  # meters, steering filter
+        self.danger_dist = config.get('danger_dist', 1.2)      # meters, speed stop
         self.limit_dist = config.get('dist_limit', None)
         self.verbose = False
-        self.last_position = None  # not defined, probably should be 0, 0, 0
+        self.last_position = None
         self.last_obstacle = 0
         self.last_nn_mask = None
         self.last_depth = None
         self.last_dir = 0  # straight
         self.start_lon_lat = None
         self.raise_exception_on_stop = config.get('terminate_on_stop', False)
+        self.blocked_count = 0
 
     def on_pose2d(self, data):
         x, y, heading = data
@@ -47,10 +49,17 @@ class RobotemRovne(Node):
             speed, steering_angle = 0, 0
         elif self.stop_dist > 0 and self.last_obstacle < self.stop_dist:
             speed, steering_angle = 0, 0
+        elif self.blocked_count >= 5:
+            # Full stop if central path is blocked for several frames
+            speed, steering_angle = 0, 0
+        elif self.blocked_count > 0:
+            # Slow down if something is in the way
+            speed, steering_angle = self.max_speed / 2.0, self.last_dir
         else:
             speed, steering_angle = self.max_speed, self.last_dir
+        
         if self.verbose:
-            print(speed, steering_angle)
+            print(f"{speed} {steering_angle}")
         self.send_speed_cmd(speed, steering_angle)
 
     def on_emergency_stop(self, data):
@@ -84,8 +93,7 @@ class RobotemRovne(Node):
                 raise EmergencyStopException()
 
     def on_nn_mask(self, data):
-        self.last_nn_mask = data.copy()  # make sure you modify only own copy
-#        assert self.last_nn_mask.shape == (120, 160), self.last_nn_mask.shape
+        self.last_nn_mask = data.copy()
         height, width = self.last_nn_mask.shape
         self.last_nn_mask[:height//2, :] = 0  # remove sky detections
 
@@ -93,59 +101,35 @@ class RobotemRovne(Node):
             # Resize depth to mask size for fusion
             depth_resized = cv2.resize(self.last_depth, (width, height), interpolation=cv2.INTER_NEAREST)
             
-            # 1. Emergency stop if ANYTHING is too close (e.g. 1.0m) in the bottom part of FOV
-            # Depth is in mm
-            emergency_dist_mm = 1000 
-            # Focus on the central bottom part for emergency stop 
-            # ROI: rows from 60% to 90%, columns from 20% to 80%
-            # Split it into 3 columns (left, center, right) to see if any is blocked
-            roi_y_start, roi_y_end = int(height*0.6), int(height*0.9)
-            roi_x_start, roi_x_end = int(width*0.2), int(width*0.8)
-            num_cols = 3
-            col_width = (roi_x_end - roi_x_start) // num_cols
+            # 1. Check for immediate danger in central path (Narrow ROI)
+            roi_y_start, roi_y_end = int(height*0.4), int(height*0.7)
+            roi_x_start, roi_x_end = int(width*0.4), int(width*0.6)
             
-            is_blocked = False
-            for i in range(num_cols):
-                c_start = roi_x_start + i * col_width
-                c_end = c_start + col_width
-                strip = depth_resized[roi_y_start:roi_y_end, c_start:c_end]
-                valid_strip = strip[strip > 0]
-                if len(valid_strip) > 0 and np.percentile(valid_strip, 10) < emergency_dist_mm:
-                    is_blocked = True
-                    break
+            danger_zone = depth_resized[roi_y_start:roi_y_end, roi_x_start:roi_x_end]
+            valid_danger = danger_zone[danger_zone > 0]
             
-            if is_blocked:
-                if self.verbose:
-                    print(f"{self.time} EMERGENCY: Obstacle detected within 1.0m in strip {i}!")
-                self.last_dir = 0
-                self.send_speed_cmd(0, 0)
-                self.last_nn_mask[:] = 0
-                return
+            if len(valid_danger) > 0 and np.percentile(valid_danger, 10) < self.danger_dist * 1000:
+                self.blocked_count += 1
+            else:
+                self.blocked_count = 0
 
-            # 2. Filter road mask by depth: keep only road where depth is far enough
-            # Depth is in mm, min_safe_dist is in meters
+            # 2. Filter road mask by depth for steering (Wider ROI)
             safe_dist_mm = self.min_safe_dist * 1000
-            # Also ignore 0 values (often invalid or too close)
             obstacle_mask = (depth_resized < safe_dist_mm) & (depth_resized > 0)
-            
-            num_obstacles = np.sum(obstacle_mask & (data == 1))
-            if num_obstacles > 0 and self.verbose:
-                print(f"{self.time} Filtering {num_obstacles} road pixels due to depth < {self.min_safe_dist}m")
-            
             self.last_nn_mask[obstacle_mask] = 0
 
         center_y, center_x = mask_center(self.last_nn_mask)
-        dead = width//16 # was 10
+        dead = width//16
         turn_angle = math.radians(20)
         if center_x > width//2 + dead:
             self.last_dir = -turn_angle
         elif center_x < width//2 - dead:
             self.last_dir = turn_angle
         else:
-            self.last_dir = 0  # straight
+            self.last_dir = 0
         
         if self.verbose:
-            print(f"{self.time} Steering: {math.degrees(self.last_dir):.1f} deg (center_x: {center_x})")
+            print(f"{self.time} center_x: {center_x}, blocked: {self.blocked_count}")
 
     def on_orientation_list(self, data):
         if self.verbose:

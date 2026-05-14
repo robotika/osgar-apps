@@ -10,6 +10,7 @@
             "max_speed": 0.5,
             "stop_dist": -1,
             "min_safe_dist": 2.0,
+            "danger_dist": 1.2,
             "terminate_on_stop": true
           }
       },
