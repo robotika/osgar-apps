@@ -1,109 +1,161 @@
 
-import subprocess
 import os
-import glob
-import re
 import sys
+import glob
+import subprocess
+from osgar.lib.serialize import deserialize
+from osgar.logger import LogReader, lookup_stream_id
+
+def get_steering_stream_name(log_path):
+    # Try common stream names
+    for name in ["app.desired_steering", "ros.desired_steering"]:
+        try:
+            lookup_stream_id(log_path, name)
+            return name
+        except Exception:
+            pass
+    # Try any stream ending in desired_steering
+    try:
+        reader = LogReader(log_path)
+        for stream_id in reader.streams():
+            name = reader.request_uri(stream_id)
+            if name.endswith(".desired_steering"):
+                return name
+    except Exception:
+        pass
+    return None
+
+def get_steering_data(log_path, stream_name):
+    try:
+        stream_id = lookup_stream_id(log_path, stream_name)
+    except Exception:
+        return {}
+    
+    data = {}
+    for dt, channel, raw_data in LogReader(log_path, only_stream_id=stream_id):
+        # Store by timestamp (dt is timedelta)
+        data[dt.total_seconds()] = deserialize(raw_data)
+    return data
 
 def analyze_log(log_path, config_path):
     print(f"Analyzing {log_path}...")
+    temp_log = "stats_tmp.log"
+    if os.path.exists(temp_log):
+        os.remove(temp_log)
+        
     cmd = [
         "uv", "run", "python", "-m", "osgar.replay",
         log_path,
         "--module", "app",
-        "--config", config_path
+        "--config", config_path,
+        "--force",
+        "--output", temp_log
     ]
     
-    # We run without -F first to catch the first divergence
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    # Run replay to generate new steering
+    subprocess.run(cmd, capture_output=True)
     
+    if not os.path.exists(temp_log):
+        return {"error": "Replay failed to produce output log"}
+
+    orig_stream = get_steering_stream_name(log_path)
+    if not orig_stream:
+         if os.path.exists(temp_log): os.remove(temp_log)
+         return {"error": "Could not find any .desired_steering stream in original log"}
+         
+    orig_steering = get_steering_data(log_path, orig_stream)
+    new_steering = get_steering_data(temp_log, "desired_steering")
+    
+    if os.path.exists(temp_log):
+        os.remove(temp_log)
+
+    if not orig_steering or not new_steering:
+        return {"error": f"Could not find steering data (orig:{len(orig_steering)}, new:{len(new_steering)})"}
+
     stats = {
-        "diverged": False,
-        "new_stop": False,
-        "new_slowdown": False,
-        "other_change": False,
-        "error": None
+        "stops": [],
+        "slowdowns": [],
+        "total_new_msgs": len(new_steering)
     }
 
-    if result.returncode != 0:
-        stats["diverged"] = True
-        # Look for AssertionError: ([data], [ref_data], dt)
-        # Example: AssertionError: ([250, 0], [500, 0], datetime.timedelta(seconds=7, microseconds=372147))
-        match = re.search(r"AssertionError: \(\[(-?\d+), (-?\d+)\], \[(-?\d+), (-?\d+)\]", result.stderr)
-        if match:
-            new_speed = int(match.group(1))
-            new_steer = int(match.group(2))
-            old_speed = int(match.group(3))
-            old_steer = int(match.group(4))
+    # Match by timestamps
+    orig_keys = sorted(orig_steering.keys())
+    for ts, new_val in sorted(new_steering.items()):
+        # Find closest timestamp in original using binary search or simple min if keys are few
+        # For simplicity and robustness with small counts:
+        closest_ts = min(orig_keys, key=lambda x: abs(x - ts))
+        if abs(closest_ts - ts) > 0.1: # Too far apart
+            continue
             
-            if new_speed == 0 and old_speed > 0:
-                stats["new_stop"] = True
-            elif new_speed < old_speed:
-                stats["new_slowdown"] = True
-            elif new_steer != old_steer:
-                stats["new_steering"] = True
-            else:
-                stats["other_change"] = True
-        else:
-            if "AssertionError" in result.stderr:
-                stats["other_change"] = True
-            else:
-                stats["error"] = result.stderr.splitlines()[-1] if result.stderr.splitlines() else "Unknown error"
+        old_val = orig_steering[closest_ts]
+        new_speed = new_val[0]
+        old_speed = old_val[0]
+        
+        if new_speed == 0 and old_speed > 0:
+            stats["stops"].append(ts)
+        elif new_speed < old_speed and new_speed > 0:
+            stats["slowdowns"].append(ts)
 
     return stats
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python report_stats.py <log_dir> [config_path]")
+        print("Usage: python report_stats.py <log_dir> [config_path] [limit]")
         return
 
     log_dir = sys.argv[1]
-    config_path = sys.argv[2] if len(sys.argv) > 2 else "robotem-rovne/config/matty-redroad.json"
+    config_path = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] != "-" else "robotem-rovne/config/matty-redroad.json"
+    limit = int(sys.argv[3]) if len(sys.argv) > 3 else None
     
-    log_files = glob.glob(os.path.join(log_dir, "*.log"))
+    # Filter for redroad logs as they are likely the navigation ones
+    log_files = glob.glob(os.path.join(log_dir, "*redroad*.log"))
+    if not log_files:
+        log_files = glob.glob(os.path.join(log_dir, "*.log"))
+        
     if not log_files:
         print(f"No log files found in {log_dir}")
         return
 
-    print(f"Found {len(log_files)} log files.")
-    
-    total = 0
-    diverged_count = 0
-    stops_count = 0
-    slowdowns_count = 0
-    steering_count = 0
-    errors = []
+    log_files.sort()
+    if limit:
+        log_files = log_files[:limit]
 
+    print(f"Processing {len(log_files)} log files.")
+    
     for log_file in log_files:
-        total += 1
         stats = analyze_log(log_file, config_path)
-        
-        if stats.get("diverged"):
-            diverged_count += 1
-            if stats.get("new_stop"):
-                stops_count += 1
-            elif stats.get("new_slowdown"):
-                slowdowns_count += 1
-            elif stats.get("new_steering"):
-                steering_count += 1
-        
-        if stats.get("error"):
-            errors.append((log_file, stats["error"]))
+        print(f"\nResults for {os.path.basename(log_file)}:")
+        if "error" in stats:
+            print(f"  ERROR: {stats['error']}")
+            continue
+            
+        print(f"  New Stops:     {len(stats['stops'])}")
+        if stats["stops"]:
+            events = []
+            start = stats["stops"][0]
+            prev = start
+            for s in stats["stops"][1:]:
+                if s - prev > 0.5:
+                    events.append((start, prev))
+                    start = s
+                prev = s
+            events.append((start, prev))
+            for start, end in events:
+                print(f"    - From {start:.1f}s to {end:.1f}s")
 
-    print("\n" + "="*30)
-    print("REPLAY STATISTICS")
-    print("="*30)
-    print(f"Total logs processed:  {total}")
-    print(f"Behavior changed:      {diverged_count}")
-    print(f"  - New Stops:         {stops_count}")
-    print(f"  - New Slowdowns:     {slowdowns_count}")
-    print(f"  - New Steering:      {steering_count}")
-    print(f"  - Other changes:     {diverged_count - stops_count - slowdowns_count - steering_count}")
-    
-    if errors:
-        print("\nErrors encountered:")
-        for log, err in errors:
-            print(f"  {log}: {err}")
+        print(f"  New Slowdowns: {len(stats['slowdowns'])}")
+        if stats["slowdowns"]:
+             events = []
+             start = stats["slowdowns"][0]
+             prev = start
+             for s in stats["slowdowns"][1:]:
+                 if s - prev > 0.5:
+                     events.append((start, prev))
+                     start = s
+                 prev = s
+             events.append((start, prev))
+             for start, end in events:
+                 print(f"    - From {start:.1f}s to {end:.1f}s")
 
 if __name__ == "__main__":
     main()
