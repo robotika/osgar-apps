@@ -105,9 +105,9 @@ class RobotemRovne(Node):
             valid_danger = danger_zone[danger_zone > 0]
 
             if len(valid_danger) > 0 and np.percentile(valid_danger, 10) < self.danger_dist * 1000:
-                self.blocked_count += 1
-            else:
-                self.blocked_count = 0
+                self.blocked_count = min(self.blocked_count + 1, 10)
+            elif self.blocked_count > 0:
+                self.blocked_count -= 1
 
             # 2. Filter road mask by depth for steering (Wider ROI)
             safe_dist_mm = self.min_safe_dist * 1000

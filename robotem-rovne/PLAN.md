@@ -6,8 +6,9 @@ This plan outlines the steps to integrate OAK-D depth data into the `robotem-rov
 - [x] Analyze Depth Data resolution and format.
 - [x] Align Depth and NN Mask coordinate spaces.
 - [x] Implement Tiered Avoidance: Slow down at 2.0m, Stop at 1.2m (after 5 frames).
+- [x] Add Hysteresis to `blocked_count` recovery (decrement by 1 instead of reset) to avoid jerky restarts.
 - [x] Refine ROI (40-70% height, 40-60% width) to avoid ground/side triggers.
-- [x] Validate via `osgar.replay`: Tree collision at 29.8s is now avoided (robot stops at 27.8s).
+- [x] Validate via `osgar.replay`: Tree collision at 29.8s is now avoided (robot stops at 27.8s and stays stopped).
 
 ## 1. Research and Data Analysis
 - **Analyze Depth Data**: Verified depth resolution (400x640) and NN mask resolution (112x112).
