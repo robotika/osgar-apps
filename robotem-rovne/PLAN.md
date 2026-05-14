@@ -37,20 +37,20 @@ This plan outlines the steps to integrate OAK-D depth data into the `robotem-rov
 ### Step 5a: Local Replay Verification
 Run `osgar.replay` on the robot's log locally. Verify that the behavior matches what was seen on the robot.
 ```bash
-uv run python -m osgar.replay robotem-rovne/data/m04-matty-redroad-260501_105531.log --module app
+uv run python -m osgar.replay robotem-rovne/data/m04-matty-redroad-260501_105531.log --module app --config robotem-rovne/config/matty-redroad.json
 ```
 *Note: `osgar.exceptions.EmergencyStopException` at the end is **expected**; it confirms the replay reached the end of the recording where the emergency button was pressed.*
 
 ### Step 5b: Verification of Change (Expect Failure)
 Run replay *without* the `-F` (force) flag. The replay **SHOULD FAIL** because the robot's behavior (outputs) has changed.
 ```bash
-uv run python -m osgar.replay robotem-rovne/data/m04-matty-redroad-260501_105531.log --module app
+uv run python -m osgar.replay robotem-rovne/data/m04-matty-redroad-260501_105531.log --module app --config robotem-rovne/config/matty-redroad.json
 ```
 
 ### Step 5c: Force Replay for Validation
 Run `osgar.replay -F` to process the old log's inputs through the *new* logic and validate the solution.
 ```bash
-uv run python -m osgar.replay robotem-rovne/data/m04-matty-redroad-260501_105531.log --module app -F
+uv run python -m osgar.replay robotem-rovne/data/m04-matty-redroad-260501_105531.log --module app --config robotem-rovne/config/matty-redroad.json -F
 ```
 
 ## 6. Refinement
