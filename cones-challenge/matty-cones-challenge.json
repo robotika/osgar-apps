@@ -59,6 +59,7 @@
           "stereo_extended_disparity": false,
           "stereo_subpixel": false,
           "stereo_left_right_check": true,
+          "verbose_detections": false,
           "sleep_on_start_sec": 3,
           "model": {
             "blob": "coneslayer.rvc2.tar.xz"
