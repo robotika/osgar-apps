@@ -21,7 +21,6 @@ class ConesChallenge(Node):
         self.max_speed = config.get('max_speed', 0.2)
         self.stop_dist = config.get('stop_dist', 1.0)
         self.min_turn_time = datetime.timedelta(seconds=config.get('min_turn_time_sec', 3.0))
-        self.verbose = False
         self.last_position = None  # not defined, probably should be 0, 0, 0
         self.last_obstacle = 0
         self.last_detections = None
@@ -31,7 +30,6 @@ class ConesChallenge(Node):
         self.turning_state = False
         self.turning_state_start_time = None
         self.no_detections_start_time = None
-        self.verbose = False
 
     def on_pose2d(self, data):
         x, y, heading = data
