@@ -7,7 +7,7 @@
           "in": ["emergency_stop", "pose2d", "path"],
           "out": ["desired_steering"],
           "init": {
-            "max_speed": 0.1,
+            "max_speed": 0.4,
             "stop_dist": 0.5,
             "terminate_on_stop": true
           }
