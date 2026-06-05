@@ -116,7 +116,7 @@ class ConesChallenge(Node):
             assert name == 'cone', name
             cone_depth = data[y:y+height, x:x+width]
             mask = cone_depth > 0
-            if mask.max() == True:
+            if len(mask) > 0 and mask.max() == True:
                 dist = cone_depth[mask].min() / 1000
             else:
                 dist = None
