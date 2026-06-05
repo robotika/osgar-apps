@@ -87,6 +87,7 @@
       ["timer.tick", "platform.tick"],
 
       ["platform.pose2d", "app.pose2d"],
+      ["platform.emergency_stop", "app.emergency_stop"],
 
       ["oak.depth", "obstdet3d.depth"],
       ["oak.depth", "app.depth"],
