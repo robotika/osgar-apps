@@ -47,7 +47,7 @@
           "video_encoder": "h265",
           "is_depth": true,
           "laser_projector_current": 0,
-          "flood_light_current": 100,
+          "flood_light_current": 0,
           "is_imu_enabled": true,
           "number_imu_records": 10,
           "disable_magnetometer_fusion": false,
