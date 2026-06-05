@@ -8,7 +8,8 @@
           "out": ["desired_steering"],
           "init": {
             "max_speed": 0.1,
-            "stop_dist": 0.5
+            "stop_dist": 0.5,
+            "terminate_on_stop": true
           }
       },
       "platform": {

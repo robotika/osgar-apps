@@ -26,7 +26,7 @@ class ConesChallenge(Node):
         self.last_obstacle = 0
         self.last_detections = None
         self.last_cones_distances = None  # not available
-        self.raise_exception_on_stop = False
+        self.raise_exception_on_stop = config.get('terminate_on_stop', False)  # beware Pat robot
         self.field_of_view = math.radians(45)  # TODO, should clipped camera image pass it?
         self.turning_state = False
         self.turning_state_start_time = None
