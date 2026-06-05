@@ -9,6 +9,7 @@
           "init": {
             "max_speed": 0.4,
             "stop_dist": 0.5,
+            "turning_dist": 1.0,
             "terminate_on_stop": true
           }
       },

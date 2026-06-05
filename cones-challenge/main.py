@@ -20,6 +20,7 @@ class ConesChallenge(Node):
         bus.register('desired_steering')
         self.max_speed = config.get('max_speed', 0.2)
         self.stop_dist = config.get('stop_dist', 1.0)
+        self.turning_dist = config.get('turning_dist', 2.0)
         self.min_turn_time = datetime.timedelta(seconds=config.get('min_turn_time_sec', 3.0))
         self.last_position = None  # not defined, probably should be 0, 0, 0
         self.last_obstacle = 0
@@ -58,7 +59,7 @@ class ConesChallenge(Node):
 
                     steering_angle = (self.field_of_view/2) * (0.5 - (x1 + x2)/2)  # steering left is positive
                     if (self.last_cones_distances is not None and len(self.last_cones_distances) > best and
-                        self.last_cones_distances[best] is not None and self.last_cones_distances[best] <= 2.0):
+                        self.last_cones_distances[best] is not None and self.last_cones_distances[best] <= self.turning_dist):
                         print(self.time, 'start turning', self.last_cones_distances)
                         self.turning_state = True
                         self.turning_state_start_time = self.time
