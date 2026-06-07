@@ -62,7 +62,8 @@
           "verbose_detections": false,
           "sleep_on_start_sec": 3,
           "model": {
-            "blob": "coneslayer.rvc2.tar.xz"
+            "blob": "coneslayer.rvc2.tar.xz",
+            "num_shaves": 6
           },
           "nn_config": {
             "output_format": "detection",
