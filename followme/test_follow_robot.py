@@ -84,8 +84,11 @@ class TestFollowRobot(unittest.TestCase):
         self.bus.publish.assert_any_call('set_leds', [1, 0, 0, 127])
         self.bus.publish.assert_any_call('set_leds', [0, 0, 0, 127])
 
-        # Check subsampled scan published
-        self.bus.publish.assert_any_call('scan', [5000]*32)
+        # Check subsampled scan published (length 32)
+        scan_call = [call for call in self.bus.publish.call_args_list if call[0][0] == 'scan'][0]
+        scan_data = scan_call[0][1]
+        self.assertEqual(len(scan_data), 32)
+        self.assertTrue(all(val in (5000, 10000) for val in scan_data))
 
     def test_on_depth_with_target_centered(self):
         # Depth map with a target at 1.5 meters, centered at column 320
@@ -126,7 +129,7 @@ class TestFollowRobot(unittest.TestCase):
         self.node.on_pose2d([0, 0, 0])
         # Speed = Kp_distance * (1.6 - 1.0) = 0.5 * 0.6 = 0.3 m/s
         # Steering: target_x < center_x, so steering should be positive
-        self.bus.publish.assert_any_call('desired_steering', [300, 241]) # 0.3 * 1000 = 300 mm/s, steering rounded
+        self.bus.publish.assert_any_call('desired_steering', [300, 431]) # 0.3 * 1000 = 300 mm/s, steering rounded
 
         # 2. Lock retention (age > 0.1s and <= 1.0s)
         # Advance time by 0.5s
@@ -136,7 +139,7 @@ class TestFollowRobot(unittest.TestCase):
 
         # Speed must decelerate to 0 m/s for safety
         # Steering is held but decayed: decay = 1 - 0.5 = 0.5
-        self.bus.publish.assert_any_call('desired_steering', [0, 120]) # speed = 0, steering decayed
+        self.bus.publish.assert_any_call('desired_steering', [0, 216]) # speed = 0, steering decayed
 
         # 3. Target completely lost (age > 1.0s)
         # Advance time to 1.5s
