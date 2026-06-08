@@ -67,3 +67,28 @@ $$\text{steering\_angle} = K_{p\text{\_steer}} \cdot \theta_{\text{err}}$$
 *   Test the implementation against existing log files using `osgar.replay` to ensure:
     *   Depth frames are parsed without exceptions.
     *   The node successfully publishes `desired_steering` with correct speed and steering outputs.
+
+---
+
+## 5. Real-World Robotics & Safety Considerations
+
+To ensure maximum field robustness under practical constraints, the design accounts for several real-world factors:
+
+### A. Articulated Steering & FOV Gating
+*   **Mechanism:** Matty features a center pivot joint with the OAK-D Pro camera mounted on the front section. As the robot steers, the front body—and consequently the camera—naturally rotates toward the target. This behaves like a mechanical panning mechanism, keeping the leader centered.
+*   **Safety Gating:** If the leader turns extremely sharply and slips out of the horizontal $69^\circ$ FOV, the **target lock memory** retains the last-known horizontal offset for up to $T_{\text{timeout}}$ frames. This allows the follower to complete its turn and re-acquire the target, rather than executing a jarring emergency stop.
+
+### B. Ground & Slope Intrusion (Horizon Pitch)
+*   **The Issue:** When traversing uneven terrain or entering a downward slope, pitch variations can shift the ground surface into the horizontal depth slice (`horizon`). This registers as a false-positive close-range obstacle, causing sudden halts.
+*   **Mitigation:** 
+    *   A highly focused vertical band (`depth_height = 60` pixels) is used to minimize the inclusion of ground planes.
+    *   Future versions will support **Active Horizon Adjustments** by reading pitch data from the IMU (`platform.rotation`) and dynamically offsetting `self.horizon` to keep the slice level with the horizon.
+
+### C. Distance-Scaled Search Window
+*   **The Issue:** A fixed pixel window size does not scale with distance. At $1.0\text{ m}$ distance, a $120\text{px}$ window represents about $0.26\text{ m}$ of physical width (ideal for Matty's $0.6\text{ m}$ footprint). However, if the leader pulls ahead to $2.5\text{ m}$, the leader's visual size shrinks, and a fixed $120\text{px}$ window would capture background elements (trees, walls), polluting the depth percentiles.
+*   **Mitigation:** The search window width can be scaled dynamically relative to the measured distance to maintain a constant physical tracking width:
+    $$\text{window\_width} = \max\left(40, \, \min\left(160, \, \text{round}\left(120 \cdot \frac{1.0}{\text{measured\_distance\_m}}\right)\right)\right)$$
+
+### D. Direct Sun Glare on Active IR
+*   **The Issue:** Direct high-altitude sunlight can overpower the OAK-D Pro's active IR dot projector, causing temporary depth map "blind spots" (returning a depth value of $0$).
+*   **Mitigation:** While passive stereo matching still works on high-contrast physical features, our state machine implements **Lock Retention**. If depth values drop to $0$ momentarily, speed is immediately decelerated to $0\text{ m/s}$ (safe fallback), but the target lock memory is held for $10$ frames ($1.0\text{ s}$), allowing smooth tracking resumption once the glare passes.
