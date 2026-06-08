@@ -61,7 +61,7 @@ $$\text{steering\_angle} = K_{p\text{\_steer}} \cdot \theta_{\text{err}}$$
     *   `horizon` (default: 200)
 
 ### Phase 2: Configuration Setup
-*   Create a clean configuration file `followme/config/matty-follow-robot-depth.json` that runs the new `follow_robot:FollowRobot` module, connects it to the Matty platform and the standard OAK depth output, but disables YOLO inference to save CPU/GPU cycles.
+*   Create a clean configuration file `followme/config/matty-follow-robot.json` that runs the new `follow_robot:FollowRobot` module, connects it to the Matty platform and the standard OAK depth output, but disables YOLO inference to save CPU/GPU cycles.
 
 ### Phase 3: Local Replay & Tuning
 *   Test the implementation against existing log files using `osgar.replay` to ensure:
