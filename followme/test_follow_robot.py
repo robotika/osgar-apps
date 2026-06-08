@@ -4,7 +4,7 @@ import math
 from datetime import timedelta
 import numpy as np
 
-from followme.follow_robot import FollowRobot
+from follow_robot import FollowRobot
 from osgar.followme import EmergencyStopException
 
 
