@@ -193,3 +193,31 @@ Each tracking helper method is responsible for one specific task: taking the raw
 
 This clean separation ensures that switching between the two approaches is a matter of changing a single line in the JSON configuration file, without modifying any behavioral or safety-critical control logic.
 
+---
+
+## 7. Real-World Field & Safety Considerations (Plan B)
+
+To guarantee the safety of both robots and bystander personnel in the field, several active constraints are hardcoded into the Plan B execution loop:
+
+### A. Non-Reversing (No Backup) Constraint
+If the leading robot stops suddenly and Matty overshoots, the distance error becomes negative ($D_{\text{measured}} < D_{\text{target}}$). 
+*   **Action:** The speed command is strictly clamped at a minimum of `0.0 m/s`. The robot will **never** reverse or back up, which prevents dangerous blind reverse collisions with people or equipment standing behind the follower.
+
+### B. High-Speed Transient Clutter Suppression (Temporal Filtering)
+In dusty environments or under direct sunlight, transient spatial noise (like a flying dust cloud or sun glare) can momentarily form a cluster matching the physical size constraints.
+*   **Action:** To filter this, candidate clusters must exhibit **spatial persistence**. We maintain a lightweight tracking state: a cluster is only promoted to the "active target" if its bounding box overlaps with the target's previous bounding box across 3 consecutive depth frames (a $300\text{ ms}$ window at $10\text{Hz}$).
+
+### C. In-Field LED State Indicators
+Matty's multi-color side LEDs are utilized as diagnostic status indicators, allowing field operators to immediately assess the robot's tracking health from a distance:
+*   **Blinking Yellow/Orange:** Searching for target (no valid cluster matching physical chassis constraints is currently detected).
+*   **Solid Blue:** Lock-On Active (matched target is actively tracked and control commands are publishing).
+*   **Solid/Blinking Red:** Emergency Stop triggered or target lost for longer than $1.0\text{ second}$ (safety timeout).
+
+---
+
+## 8. Computational Optimization & Latency Control
+
+Since depth frames arrive at $10\text{Hz}$, the clustering and physical dimension calculations must be extremely fast to avoid control loop lag.
+*   **Downsampled Binary Masking:** Instead of analyzing the full-resolution $640 \times 400$ matrix, we can downsample the depth data by a factor of 2 or 4 (to $320 \times 200$ or $160 \times 100$) before running the connected component algorithm. This reduces the number of operations by **up to 16x**, dropping execution time of the clustering phase to under $1\text{ ms}$ on the embedded CPU.
+*   **Vectorized Indexing:** All distance and bounding box calculations are handled using highly optimized Numpy vector operations, completely eliminating slow Python nested `for` loops inside the main processing thread.
+
