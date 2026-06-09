@@ -112,11 +112,11 @@ To facilitate offline analysis and fine-tuning, we integrate a dedicated **Diagn
 *   **Output Directory:** Images are saved in a hardcoded local directory `debug_images/` (created automatically if missing).
 *   **Alphabetical Timestamp Naming Convention:**
     To support perfect alphabetical sorting, retain chronological ordering, and cross-reference back to the source log file, we name files using the format:
-    `debug_images/{short_log_name}_{centiseconds:06d}_{event_type}.png`
+    `debug_images/{short_log_name}_{centiseconds:06d}_{event_type}.jpg`
     *   `short_log_name`: The prefix/short name of the log run (e.g., `m05_183052`).
     *   `centiseconds`: Calculated as `round(self.time.total_seconds() * 100.0)`. Formatted as a zero-padded 6-digit integer (`{:06d}`), which covers up to `9999.99` seconds (over 166 minutes of continuous recording, far exceeding the 10-minute target) while maintaining absolute chronological and alphabetical alignment.
     *   `event_type`: A brief label indicating the tracking state (e.g., `tracked`, `lost`, `estop`).
-    *   *Example filename:* `debug_images/m05_183052_012340_tracked.png` (representing a snapshot at exactly $123.40\text{ s}$ into the run).
+    *   *Example filename:* `debug_images/m05_183052_012340_tracked.jpg` (representing a snapshot at exactly $123.40\text{ s}$ into the run).
 
 ### B. Overlay Visuals
 Every saved diagnostic image will be annotated with:
