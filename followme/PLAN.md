@@ -92,3 +92,27 @@ To ensure maximum field robustness under practical constraints, the design accou
 ### D. Direct Sun Glare on Active IR
 *   **The Issue:** Direct high-altitude sunlight can overpower the OAK-D Pro's active IR dot projector, causing temporary depth map "blind spots" (returning a depth value of $0$).
 *   **Mitigation:** While passive stereo matching still works on high-contrast physical features, our state machine implements **Lock Retention**. If depth values drop to $0$ momentarily, speed is immediately decelerated to $0\text{ m/s}$ (safe fallback), but the target lock memory is held for $10$ frames ($1.0\text{ s}$), allowing smooth tracking resumption once the glare passes.
+
+---
+
+## 6. Lessons Learned (June 8, 2026)
+
+Following the first real-world field test of the `FollowRobot` module (`m05-matty-follow-robot-260608_183003.log`), we identified critical mathematical and physical relationships:
+
+### A. Horizon Pitch Correction Sign Alignment
+*   **The Bug:** The initial implementation used a positive correction sign (`+=`) for IMU pitch:
+    $$\text{current\_horizon} = \text{horizon} + \text{pitch\_offset}$$
+    While standing still (pitch $\approx +5.9^\circ$), this offset added $+53\text{px}$ to the horizon, setting it to $253\text{px}$, which successfully targeted the leader's rear body. However, as the robot accelerated and pitched **up** (nose-rise, pitch decreasing to $+3.3^\circ$), the correction shifted the slice **up** in the frame (smaller Y coordinate, e.g., $230\text{px}$), while the leader actually shifted **down** (higher Y coordinate, e.g., $270\text{px}$). This caused a complete target loss at $10.23\text{ s}$ as the sensor slice looked over the leader's head.
+*   **The Fix:** Changed the pitch correction sign to subtraction (`-=`):
+    $$\text{current\_horizon} = \text{horizon} - \text{pitch\_offset}$$
+    This correctly couples pitch with image coordinates: when the nose rises (camera tilts up / pitch decreases), the target's pixel Y coordinate increases, and our search slice automatically descends to track it.
+
+### B. Horizon Baseline Calibration
+*   **Calibration Insight:** The default `horizon` config value (representing the slice coordinate when the camera is level at $0.0^\circ$ pitch) must be calibrated to **`300`**.
+*   This baseline ensures that when the robot is standing still at its nominal mounting pitch ($+5.93^\circ$), the dynamic horizon evaluates to:
+    $$\text{current\_horizon} = 300 - (5.93 \cdot 9.09) \approx 246\text{px}$$
+    This perfectly aligns the horizontal slice with the center of the leading robot's chassis.
+
+### C. Validation Summary
+*   Replaying the test log using `osgar.replay -F --config followme/config/matty-follow-robot.json` confirmed that **the robot now achieves 100% stable tracking for the entire duration of the log file**, surviving sudden stops, dynamic pitching, and sharp steering maneuvers without a single track loss.
+
