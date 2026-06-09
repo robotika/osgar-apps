@@ -117,3 +117,57 @@ The chosen cluster's spatial parameters are fed directly into the P-controller:
 
 ### Phase 3: Unit Testing
 *   Update `test_follow_robot.py` with mock depth maps containing 2D target shapes and verifying they are correctly clustered and identified as the target.
+
+---
+
+## 6. Coexistence Architecture with Plan A
+
+To allow both algorithms to coexist seamlessly in the codebase and be selected via configuration, we separate **perception (target detection)** from **control (driving/steering)**. 
+
+### A. Configuration-Driven Delegation
+We introduce a new configuration parameter `algorithm` with two valid options:
+*   `"slice"` (default - Plan A): Uses the horizon slice + IMU pitch adjustment.
+*   `"clustering"` (Plan B): Uses 2D spatial connected component clustering.
+
+### B. Code Structure (`follow_robot.py`)
+Both algorithms share the same initialization, safety limits, LED states, and closed-loop control logic (`on_pose2d`). Inside `on_depth`, the node delegates depth-processing to the corresponding algorithm method:
+
+```python
+class FollowRobot(Node):
+    def __init__(self, config, bus):
+        # ... standard initialization ...
+        self.algorithm = config.get('algorithm', 'slice')
+        
+        # Plan A specific configs
+        self.horizon = config.get('horizon', 300)
+        self.depth_height = config.get('depth_height', 60)
+        
+        # Plan B specific configs
+        self.min_phys_width = config.get('min_phys_width', 0.3)
+        self.max_phys_width = config.get('max_phys_width', 0.8)
+        self.min_phys_height = config.get('min_phys_height', 0.2)
+        self.max_phys_height = config.get('max_phys_height', 0.7)
+
+    def on_depth(self, data):
+        if self.algorithm == 'slice':
+            target_x, distance = self.track_via_slice(data)
+        elif self.algorithm == 'clustering':
+            target_x, distance = self.track_via_clustering(data)
+        else:
+            raise ValueError(f"Unknown tracking algorithm: {self.algorithm}")
+
+        if target_x is not None and distance is not None:
+            self.last_target_x = target_x
+            self.last_distance = distance
+            self.last_target_time = self.time
+
+        # ... common telemetry, LED updates, etc. ...
+```
+
+### C. Helper Method Responsibilities
+Each tracking helper method is responsible for one specific task: taking the raw depth frame and returning the matched target's `(target_x, distance_meters)`.
+*   `track_via_slice(self, data)`: Implements the current Plan A logic using IMU-adjusted horizontal band extraction and percentile estimation.
+*   `track_via_clustering(self, data)`: Implements the Plan B logic using OpenCV `connectedComponentsWithStats`, physical size projections, and target proximity matching.
+
+This clean separation ensures that switching between the two approaches is a matter of changing a single line in the JSON configuration file, without modifying any behavioral or safety-critical control logic.
+
