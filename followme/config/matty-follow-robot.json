@@ -14,7 +14,7 @@
             "target_distance": 1.0,
             "Kp_distance": 0.5,
             "Kp_steering": 2.0,
-            "horizon": 200
+            "horizon": 300
           }
       },
       "platform": {

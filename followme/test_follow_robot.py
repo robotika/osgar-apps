@@ -110,13 +110,13 @@ class TestFollowRobot(unittest.TestCase):
         self.assertEqual(self.node.pitch, 1000)
 
         depth_data = np.full((400, 640), 5000, dtype=np.uint16)
-        # Place target at the shifted horizon (horizon is 200 + 10 * 9.09 = 290)
-        # So slice will look from 260 to 320. Place obstacle at Y=280
-        depth_data[270:290, 300:340] = 1500
+        # Place target at the shifted horizon (horizon is 200 - 10 * 9.09 = 110)
+        # So slice will look from 80 to 140. Place obstacle at Y=100
+        depth_data[90:110, 300:340] = 1500
 
         self.node.on_depth(depth_data)
 
-        # Target should be successfully tracked because the dynamic horizon adjusted to include Y=280
+        # Target should be successfully tracked because the dynamic horizon adjusted to include Y=100
         self.assertIsNotNone(self.node.last_target_x)
         self.assertAlmostEqual(self.node.last_target_x, 320.0, delta=2.0)
 

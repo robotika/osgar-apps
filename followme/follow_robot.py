@@ -34,7 +34,7 @@ class FollowRobot(Node):
         self.target_distance = config.get('target_distance', 1.0)
         self.Kp_distance = config.get('Kp_distance', 0.5)
         self.Kp_steering = config.get('Kp_steering', 2.0)
-        self.horizon = config.get('horizon', 200)
+        self.horizon = config.get('horizon', 300)
         self.max_track_dist = config.get('max_track_dist', 3.0)
         self.depth_height = config.get('depth_height', 60)
         self.raise_exception_on_stop = config.get('terminate_on_stop', True)
@@ -48,7 +48,6 @@ class FollowRobot(Node):
         self.pitch = None
         self.yaw = None
         self.status_ready = False
-        self.verbose = config.get('verbose', False)
 
     def send_speed_cmd(self, speed, steering_angle):
         return self.bus.publish(
@@ -90,7 +89,7 @@ class FollowRobot(Node):
             # 1 degree of pitch corresponds to approx (h / 44.0) pixels on a ~44 deg vertical FOV mono camera
             pixels_per_degree = h / 44.0
             pitch_deg = self.pitch / 100.0
-            current_horizon += int(pitch_deg * pixels_per_degree)
+            current_horizon -= int(pitch_deg * pixels_per_degree)
 
         # Vertical band limits
         half_height = self.depth_height // 2
@@ -123,6 +122,9 @@ class FollowRobot(Node):
             min_d = np.min(window_scan)
         else:
             min_d = 10.0
+
+        if self.verbose:
+            print(f"DEPTH: time={self.time} | min_d={min_d:.3f} | target_x={target_x:.1f} | window_width={window_width:.1f} | range=[{x_start},{x_end}]")
 
         if min_d <= self.max_track_dist:
             # Identify all columns in the search window close to min_d (within 30cm) and within track range
@@ -196,6 +198,8 @@ class FollowRobot(Node):
         yaw, pitch, roll = data
         self.yaw = math.radians(yaw / 100.0)
         self.pitch = pitch
+        if self.verbose:
+            print(f"ROTATION: time={self.time} | yaw={yaw / 100.0:.2f} | pitch={pitch / 100.0:.2f} | roll={roll / 100.0:.2f}")
 
     def on_orientation_list(self, data):
         pass
