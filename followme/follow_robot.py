@@ -2,6 +2,7 @@
   Pure Depth-Based Robot-Following Node
 """
 
+import os
 import math
 from datetime import timedelta
 
@@ -69,6 +70,7 @@ class FollowRobot(Node):
         self.tracker_candidate_bbox = None
         self.tracker_candidate_count = 0
         self.emergency_stop = False
+        self.debug_images_cleaned = False
 
     def send_speed_cmd(self, speed, steering_angle):
         return self.bus.publish(
@@ -356,8 +358,15 @@ class FollowRobot(Node):
 
         # Diagnostic Image-Saving Trigger (Phase 1 & 2)
         if self.verbose:
-            import os
-            os.makedirs("debug_images", exist_ok=True)
+            if not self.debug_images_cleaned:
+                import glob as py_glob
+                os.makedirs("debug_images", exist_ok=True)
+                for f in py_glob.glob("debug_images/*.jpg"):
+                    try:
+                        os.remove(f)
+                    except OSError:
+                        pass
+                self.debug_images_cleaned = True
 
             # Convert depth map to BGR grayscale representation for annotations
             display_depth = data.copy()
