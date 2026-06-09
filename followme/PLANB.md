@@ -103,16 +103,38 @@ The chosen cluster's spatial parameters are fed directly into the P-controller:
 
 ---
 
-## 5. Phased Implementation Roadmap
+## 5. Phased Implementation Roadmap & Analysis Automation
+
+To facilitate offline analysis and fine-tuning, we integrate a dedicated **Diagnostic Image-Saving Trigger** specifically designed for use during log replays.
+
+### A. Automated Replay Diagnostics (Option 1)
+*   **Trigger Condition:** Diagnostic images are only saved when running in local replay mode (`osgar.replay`) with the `--verbose` flag active (i.e., `self.verbose` is `True`). This prevents the robot from writing files during real-world runs, avoiding storage or CPU bottlenecks.
+*   **Output Directory:** Images are saved in a hardcoded local directory `debug_images/` (created automatically if missing).
+*   **Alphabetical Timestamp Naming Convention:**
+    To support perfect alphabetical sorting, retain chronological ordering, and cross-reference back to the source log file, we name files using the format:
+    `debug_images/{short_log_name}_{centiseconds:06d}_{event_type}.png`
+    *   `short_log_name`: The prefix/short name of the log run (e.g., `m05_183052`).
+    *   `centiseconds`: Calculated as `round(self.time.total_seconds() * 100.0)`. Formatted as a zero-padded 6-digit integer (`{:06d}`), which covers up to `9999.99` seconds (over 166 minutes of continuous recording, far exceeding the 10-minute target) while maintaining absolute chronological and alphabetical alignment.
+    *   `event_type`: A brief label indicating the tracking state (e.g., `tracked`, `lost`, `estop`).
+    *   *Example filename:* `debug_images/m05_183052_012340_tracked.png` (representing a snapshot at exactly $123.40\text{ s}$ into the run).
+
+### B. Overlay Visuals
+Every saved diagnostic image will be annotated with:
+1.  **ROI Boundaries:** A dotted bounding rectangle indicating the search ROI ($x \in [80, 560], y \in [120, 360]$).
+2.  **Target Overlay:** A bright green box surrounding the matched cluster with overlay text showing physical dimensions (e.g., `Robot (W: 0.52m, H: 0.45m, D: 1.25m)`).
+3.  **Rejected Overlays:** Soft red/yellow boxes around rejected clusters showing why they were discarded (e.g., `Rejected: W: 1.85m, H: 0.12m` - "Ground").
+
+---
 
 ### Phase 1: Prototype Development
 *   Implement `on_depth` in a new class/node (or as a configuration option in `follow_robot.py`).
 *   Incorporate `cv2.connectedComponentsWithStats` for lightning-fast blob segmentation.
 *   Implement 3D projection formulas to calculate physical width/height.
+*   Implement the `debug_images` saving logic utilizing the padded centisecond naming format.
 
 ### Phase 2: Offline Log Verification (Replay)
-*   Replay existing robot logs (e.g., `m05-matty-follow-robot-260608_173840.log`) using the new algorithm.
-*   Assert that the segmented target's physical size aligns perfectly with Matty's dimensions (~0.5m wide).
+*   Replay existing robot logs (e.g., `m05-matty-follow-robot-260608_173840.log`) with `osgar.replay --verbose` using the new algorithm.
+*   Inspect the generated images in `debug_images/` to verify that the segmented target's physical size aligns perfectly with Matty's dimensions (~0.5m wide).
 *   Verify that tracking remains 100% lock-on during periods of dynamic pitching.
 
 ### Phase 3: Unit Testing
