@@ -152,6 +152,71 @@ class TestFollowRobot(unittest.TestCase):
         self.assertIsNone(self.node.last_target_x)
         self.assertIsNone(self.node.last_distance)
 
+    def test_on_depth_clustering_with_target(self):
+        # Configure node with algorithm='clustering'
+        clustering_config = self.config.copy()
+        clustering_config['algorithm'] = 'clustering'
+        node = FollowRobot(clustering_config, self.bus)
+        node.time = timedelta(seconds=0)
+
+        # 1. First frame: target detected, count goes to 1, no active tracking yet
+        depth_data = np.full((400, 640), 5000, dtype=np.uint16)
+        # Create a cluster: height 130 (150 to 280), width 160 (240 to 400)
+        depth_data[150:280, 240:400] = 1500  # 1.5m
+
+        node.on_depth(depth_data)
+        self.assertEqual(node.tracker_candidate_count, 1)
+        self.assertIsNone(node.last_target_x)
+
+        # 2. Second frame: target overlaps, count goes to 2, still no active tracking
+        node.time += timedelta(seconds=0.1)
+        node.on_depth(depth_data)
+        self.assertEqual(node.tracker_candidate_count, 2)
+        self.assertIsNone(node.last_target_x)
+
+        # 3. Third frame: target overlaps, count goes to 3, promoted to active tracking!
+        node.time += timedelta(seconds=0.1)
+        node.on_depth(depth_data)
+        self.assertEqual(node.tracker_candidate_count, 3)
+        self.assertIsNotNone(node.last_target_x)
+        self.assertAlmostEqual(node.last_target_x, 320.0, delta=2.0)
+        self.assertAlmostEqual(node.last_distance, 1.5, delta=0.1)
+
+    def test_clustering_led_states(self):
+        clustering_config = self.config.copy()
+        clustering_config['algorithm'] = 'clustering'
+        node = FollowRobot(clustering_config, self.bus)
+        node.time = timedelta(seconds=0)
+
+        # 1. Initially (searching), pose2d should publish orange (blinking)
+        self.bus.reset_mock()
+        node.on_pose2d([0, 0, 0])
+        self.bus.publish.assert_any_call('set_leds', [1, 255, 127, 0])
+        self.bus.publish.assert_any_call('set_leds', [0, 255, 127, 0])
+
+        # 2. Actively tracked (age <= 0.1s) -> Solid Blue [0, 0, 255]
+        self.bus.reset_mock()
+        node.last_target_x = 320.0
+        node.last_distance = 1.5
+        node.last_target_time = node.time
+        node.on_pose2d([0, 0, 0])
+        self.bus.publish.assert_any_call('set_leds', [1, 0, 0, 255])
+        self.bus.publish.assert_any_call('set_leds', [0, 0, 0, 255])
+
+        # 3. Lock retention (age = 0.5s) -> Blinking Orange/Yellow
+        node.time += timedelta(seconds=0.5)
+        self.bus.reset_mock()
+        node.on_pose2d([0, 0, 0])
+        self.bus.publish.assert_any_call('set_leds', [1, 255, 127, 0])
+        self.bus.publish.assert_any_call('set_leds', [0, 255, 127, 0])
+
+        # 4. Completely lost (age > 1.0s) -> Solid Red [255, 0, 0]
+        node.time += timedelta(seconds=1.5)
+        self.bus.reset_mock()
+        node.on_pose2d([0, 0, 0])
+        self.bus.publish.assert_any_call('set_leds', [1, 255, 0, 0])
+        self.bus.publish.assert_any_call('set_leds', [0, 255, 0, 0])
+
 
 if __name__ == '__main__':
     unittest.main()

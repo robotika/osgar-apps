@@ -1,0 +1,93 @@
+{
+  "version": 2,
+  "robot": {
+    "env": {
+      "OSGAR_LOGS_PREFIX": null
+    },
+    "modules": {
+      "app": {
+          "driver": "follow_robot:FollowRobot",
+          "in": ["emergency_stop", "pose2d", "nmea_data", "rotation", "bumpers_front", "bumpers_rear"],
+          "out": ["desired_steering", "scan", "set_leds"],
+          "init": {
+            "max_speed": 0.5,
+            "target_distance": 1.0,
+            "Kp_distance": 0.5,
+            "Kp_steering": 2.0,
+            "horizon": 300,
+            "algorithm": "clustering"
+          }
+      },
+      "platform": {
+        "driver": "osgar.platforms.matty:Matty",
+        "in": ["esp_data"],
+        "out": ["esp_data"],
+        "init": {}
+      },
+      "timer": {
+        "driver": "timer",
+        "in": [],
+        "out": ["tick"],
+        "init": {
+          "sleep": 0.1
+        }
+      },
+      "gps": {
+        "driver": "gps",
+        "in": ["raw"],
+        "out": ["nmea_data"],
+        "init": {
+        }
+      },
+      "serial": {
+          "driver": "serial",
+          "in": ["raw"],
+          "out": ["raw"],
+          "init": {"port": "/dev/esp32", "speed": 115200}
+      },
+      "oak": {
+        "driver": "osgar.drivers.oak_camera:OakCamera",
+        "init": {
+          "fps": 10,
+          "is_color": true,
+          "video_encoder": "h265",
+          "h264_bitrate": 4000,
+          "is_depth": true,
+          "is_stereo_images": false,
+          "laser_projector_current": 0,
+          "flood_light_current": 500,
+          "is_imu_enabled": true,
+          "number_imu_records": 15,
+          "disable_magnetometer_fusion": false,
+          "mono_resolution": [640, 400],
+          "color_resolution": "THE_1080_P",
+          "color_manual_focus": 130,
+          "stereo_median_filter": "KERNEL_3x3",
+          "stereo_mode": "HIGH_ACCURACY",
+          "stereo_extended_disparity": false,
+          "stereo_subpixel": false,
+          "stereo_left_right_check": true,
+          "sleep_on_start_sec": 5
+        }
+      }
+    },
+    "links": [
+      ["app.desired_steering", "platform.desired_steering"],
+      ["app.set_leds", "platform.set_leds"],
+      ["platform.pose2d", "app.pose2d"],
+      ["platform.emergency_stop", "app.emergency_stop"],
+      ["platform.rotation", "app.rotation"],
+      ["serial.raw", "platform.esp_data"],
+      ["platform.esp_data", "serial.raw"],
+      ["platform.gps_serial", "gps.raw"],
+      ["timer.tick", "platform.tick"],
+
+      ["platform.bumpers_front", "app.bumpers_front"],
+      ["platform.bumpers_rear", "app.bumpers_rear"],
+
+      ["gps.nmea_data", "app.nmea_data"],
+
+      ["oak.depth", "app.depth"]
+    ]
+  }
+}
