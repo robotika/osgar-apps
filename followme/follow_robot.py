@@ -43,7 +43,7 @@ class FollowRobot(Node):
         self.field_of_view = math.radians(69)  # OAK-D Pro camera horizontal FOV (69 degrees)
 
         # Coexistence & Delegation (Section 6)
-        self.algorithm = config.get('algorithm', 'slice')
+        self.algorithm = config.get('algorithm', 'slice')  # ['slice', 'clustering']  # TODO apriltag
 
         # Plan B specific configurations (Section 2 & 7)
         self.min_phys_width = config.get('min_phys_width', 0.3)
@@ -158,6 +158,7 @@ class FollowRobot(Node):
             pixels_per_degree = h / 44.0
             pitch_deg = self.pitch / 100.0
             current_horizon -= int(pitch_deg * pixels_per_degree)
+#        print(current_horizon, self.horizon)
 
         # Vertical band limits
         half_height = self.depth_height // 2
@@ -475,8 +476,8 @@ class FollowRobot(Node):
         yaw, pitch, roll = data
         self.yaw = math.radians(yaw / 100.0)
         self.pitch = pitch
-        if self.verbose:
-            print(f"ROTATION: time={self.time} | yaw={yaw / 100.0:.2f} | pitch={pitch / 100.0:.2f} | roll={roll / 100.0:.2f}")
+#        if self.verbose:
+#            print(f"ROTATION: time={self.time} | yaw={yaw / 100.0:.2f} | pitch={pitch / 100.0:.2f} | roll={roll / 100.0:.2f}")
 
     def on_orientation_list(self, data):
         pass
