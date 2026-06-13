@@ -6,7 +6,7 @@
     },
     "modules": {
       "app": {
-          "driver": "follow_robot:FollowRobot",
+          "driver": "follow_apriltag:FollowAprilTag",
           "in": ["emergency_stop", "pose2d", "nmea_data", "rotation", "bumpers_front", "bumpers_rear"],
           "out": ["desired_steering", "scan", "set_leds"],
           "init": {
@@ -15,6 +15,13 @@
             "Kp_distance": 0.5,
             "Kp_steering": 2.0,
             "horizon": 300
+          }
+      },
+      "apriltag": {
+          "driver": "follow_apriltag:AprilTag",
+          "in": [],
+          "out": [],
+          "init": {
           }
       },
       "platform": {
@@ -86,7 +93,8 @@
 
       ["gps.nmea_data", "app.nmea_data"],
 
-      ["oak.depth", "app.depth"]
+      ["oak.color", "apriltag.image"],
+      ["apriltag.apriltag", "app.apriltag"]
     ]
   }
 }
