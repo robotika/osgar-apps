@@ -7,8 +7,8 @@
           "in": ["encoders", "scan", "emergency_stop", "pose2d"],
           "out": ["desired_speed"],
           "init": {
-            "max_speed": 0.6,
-            "max_dist_limit": 2.5,
+            "max_speed": 0.7,
+            "max_dist_limit": 3.0,
             "desired_dist": 1.5,
             "laser_pose2d": [0.13, 0.055, 0],
             "scan_size": 1800,
