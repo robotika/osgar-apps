@@ -26,8 +26,6 @@ class AprilTag(Node):
         detector = cv2.aruco.ArucoDetector(dictionary, parameters)
         markerCorners, markerIds, rejectedCandidates = detector.detectMarkers(image)
         if markerCorners is None or markerIds is None:
-#            assert markerCorners is None, markerCorners
-#            assert markerIds is None, markerIds
             return [], []
         assert len(markerCorners) == len(markerIds), (markerCorners, markerIds)
         return [[x[0] for x in markerIds],
@@ -37,7 +35,12 @@ class AprilTag(Node):
         center_x = sum([x for x, _ in corners])/4.0
         center_y = sum([y for _, y in corners])/4.0
         size = sum([math.hypot(x - center_x, y - center_y) for x, y in corners])/4.0
-        return 35.0/size
+        return 1.3 * 35.0/size  # GG factor
+
+    def corners_to_angle(self, corners):
+        center_x = sum([x for x, _ in corners])/4.0
+        width = 1920
+        return math.radians(69/2)*(width/2 - center_x)/(width/2)
 
     def on_video(self, data):
         try:
@@ -52,9 +55,6 @@ class AprilTag(Node):
                             if len(tags[0]) > 0:
                                 print(self.time, tags, [self.corners_to_dist(c) for c in tags[1]])
                             self.publish('apriltags', tags)
-#                        retval, jpeg_data = cv2.imencode('.jpg', img)
-#                        if retval:
-#                            self.publish('jpeg', jpeg_data.tobytes())
                 except av.error.FFmpegError:
                     # Ignore decoding errors from incomplete packets/keyframes at startup
                     pass
@@ -66,9 +66,7 @@ class AprilTag(Node):
 class FollowAprilTag(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
-        bus.register('desired_steering',
-                     'scan',
-                     'set_leds')
+        bus.register('desired_steering')
 
         # Configuration parameters
         self.max_speed = config.get('max_speed', 0.5)
