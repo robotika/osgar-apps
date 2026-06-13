@@ -68,8 +68,8 @@ class FollowMe(Node):
         SCANS_PER_DEG = abs(SCAN_SIZE//self.scan_fov_deg)  # FOV can be negative for flipped lidar
 
         # limit tracking to front 180deg only due to mounting (back laser is blocked by robot body)
-        LIMIT_LOW = 0  # SCAN_SIZE//6
-        LIMIT_HIGH = SCAN_SIZE  # 5*SCAN_SIZE//6
+        LIMIT_LOW = 3*SCAN_SIZE//4  # SCAN_SIZE//6
+        LIMIT_HIGH = SCAN_SIZE - 3*SCAN_SIZE//4  # 5*SCAN_SIZE//6
         CLOSE_REFLECTIONS = 10  # ignore readings closer than 10mm, where 0 = infinite (no response)
 
         thresholds = []
