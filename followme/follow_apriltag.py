@@ -99,7 +99,10 @@ class FollowAprilTag(Node):
         if data:
             self.send_speed_cmd(0, 0)
 
-    def on_target(self, data):
+    def on_apriltags(self, data):
+        pass
+
+    def on_targets(self, data):
         if len(data) == 0:
             self.send_speed_cmd(0, 0)
         else:
