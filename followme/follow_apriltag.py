@@ -73,7 +73,7 @@ class FollowAprilTag(Node):
 
         # Configuration parameters
         self.max_speed = config.get('max_speed', 0.5)
-        self.target_distance = config.get('target_distance', 1.0)
+        self.target_distance = config.get('target_distance', 0.5)
         self.Kp_distance = config.get('Kp_distance', 0.5)
         self.Kp_steering = config.get('Kp_steering', 2.0)
         self.raise_exception_on_stop = config.get('terminate_on_stop', True)
