@@ -33,8 +33,11 @@ class AprilTag(Node):
         return [[x[0] for x in markerIds],
                 [[[int(a), int(b)] for a, b in x[0]] for x in markerCorners]]
 
-    def on_image(self, data):
-        pass
+    def corners_to_dist(self, corners):
+        center_x = sum([x for x, _ in corners])/4.0
+        center_y = sum([y for _, y in corners])/4.0
+        size = sum([math.hypot(x - center_x, y - center_y) for x, y in corners])/4.0
+        return 35.0/size
 
     def on_video(self, data):
         try:
@@ -47,7 +50,7 @@ class AprilTag(Node):
                         if img is not None:
                             tags = self.detect_april_tags(img)
                             if len(tags[0]) > 0:
-                                print(self.time, tags)
+                                print(self.time, tags, [self.corners_to_dist(c) for c in tags[1]])
                             self.publish('apriltags', tags)
 #                        retval, jpeg_data = cv2.imencode('.jpg', img)
 #                        if retval:
