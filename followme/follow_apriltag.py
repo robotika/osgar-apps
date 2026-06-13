@@ -1,29 +1,60 @@
 """
-  Pure Depth-Based Robot-Following Node
+  Follow AprilTag
 """
 
 import os
 import math
 from datetime import timedelta
 
+import av
+import cv2
 import numpy as np
 
 from osgar.node import Node
 from osgar.bus import BusShutdownException
-from osgar.followme import EmergencyStopException
-
-LEFT_LED_INDEX = 1
-RIGHT_LED_INDEX = 0
-LED_COLORS = {  # red, green, blue
-    'm01-': [0, 0, 0xFF],
-    'm02-': [0, 0xFF, 0],
-    'm03-': [0xFF, 0, 0],
-    'm04-': [0xFF, 0x6E, 0xC7], # pink
-    'm05-': [0xFF, 0x7F, 0]  # orange
-}
+from osgar.exceptions import EmergencyStopException
 
 
-class FollowRobot(Node):
+class AprilTag(Node):
+    def __init__(self, config, bus):
+        super().__init__(config, bus)
+        self.codec = av.CodecContext.create('hevc', 'r')  # h265
+
+    def detect_april_tags(self, image):
+        dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_APRILTAG_25h9)
+        parameters = cv2.aruco.DetectorParameters()
+        detector = cv2.aruco.ArucoDetector(dictionary, parameters)
+        markerCorners, markerIds, rejectedCandidates = detector.detectMarkers(image)
+        assert len(markerCorners) == len(markerIds), (markerCorners, markerIds)
+        return [[x[0] for x in markerIds],
+                [[[int(a), int(b)] for a, b in x[0]] for x in markerCorners]]
+
+    def on_image(self, data):
+        pass
+
+    def on_video(self, data):
+        try:
+            packets = self.codec.parse(data)
+            for packet in packets:
+                try:
+                    frames = self.codec.decode(packet)
+                    for frame in frames:
+                        img = frame.to_ndarray(format='bgr24')
+                        if img is not None:
+                            tags = self.detect_april_tags(img)
+                            self.publish('apriltags', tags)
+#                        retval, jpeg_data = cv2.imencode('.jpg', img)
+#                        if retval:
+#                            self.publish('jpeg', jpeg_data.tobytes())
+                except av.error.FFmpegError:
+                    # Ignore decoding errors from incomplete packets/keyframes at startup
+                    pass
+        except av.error.FFmpegError:
+            # Ignore parsing errors from incomplete streams
+            pass
+
+
+class FollowAprilTag(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
         bus.register('desired_steering',
