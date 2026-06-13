@@ -79,7 +79,6 @@
     },
     "links": [
       ["app.desired_steering", "platform.desired_steering"],
-      ["app.set_leds", "platform.set_leds"],
       ["platform.pose2d", "app.pose2d"],
       ["platform.emergency_stop", "app.emergency_stop"],
       ["platform.rotation", "app.rotation"],
@@ -93,8 +92,9 @@
 
       ["gps.nmea_data", "app.nmea_data"],
 
-      ["oak.color", "apriltag.image"],
-      ["apriltag.apriltag", "app.apriltag"]
+      ["oak.color", "apriltag.video"],
+      ["apriltag.apriltags", "app.apriltags"],
+      ["apriltag.targets", "app.targets"]
     ]
   }
 }
