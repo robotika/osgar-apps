@@ -29,7 +29,7 @@ class AprilTag(Node):
         if markerCorners is None or markerIds is None:
             return [], []
         assert len(markerCorners) == len(markerIds), (markerCorners, markerIds)
-        return [[x[0] for x in markerIds],
+        return [[int(x[0]) for x in markerIds],
                 [[[int(a), int(b)] for a, b in x[0]] for x in markerCorners]]
 
     def corners_to_dist(self, corners):
