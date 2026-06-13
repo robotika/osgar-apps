@@ -46,6 +46,8 @@ class AprilTag(Node):
                         img = frame.to_ndarray(format='bgr24')
                         if img is not None:
                             tags = self.detect_april_tags(img)
+                            if len(tags[0]) > 0:
+                                print(self.time, tags)
                             self.publish('apriltags', tags)
 #                        retval, jpeg_data = cv2.imencode('.jpg', img)
 #                        if retval:
