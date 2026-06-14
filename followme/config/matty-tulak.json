@@ -11,7 +11,7 @@
           "out": ["desired_steering", "scan", "set_leds"],
           "init": {
             "max_speed": 0.5,
-            "target_distance": 0.5
+            "target_distance": 0.8
           }
       },
       "apriltag": {
