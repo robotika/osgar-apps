@@ -6,15 +6,12 @@
     },
     "modules": {
       "app": {
-          "driver": "follow_apriltag:FollowAprilTag",
+          "driver": "tulak:Tulak",
           "in": ["emergency_stop", "pose2d", "nmea_data", "rotation", "bumpers_front", "bumpers_rear"],
           "out": ["desired_steering", "scan", "set_leds"],
           "init": {
             "max_speed": 0.5,
-            "target_distance": 0.5,
-            "Kp_distance": 0.5,
-            "Kp_steering": 2.0,
-            "horizon": 300
+            "target_distance": 0.5
           }
       },
       "apriltag": {
@@ -57,15 +54,15 @@
           "fps": 10,
           "is_color": true,
           "video_encoder": "h265",
-          "h264_bitrate": 4000,
+          "h264_bitrate": 2000,
           "is_depth": true,
           "is_stereo_images": false,
-          "laser_projector_current": 500,
-          "flood_light_current": 0,
+          "laser_projector_current": 0,
+          "flood_light_current": 500,
           "is_imu_enabled": true,
-          "number_imu_records": 15,
-          "disable_magnetometer_fusion": false,
-          "mono_resolution": [640, 400],
+          "number_imu_records": 10,
+          "disable_magnetometer_fusion": true,
+          "mono_resolution": "THE_400_P",
           "color_resolution": "THE_1080_P",
           "color_manual_focus": 130,
           "stereo_median_filter": "KERNEL_3x3",
@@ -73,7 +70,15 @@
           "stereo_extended_disparity": false,
           "stereo_subpixel": false,
           "stereo_left_right_check": true,
-          "sleep_on_start_sec": 5
+          "sleep_on_start_sec": 3,
+          "model": {
+            "blob": "models/robotourist-093-redroad-20260409-224x224-rgb-chw-1shave.blob"
+          },
+          "nn_config": {
+            "output_format": "LayerFp16",
+            "NN_family": "robotourist",
+            "input_size": "224x224"
+          }
         }
       }
     },
@@ -91,6 +96,9 @@
       ["platform.bumpers_rear", "app.bumpers_rear"],
 
       ["gps.nmea_data", "app.nmea_data"],
+
+      ["oak.nn_mask", "app.nn_mask"],
+      ["oak.orientation_list", "app.orientation_list"],
 
       ["oak.color", "apriltag.video"],
       ["apriltag.apriltags", "app.apriltags"],
