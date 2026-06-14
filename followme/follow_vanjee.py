@@ -42,8 +42,8 @@ class FollowMe(Node):
         self.last_position = data
 
     def on_scan(self, data):
-        if self.verbose:
-            print(self.time, 'min_dist', min_dist(data) / 1000.0)
+#        if self.verbose:
+#            print(self.time, 'min_dist', min_dist(data) / 1000.0)
         self.last_scan = data
 
     def on_emergency_stop(self, data):
@@ -121,7 +121,7 @@ class FollowMe(Node):
                     if speed > self.max_speed:
                         speed = self.max_speed
                 if self.verbose:
-                    print(self.time, 'speed', speed, angle, rot)
+                    print(self.time, 'speed', speed, angle, rot, f'[{low}, {high}]')
                     self.debug_arr.append((self.time.total_seconds(), angle, near, speed))
                 self.send_speed_cmd(speed, rot)
 
