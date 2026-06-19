@@ -27,7 +27,7 @@ class AprilTag(Node):
         detector = cv2.aruco.ArucoDetector(dictionary, parameters)
         markerCorners, markerIds, rejectedCandidates = detector.detectMarkers(image)
         if markerCorners is None or markerIds is None:
-            return [], []
+            return [[], []]
         assert len(markerCorners) == len(markerIds), (markerCorners, markerIds)
         return [[int(x[0]) for x in markerIds],
                 [[[int(a), int(b)] for a, b in x[0]] for x in markerCorners]]
