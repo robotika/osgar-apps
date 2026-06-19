@@ -106,7 +106,7 @@ class FollowAprilTag(Node):
         if len(data) == 0:
             self.send_speed_cmd(0, 0)
         else:
-            dist, angle = data[0]  # TODO select nearest
+            dist, angle = min(data, key=lambda x: x[0])
             if dist < self.target_distance:
                 self.send_speed_cmd(0, 0)
             else:

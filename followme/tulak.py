@@ -69,7 +69,7 @@ class Tulak(Node):
             speed, steering_angle = self.max_speed, self.last_dir
             self.send_speed_cmd(speed, steering_angle)
         else:
-            dist, angle = data[0]  # TODO select nearest
+            dist, angle = min(data, key=lambda x: x[0])
             if dist < self.target_distance:
                 self.send_speed_cmd(0, 0)
             else:
