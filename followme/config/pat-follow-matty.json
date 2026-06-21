@@ -3,7 +3,7 @@
   "robot": {
     "modules": {
       "app": {
-          "driver": "follow_vanjee:FollowMe",
+          "driver": "osgar.followme:FollowMe",
           "in": ["encoders", "scan", "emergency_stop", "pose2d"],
           "out": ["desired_speed"],
           "init": {
@@ -12,7 +12,8 @@
             "desired_dist": 1.5,
             "laser_pose2d": [0.13, 0.055, 0],
             "scan_size": 1800,
-            "scan_fov_deg": -360
+            "scan_fov_deg": -360,
+            "track_front_deg": 90
           }
       },
       "platform": {
