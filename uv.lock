@@ -868,7 +868,7 @@ wheels = [
 [[package]]
 name = "osgar"
 version = "1.0.0"
-source = { git = "https://github.com/robotika/osgar.git?rev=master#cf121382513111e5f8009a7be68de2a63884c881" }
+source = { git = "https://github.com/robotika/osgar.git?rev=master#9c67415202cb551eecd93cce923c0de1adde6e91" }
 dependencies = [
     { name = "msgpack" },
 ]
