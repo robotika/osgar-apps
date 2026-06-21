@@ -94,9 +94,6 @@ class FollowAprilTag(Node):
         if data:
             self.send_speed_cmd(0, 0)
 
-    def on_apriltags(self, data):
-        pass
-
     def on_targets(self, data):
         if len(data) == 0:
             self.send_speed_cmd(0, 0)
@@ -106,20 +103,4 @@ class FollowAprilTag(Node):
                 self.send_speed_cmd(0, 0)
             else:
                 self.send_speed_cmd(self.max_speed, angle)
-
-    def on_depth(self, data):
-        pass
-
-    def on_pose2d(self, data):
-        pass
-
-    def on_rotation(self, data):
-        pass
-
-    def on_orientation_list(self, data):
-        pass
-
-    def on_nmea_data(self, data):
-        pass
-
 # vim: expandtab sw=4 ts=4
