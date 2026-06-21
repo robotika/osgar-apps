@@ -2,12 +2,8 @@
   Tulak po krasu 2026 - combination of RedRoad and Follow AprilTag
 """
 
-import os
 import math
-from datetime import timedelta
 
-import av
-import cv2
 import numpy as np
 
 from osgar.node import Node
@@ -33,7 +29,6 @@ class Tulak(Node):
         # Configuration parameters
         self.max_speed = config.get('max_speed', 0.5)
         self.target_distance = config.get('target_distance', 0.5)
-        self.Kp_distance = config.get('Kp_distance', 0.5)
         self.raise_exception_on_stop = config.get('terminate_on_stop', True)
 
         self.last_nn_mask = None
