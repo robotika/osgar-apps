@@ -75,12 +75,12 @@
             },
             {
               "model": {
-                "blob": "../dtc-systems/models/yolov8n_coco_640x352.blob"
+                "blob": "../models/yolo26n.rvc2.tar.xz"
               },
               "nn_config": {
                 "output_format": "detection",
                 "NN_family": "YOLO",
-                "input_size": "640x352",
+                "input_size": "512x384",
                 "NN_specific_metadata": {
                   "classes": 80,
                   "coordinates": 4,
