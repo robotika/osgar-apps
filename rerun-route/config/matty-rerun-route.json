@@ -15,6 +15,10 @@
             "min_inliers": 20,
             "visualize_alignment": true,
             "join_threshold": 0.5,
+            "match_distance_step": 1.0,
+            "match_time_step": 2.0,
+            "match_window_size": 3,
+            "pose_filter_alpha": 0.1,
             "timeout": 30
           }
       },

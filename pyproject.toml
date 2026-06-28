@@ -9,6 +9,7 @@ requires-python = ">=3.9"
 dependencies = [
     "av>=15.1.0",
     "bitstring>=4.3.1",
+    "depthai>=3.5.0",
     "librosa>=0.10.0",
     "numpy==1.22.0",
     "opencv-python==4.7.0.72",
@@ -36,3 +37,13 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
 ignore = []
+
+[tool.ruff.format]
+# use double quotes for strings.
+quote-style = "single"
+# indent with spaces, rather than tabs.
+indent-style = "space"
+# automatically detect the appropriate line ending.
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
