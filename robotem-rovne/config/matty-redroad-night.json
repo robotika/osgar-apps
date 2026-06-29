@@ -49,7 +49,7 @@
           "is_depth": true,
           "is_stereo_images": true,
           "laser_projector_current": 0,
-          "flood_light_current": 500,
+          "flood_light_current": 100,
           "is_imu_enabled": true,
           "number_imu_records": 10,
           "disable_magnetometer_fusion": true,
@@ -75,7 +75,8 @@
             },
             {
               "model": {
-                "blob": "../models/yolo26n.rvc2.tar.xz"
+                "blob": "../models/yolo26n.rvc2.tar.xz",
+                "num_shaves": 4
               },
               "nn_config": {
                 "output_format": "detection",
