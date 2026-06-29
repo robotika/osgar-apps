@@ -1,0 +1,77 @@
+{
+  "version": 2,
+  "robot": {
+    "modules": {
+      "oak": {
+        "driver": "osgar.drivers.oak_camera:OakCamera",
+        "init": {
+          "fps": 10,
+          "is_color": true,
+          "video_encoder": "mjpeg",
+          "is_depth": false,
+          "laser_projector_current": 0,
+          "flood_light_current": 500,
+          "is_imu_enabled": true,
+          "number_imu_records": 10,
+          "disable_magnetometer_fusion": true,
+          "mono_resolution": "THE_400_P",
+          "color_resolution": "THE_1080_P",
+          "color_manual_focus": 130,
+          "stereo_median_filter": "KERNEL_3x3",
+          "stereo_mode": "HIGH_ACCURACY",
+          "stereo_extended_disparity": false,
+          "stereo_subpixel": false,
+          "stereo_left_right_check": true,
+          "models": [
+            {
+              "model": {
+                "blob": "models/robotourist-093-redroad-20260409-224x224-rgb-chw-1shave.blob"
+              },
+              "nn_config": {
+                "output_format": "LayerFp16",
+                "NN_family": "robotourist",
+                "input_size": "224x224"
+              }
+            },
+            {
+              "model": {
+                "blob": "../models/yolo26n.rvc2.tar.xz"
+              },
+              "nn_config": {
+                "output_format": "detection",
+                "NN_family": "YOLO",
+                "input_size": "512x384",
+                "NN_specific_metadata": {
+                  "classes": 80,
+                  "coordinates": 4,
+                  "anchors": [],
+                  "anchor_masks": {},
+                  "iou_threshold": 0.5,
+                  "confidence_threshold": 0.5
+                }
+              },
+              "mappings": {
+                "labels": [
+                  "person",         "bicycle",    "car",           "motorbike",     "aeroplane",   "bus",           "train",
+                  "truck",          "boat",       "traffic light", "fire hydrant",  "stop sign",   "parking meter", "bench",
+                  "bird",           "cat",        "dog",           "horse",         "sheep",       "cow",           "elephant",
+                  "bear",           "zebra",      "giraffe",       "backpack",      "umbrella",    "handbag",       "tie",
+                  "suitcase",       "frisbee",    "skis",          "snowboard",     "sports ball", "kite",          "baseball bat",
+                  "baseball glove", "skateboard", "surfboard",     "tennis racket", "bottle",      "wine glass",    "cup",
+                  "fork",           "knife",      "spoon",         "bowl",          "banana",      "apple",         "sandwich",
+                  "orange",         "broccoli",   "carrot",        "hot dog",       "pizza",       "donut",         "cake",
+                  "chair",          "sofa",       "pottedplant",   "bed",           "diningtable", "toilet",        "tvmonitor",
+                  "laptop",         "mouse",      "remote",        "keyboard",      "cell phone",  "microwave",     "oven",
+                  "toaster",        "sink",       "refrigerator",  "book",          "clock",       "vase",          "scissors",
+                  "teddy bear",     "hair drier", "toothbrush"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "links": [
+    ]
+  }
+}
