@@ -54,7 +54,8 @@ def main():
     if args.out:
         output_dir = args.out
     else:
-        base, _ = os.path.splitext(logfile)
+        log_basename = os.path.basename(logfile)
+        base, _ = os.path.splitext(log_basename)
         output_dir = base
 
     print(f"Reading log: {logfile}")
