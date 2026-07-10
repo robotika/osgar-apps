@@ -107,6 +107,7 @@ This will look for the calibration config JSON inside the folder (or fall back t
 - `--road-width`: Physical width of the road in meters, corresponding to the calibrated lines (default: `2.0`).
 - `--lane-width-fraction`: Fraction of the BEV width that the road width occupies (default: `0.5`, matching the 25% and 75% vertical guidelines).
 - `--near`: Forward distance in meters of the bottom edge of the BEV from the robot center (default: `1.0`).
+- `--margin`: Horizontal margin in meters to extend the BEV image on each side (default: `0.0`).
 - `--resolution`: Resolution of the final global mosaic map in meters per pixel (default: `0.02`).
 - `-o`, `--out`: Custom output image path (defaults to `mosaic.png` inside the input folder).
 

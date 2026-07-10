@@ -8,6 +8,7 @@ import json
 import math
 import os
 import sys
+
 import cv2
 import numpy as np
 
@@ -89,6 +90,10 @@ def main():
         help="Forward distance of the BEV image bottom edge from the robot center, in meters (default: 1.0)"
     )
     parser.add_argument(
+        "--margin", type=float, default=0.0,
+        help="Horizontal margin in meters to extend the BEV image on each side (default: 0.0)"
+    )
+    parser.add_argument(
         "--resolution", type=float, default=0.02,
         help="Output mosaic map resolution in meters per pixel (default: 0.02)"
     )
@@ -129,14 +134,30 @@ def main():
         print("Error: Calibration config is missing required fields (matrix_M, bev_width, bev_height).")
         sys.exit(1)
 
-    M = np.array(calib["matrix_M"], dtype=np.float32)
-    bev_w = calib["bev_width"]
+    M_orig = np.array(calib["matrix_M"], dtype=np.float32)
+    bev_w_orig = calib["bev_width"]
     bev_h = calib["bev_height"]
 
     # Calculate local spatial calibration
     # meters_per_pixel of BEV image
-    m_per_pixel = args.road_width / (bev_w * args.lane_width_fraction)
+    m_per_pixel = args.road_width / (bev_w_orig * args.lane_width_fraction)
     print(f"BEV local scale: {m_per_pixel:.4f} meters/pixel")
+
+    # Apply margin to expand horizontal view if requested
+    margin_pixels = int(args.margin / m_per_pixel) if args.margin > 0.0 else 0
+    if margin_pixels > 0:
+        # Translation matrix to shift output by margin_pixels to the right
+        T = np.array([
+            [1, 0, margin_pixels],
+            [0, 1, 0],
+            [0, 0, 1]
+        ], dtype=np.float32)
+        M = T @ M_orig
+        bev_w = bev_w_orig + 2 * margin_pixels
+        print(f"Applying horizontal margin: {args.margin}m ({margin_pixels}px on each side). New BEV width: {bev_w}px")
+    else:
+        M = M_orig
+        bev_w = bev_w_orig
 
     # Local dimensions in meters
     bev_w_m = bev_w * m_per_pixel
