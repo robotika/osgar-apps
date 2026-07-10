@@ -81,3 +81,33 @@ img-0001.jpg,3.480,2.985,0.032,1.571210
 - Column 4: Y coordinate in meters
 - Column 5: Heading in radians
 
+## mosaic.py
+
+`mosaic.py` stitches multiple BEV-warped images into a single global mosaic map using the spatial coordinate metadata in `overview.csv` and perspective parameters in `bev.json`.
+
+### Features
+- Warps each camera frame into its local BEV perspective using the Homography matrix `matrix_M`.
+- Transforms local coordinates of each BEV image (forward, left) into the global Cartesian coordinate frame (Y=left, X=forward).
+- Computes the minimum and maximum global bounds across all frame corners to construct an optimal-size global canvas bounding box.
+- Warps each local BEV image onto the global canvas using an exact 2D affine transformation (accounting for robot position, heading rotation, and canvas scale resolution).
+- Handles heavy frame overlaps by overwriting newer frames on top of older frames (Option A).
+
+### Usage
+
+Stitch extracted images in a folder using the default config:
+
+```bash
+uv run python bev-road/mosaic.py my_extracted_log_folder
+```
+
+This will look for the calibration config JSON inside the folder (or fall back to `bev_config.json`) and output `mosaic.png` in the input folder.
+
+### Options
+- `--config`: Path to calibration `bev.json` (by default, auto-detects any JSON inside the image directory).
+- `--road-width`: Physical width of the road in meters, corresponding to the calibrated lines (default: `2.0`).
+- `--lane-width-fraction`: Fraction of the BEV width that the road width occupies (default: `0.5`, matching the 25% and 75% vertical guidelines).
+- `--near`: Forward distance in meters of the bottom edge of the BEV from the robot center (default: `1.0`).
+- `--resolution`: Resolution of the final global mosaic map in meters per pixel (default: `0.02`).
+- `-o`, `--out`: Custom output image path (defaults to `mosaic.png` inside the input folder).
+
+
