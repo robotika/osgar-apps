@@ -32,8 +32,8 @@ def main():
         help="Distance step in meters (default: 0.5)"
     )
     parser.add_argument(
-        "--end", "--finish", dest="end", type=float, default=10.0,
-        help="Finish/end distance in meters (default: 10.0)"
+        "--end", type=float, default=10.0,
+        help="End distance in meters (default: 10.0)"
     )
     parser.add_argument(
         "--camera", default="oak.color",

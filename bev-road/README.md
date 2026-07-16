@@ -63,7 +63,7 @@ uv run python bev-road/log2imdir.py path/to/logfile.log
 - `-o`, `--out`: Custom output directory (defaults to logfile name without extension).
 - `--start`: Distance along path to start extraction, in meters (default: `1.0`).
 - `--step`: Interval distance between extractions, in meters (default: `0.5`).
-- `--end`, `--finish`: Distance along path to end extraction, in meters (default: `10.0`).
+- `--end`: Distance along path to end extraction, in meters (default: `10.0`).
 - `--camera`: Name of the camera stream (default: `"oak.color"`).
 - `--pose`: Name of the Pose2D stream (default: `"platform.pose2d"`).
 
