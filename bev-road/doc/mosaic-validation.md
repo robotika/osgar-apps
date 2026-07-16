@@ -102,7 +102,43 @@ In a standard sequential overlay mosaic, this leads to **"ghost trails"**—wher
 
 ---
 
-## 5. Proposed Validation Tooling
+## 5. Advanced Real-World Modeling: Varying Widths, Lateral Offsets, and 3D Obstacles
+
+In unstructured outdoor environments, several physical assumptions made in the basic PoC begin to break down:
+1. **The road width is not constant** (it widens, narrows, or merges).
+2. **The robot is not centered** (lateral weaving and offset).
+3. **The environment is 3D** (objects like trees, poles, and walls extend vertically and violate the flat-plane homography assumption).
+
+Below are the mathematical challenges and concrete engineering strategies to validate and handle these real-world variations.
+
+### A. Varying Road Widths
+- **Challenge:** If calibration assumes a fixed road width to compute the global scaling, any widening of the road will be incorrectly warped as if it were still the default width, or will result in coordinate stretching.
+- **Solution & Validation:**
+  - **Intrinsic Ground Resolution (GSD):** Instead of using road width to compute `meters_per_pixel`, calculate the **Ground Sampling Distance (GSD)** based purely on physical camera parameters (sensor pitch, focal length, mounting height, and pitch angle). GSD is a physical invariant of the camera mount and does not change based on road width.
+  - **Dynamic Boundary Extraction:** Let the lane lines in the mosaic widen and narrow naturally. In the validation phase, verify that the *local ground scale* (meters per pixel) remains perfectly constant, even when the distance between detected lane boundaries changes.
+
+### B. Lateral Offsets & Weaving (Robot is not Centered)
+- **Challenge:** The robot weaves, drives off-center, or turns, causing the road to shift sideways in the camera's view.
+- **Solution & Validation:**
+  - **Rigid Body Extrinsics (Camera-to-Robot Transform):** If the camera is mounted with a physical offset relative to the robot's center of rotation, apply a static extrinsic rigid transform matrix $T_{\text{camera}\to\text{robot}} = (x_{\text{offset}}, y_{\text{offset}}, \theta_{\text{offset}})$ to map the BEV coordinates into the robot center *before* applying the global `Pose2D` odometry transform.
+  - **Closed-Loop Alignment Validation:** Since the 2D affine transform rotates and translates the entire BEV patch based on the robot's heading and position, the road's global coordinates should remain perfectly static on the canvas while the robot's trajectory line moves left or right relative to it. Verify this by ensuring the road edges form continuous global curves regardless of the robot's lateral maneuvers.
+
+### C. 3D Non-Plane Objects (Trees, Walls, Posts)
+- **Challenge (Radial Distortion/Smearing):** Homography operates on the strict assumption of a **flat ground plane (2D)**. Any 3D object extending vertically above the ground (e.g., trees, lampposts, walls) violates this. When warped, vertical 3D coordinates are projected onto the ground plane, causing them to stretch out infinitely as **radial streaks/smears** pointing away from the camera's optical center.
+- **Solution & Validation:**
+  1. **Near-Field Cropping:** 
+     3D radial distortion increases exponentially with distance (towards the horizon). By aggressively cropping the top portion of the BEV frame (limiting the forward look-ahead distance to 3-5 meters), 3D smearing is minimized because only the flat ground immediately in front of the robot is processed.
+  2. **Semantic Masking (Segmentation):**
+     Use a lightweight segmentation model (like YOLOv8-seg or Fast-SCNN) to detect non-road classes (e.g., `tree`, `building`, `sky`, `trunk`, `pole`). Generate a binary exclusion mask for these classes and set their pixels to transparent `(0, 0, 0)` prior to perspective warping.
+  3. **Depth-Based Plane Segmentation (OAK-D integration):**
+     Since the OAK camera provides stereo depth/disparity, we can convert the pixels into a 3D point cloud:
+     - Fit a dominant ground plane equation $Ax + By + Cz + D = 0$ using **RANSAC**.
+     - Identify any 3D points where the height $|Ax + By + Cz + D| > h_{\text{threshold}}$ (e.g., more than 5cm above the ground).
+     - Generate a binary mask for these high points (trees, obstacles) and exclude them from the BEV stitching process. This guarantees that only flat ground is drawn on the mosaic.
+
+---
+
+## 6. Proposed Validation Tooling
 
 To put these ideas into practice, we propose creating an automated tool: `validate_mosaic.py`.
 
