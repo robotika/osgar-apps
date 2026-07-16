@@ -90,8 +90,7 @@ def extract_images_from_reader(reader, output_dir, start, step, end, camera_stre
     try:
         for dt, stream_name, data in reader:
             if stream_name == camera_stream:
-                if not isinstance(data, bytes):
-                    continue
+                assert isinstance(data, bytes), f"Expected bytes for camera stream, got {type(data)}"
 
                 if data.startswith(b'\xff\xd8'):  # JPEG
                     frame = cv2.imdecode(np.frombuffer(data, dtype=np.uint8), cv2.IMREAD_COLOR)
@@ -117,8 +116,8 @@ def extract_images_from_reader(reader, output_dir, start, step, end, camera_stre
 
             elif stream_name == pose_stream:
                 # data is expected to be [x_mm, y_mm, heading_cd]
-                if not isinstance(data, list) or len(data) < 3:
-                    continue
+                assert isinstance(data, list), f"Expected list for pose stream, got {type(data)}"
+                assert len(data) >= 3, f"Expected at least 3 elements in pose list, got {len(data)}"
 
                 x_mm, y_mm, heading_cd = data[:3]
                 x = x_mm / 1000.0
