@@ -7,6 +7,7 @@ import argparse
 import math
 import os
 import sys
+from pathlib import Path
 
 import av
 import cv2
@@ -54,9 +55,7 @@ def main():
     if args.out:
         output_dir = args.out
     else:
-        log_basename = os.path.basename(logfile)
-        base, _ = os.path.splitext(log_basename)
-        output_dir = base
+        output_dir = str(Path(logfile).stem)
 
     print(f"Reading log: {logfile}")
     print(f"Output directory: {output_dir}")
