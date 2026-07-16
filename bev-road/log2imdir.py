@@ -76,7 +76,7 @@ def main():
 
 
 def extract_images_from_reader(reader, output_dir, start, step, end, camera_stream, pose_stream):
-    csv_path = os.path.join(output_dir, "overview.csv")
+    csv_path = Path(output_dir) / "overview.csv"
     csv_file = open(csv_path, "w", encoding="utf-8")
 
     prev_pose = None
