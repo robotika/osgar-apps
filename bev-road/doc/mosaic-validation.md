@@ -74,7 +74,35 @@ Because the global canvas is constructed by sequentially overlaying images with 
 
 ---
 
-## 4. Proposed Validation Tooling
+## 4. Dynamic Objects & Leading-Robot Occlusion
+
+In convoy-style traces where the robot is actively following another vehicle, the leading platform will constantly occupy the center-forward portion of the camera's field of view, partially obscuring the road ahead. 
+
+In a standard sequential overlay mosaic, this leads to **"ghost trails"**—where multiple stretched copies of the leading robot are continuously pasted onto the global canvas along the entire trajectory.
+
+### A. The Challenge
+- **Occlusion:** The leading robot blocks the view of actual road features (lines, lanes, surface changes) directly in front of the camera.
+- **Stretching:** Because the leading robot is far away (near the horizon / top of the trapezoid), the perspective warp stretches its pixels heavily in the BEV image, turning a small vehicle into a long, distorted blob.
+
+### B. Validation & Detection of Occlusion Artifacts
+1. **Traveled Corridor Color Anomaly Detection:**
+   - *Method:* Analyze the central column of the local BEV images (where the leading robot is expected to be). Compare the color histogram or variance of this region against known road surface colors (e.g., gray pavement or green grass).
+   - *Metric:* Peak deviation score. Large spikes in color variation or non-road colors (e.g., chassis red, yellow, black) indicate occlusion.
+2. **Keypoint Matching Rejection:**
+   - *Method:* High-frequency, dynamic features on the moving leading robot should not be used as static ground keypoints for alignment.
+   - *Metric:* Filter out keypoint matches that lie within the central occlusion zone. If matches within this zone show inconsistent vectors compared to outer (static road boundary) keypoints, they are flagged as dynamic occlusion.
+
+### C. Mitigation Strategies to Document/Test
+- **Near-Field Cropping (Horizon Masking):** 
+  Since the leading robot is far ahead, it occupies the top region of the perspective trapezoid. Lowering the `Top Y` parameter or cropping out the top 20-30% of the BEV image can exclude the leading robot completely from the warped output, ensuring only the clean, un-obscured road closer to the robot is stitched.
+- **Dynamic Masking (Segmentation):**
+  Use a simple color-thresholding mask (or deep-learning models like YOLO) to segment the preceding robot, creating a binary exclusion mask. Set these pixels to transparent/black `(0, 0, 0)` so they do not get drawn onto the canvas.
+- **Temporal Minimum/Median Blending:**
+  Instead of simple overwriting (where the robot's pixel always wins), keep a history of overlapping frames. If the leading robot's distance changes or it weaves slightly, a temporal median or minimum filter across overlapping pixels can filter out the transient vehicle pixels, leaving the static road underneath.
+
+---
+
+## 5. Proposed Validation Tooling
 
 To put these ideas into practice, we propose creating an automated tool: `validate_mosaic.py`.
 
