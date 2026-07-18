@@ -342,112 +342,14 @@ def evaluate_pair(
         pixel_mae_m = 0.0
         pixel_rmse_m = 0.0
 
-    # 3. Detect and Match Keypoints (ORB with spatial masks)
-    orb = cv2.ORB_create(nfeatures=1500)
-    kp1, des1 = orb.detectAndCompute(bev1, mask)
-    kp2, des2 = orb.detectAndCompute(bev2, mask)
-
-    if des1 is None or des2 is None or len(kp1) < 4 or len(kp2) < 4:
-        print("Warning: Insufficient keypoints detected in the static ground mask to evaluate alignment.")
-        sys.exit(0)
-
-    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-    matches = bf.match(des1, des2)
-    matches = sorted(matches, key=lambda x: x.distance)
-    matches = matches[:150]
-
-    if not matches:
-        print("Error: No keypoint matches found in the static overlap region.")
-        sys.exit(1)
-
-    # 4. Compute Global Spatial Displacement and remaining/overwritten classification
-    displacements = []
-    remaining_displacements = []
-    points_to_draw_remaining = []
-    points_to_draw_overwritten = []
-
-    for m in matches:
-        col1, row1 = kp1[m.queryIdx].pt
-        col2, row2 = kp2[m.trainIdx].pt
-
-        xl1 = d_near + (bev_h - 1 - row1) * m_per_pixel
-        yl1 = (bev_w_m / 2.0) - col1 * m_per_pixel
-
-        xl2 = d_near + (bev_h - 1 - row2) * m_per_pixel
-        yl2 = (bev_w_m / 2.0) - col2 * m_per_pixel
-
-        gx1, gy1 = transform_point(xl1, yl1, rec1['x'], rec1['y'], rec1['heading'])
-        gx2, gy2 = transform_point(xl2, yl2, rec2['x'], rec2['y'], rec2['heading'])
-
-        disp_m = math.hypot(gx1 - gx2, gy1 - gy2)
-        displacements.append(disp_m)
-
-        # Check if covered by N+2 in its local frame
-        avg_gx = 0.5 * (gx1 + gx2)
-        avg_gy = 0.5 * (gy1 + gy2)
-
-        dx3 = avg_gx - pred_x
-        dy3 = avg_gy - pred_y
-        xl3 = dx3 * c3 + dy3 * s3
-        yl3 = -dx3 * s3 + dy3 * c3
-
-        is_covered_by_n2 = (xl3 >= d_near) & (xl3 <= d_near + bev_h * m_per_pixel) & \
-                            (yl3 >= -bev_w_m / 2.0) & (yl3 <= bev_w_m / 2.0)
-
-        if not is_covered_by_n2:
-            remaining_displacements.append(disp_m)
-            points_to_draw_remaining.append(((col1, row1), (col2, row2), disp_m))
-        else:
-            points_to_draw_overwritten.append(((col1, row1), (col2, row2), disp_m))
-
-    displacements = np.array(displacements)
-    mean_disp = np.mean(displacements)
-    median_disp = np.median(displacements)
-    std_disp = np.std(displacements)
-    min_disp = np.min(displacements)
-    max_disp = np.max(displacements)
-    rmse_disp = np.sqrt(np.mean(displacements**2))
-
-    # Print Detailed Statistical Analysis
-    print("\nAlignment Quality Evaluation Report (All Matches):")
-    print("-----------------------------------------")
-    print(f"  Valid Matches Evaluated : {len(displacements)}")
-    print(f"  Mean Alignment Error    : {mean_disp * 100:.2f} cm ({mean_disp:.4f} m)")
-    print(f"  Median Alignment Error  : {median_disp * 100:.2f} cm ({median_disp:.4f} m)")
-    print(f"  RMSE (Root Mean Square) : {rmse_disp * 100:.2f} cm ({rmse_disp:.4f} m)")
-    print(f"  Standard Deviation (SD) : {std_disp * 100:.2f} cm ({std_disp:.4f} m)")
-    print(f"  Error Range             : [{min_disp * 100:.2f} cm, {max_disp * 100:.2f} cm]")
-    print("  Stitching Quality Rating: ", end="")
-    if rmse_disp < 0.05:
-        print("EXCELLENT (Highly Consistent)")
-    elif rmse_disp < 0.12:
-        print("ACCEPTABLE (Minor Drift/Slip)")
-    else:
-        print("POOR (Needs Calibration or Pose/Sync Check)")
-    print("-----------------------------------------\n")
-
-    # Remaining Overlap & Match Analysis
-    print("\nRemaining Overlap & Match Analysis (After N+2 Overwrite):")
+    # Remaining Overlap Analysis Report
+    print("\nRemaining Overlap Analysis (After N+2 Overwrite):")
     print("-----------------------------------------")
     print(f"  Remaining Raw Overlap Area: {remaining_overlap_pixels} pixels ({remaining_overlap_area_sq_m:.4f} m²)")
     print(f"  Remaining Masked Area     : {remaining_masked_overlap_pixels} pixels ({remaining_masked_overlap_area_sq_m:.4f} m²)")
     print(f"  Pixel Grayscale MAE       : {pixel_mae:.2f} (masked: {pixel_mae_m:.2f})")
     print(f"  Pixel Grayscale RMSE      : {pixel_rmse:.2f} (masked: {pixel_rmse_m:.2f})")
-    print(f"  Remaining Matches Count   : {len(remaining_displacements)} (out of {len(displacements)} total)")
-    if remaining_displacements:
-        rem_disp = np.array(remaining_displacements)
-        mean_rem = np.mean(rem_disp)
-        median_rem = np.median(rem_disp)
-        rmse_rem = np.sqrt(np.mean(rem_disp ** 2))
-        std_rem = np.std(rem_disp)
-        print(f"  Mean Alignment Error (Rem): {mean_rem * 100:.2f} cm ({mean_rem:.4f} m)")
-        print(f"  Median Alignment Error(Rem): {median_rem * 100:.2f} cm ({median_rem:.4f} m)")
-        print(f"  RMSE (Rem)                : {rmse_rem * 100:.2f} cm ({rmse_rem:.4f} m)")
-        print(f"  Standard Deviation (Rem)  : {std_rem * 100:.2f} cm ({std_rem:.4f} m)")
-    else:
-        rmse_rem = 0.0
-        print("  No keypoint matches remain after N+2 overwrite.")
-    print("-----------------------------------------\n")
+    print("-----------------------------------------")
 
     # 5. Visualization
     bev_h_vis, bev_w_vis = bev1.shape[:2]
@@ -497,31 +399,6 @@ def evaluate_pair(
     cv2.polylines(vis_img, [pts_bev1_arr], isClosed=True, color=(255, 255, 0), thickness=2)
     cv2.polylines(vis_img, [pts_bev2_vis], isClosed=True, color=(255, 255, 0), thickness=2)
 
-    # Draw overwritten matches as small gray circles/lines
-    for (pt1, pt2, err) in points_to_draw_overwritten:
-        p1 = (int(pt1[0]), int(pt1[1]))
-        p2 = (int(pt2[0] + bev_w_vis), int(pt2[1]))
-        color = (100, 100, 100)
-        cv2.circle(vis_img, p1, 2, color, -1)
-        cv2.circle(vis_img, p2, 2, color, -1)
-        cv2.line(vis_img, p1, p2, color, 1)
-
-    # Draw remaining matches with standard color and larger circles
-    for (pt1, pt2, err) in points_to_draw_remaining:
-        p1 = (int(pt1[0]), int(pt1[1]))
-        p2 = (int(pt2[0] + bev_w_vis), int(pt2[1]))
-
-        if err < 0.05:
-            color = (0, 255, 0)  # Green
-        elif err < 0.12:
-            color = (0, 255, 255) # Yellow
-        else:
-            color = (0, 0, 255)  # Red
-
-        cv2.circle(vis_img, p1, 4, color, -1)
-        cv2.circle(vis_img, p2, 4, color, -1)
-        cv2.line(vis_img, p1, p2, color, 1)
-
     # Overlay Text stats
     cv2.putText(
         vis_img, f"Frame {index} BEV | Cyan: Pred N+2", (10, 25),
@@ -532,7 +409,7 @@ def evaluate_pair(
         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA
     )
     cv2.putText(
-        vis_img, f"All RMSE: {rmse_disp*100:.1f}cm | Rem RMSE: {rmse_rem*100:.1f}cm", (10, bev_h_vis - 15),
+        vis_img, f"Masked Overlap: {overlap_pct_masked:.1f}% | Rem Pixel RMSE: {pixel_rmse_m:.1f}", (10, bev_h_vis - 15),
         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1, cv2.LINE_AA
     )
 
