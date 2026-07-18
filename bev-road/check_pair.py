@@ -116,6 +116,7 @@ def evaluate_pair(
     lane_width_fraction=0.5,
     near=1.0,
     resolution=0.02,
+    tolerance=15.0,
     no_vis=False,
     save_debug=False
 ):
@@ -288,9 +289,16 @@ def evaluate_pair(
         pixel_errors = np.abs(vals1 - vals2)
         pixel_mae = np.mean(pixel_errors)
         pixel_rmse = np.sqrt(np.mean(pixel_errors ** 2))
+
+        # Tolerance check
+        within_tol = pixel_errors <= tolerance
+        pixels_within_tol = np.count_nonzero(within_tol)
+        pct_within_tol = 100.0 * pixels_within_tol / len(r1_indices)
     else:
         pixel_mae = 0.0
         pixel_rmse = 0.0
+        pixels_within_tol = 0
+        pct_within_tol = 0.0
 
     # Remaining Overlap Analysis Report
     print("\nRemaining Overlap Analysis (After N+2 Overwrite):")
@@ -298,13 +306,42 @@ def evaluate_pair(
     print(f"  Remaining Overlap Area  : {remaining_overlap_pixels} pixels ({remaining_overlap_area_sq_m:.4f} m²)")
     print(f"  Pixel Grayscale MAE     : {pixel_mae:.2f}")
     print(f"  Pixel Grayscale RMSE    : {pixel_rmse:.2f}")
+    print(f"  Pixels Within Tolerance : {pixels_within_tol} / {len(r1_indices)} ({pct_within_tol:.2f}%) [tolerance = {tolerance}]")
     print("-----------------------------------------")
 
     # 5. Visualization
     bev_h_vis, bev_w_vis = bev1.shape[:2]
+    
+    # Create copies for drawing transparent colored overlays for tolerance visualization
+    vis_bev1 = bev1.copy()
+    vis_bev2 = bev2.copy()
+
+    if len(r1_indices) > 0:
+        # Create overlays
+        green_overlay = np.array([0, 255, 0], dtype=np.uint8)
+        red_overlay = np.array([0, 0, 255], dtype=np.uint8)
+        
+        # Indices within / outside tolerance in BEV1
+        r1_win, c1_win = r1_indices[within_tol], c1_indices[within_tol]
+        r1_out, c1_out = r1_indices[~within_tol], c1_indices[~within_tol]
+        
+        # Alpha blend on vis_bev1 (green for match, red for mismatch)
+        alpha = 0.5
+        vis_bev1[r1_win, c1_win] = (vis_bev1[r1_win, c1_win] * (1 - alpha) + green_overlay * alpha).astype(np.uint8)
+        vis_bev1[r1_out, c1_out] = (vis_bev1[r1_out, c1_out] * (1 - alpha) + red_overlay * alpha).astype(np.uint8)
+        
+        # Indices within / outside tolerance in BEV2
+        r2_win, c2_win = r2_indices[within_tol], c2_indices[within_tol]
+        r2_out, c2_out = r2_indices[~within_tol], c2_indices[~within_tol]
+        
+        # Alpha blend on vis_bev2
+        vis_bev2[r2_win, c2_win] = (vis_bev2[r2_win, c2_win] * (1 - alpha) + green_overlay * alpha).astype(np.uint8)
+        vis_bev2[r2_out, c2_out] = (vis_bev2[r2_out, c2_out] * (1 - alpha) + red_overlay * alpha).astype(np.uint8)
+
+    # Side by side concatenation
     vis_img = np.zeros((bev_h_vis, bev_w_vis * 2, 3), dtype=np.uint8)
-    vis_img[:, :bev_w_vis] = bev1
-    vis_img[:, bev_w_vis:] = bev2
+    vis_img[:, :bev_w_vis] = vis_bev1
+    vis_img[:, bev_w_vis:] = vis_bev2
 
     # Project N+2 corners back to BEV1/BEV2 pixels for drawing
     local_corners_3 = [
@@ -344,15 +381,15 @@ def evaluate_pair(
 
     # Overlay Text stats
     cv2.putText(
-        vis_img, f"Frame {index} BEV | Cyan: Pred N+2", (10, 25),
+        vis_img, f"Frame {index} BEV | Cyan: Pred N+2 | Overlay: Green(<=tol), Red(>tol)", (10, 25),
         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA
     )
     cv2.putText(
-        vis_img, f"Frame {index+1} BEV | Cyan: Pred N+2", (bev_w_vis + 10, 25),
+        vis_img, f"Frame {index+1} BEV | Cyan: Pred N+2 | Overlay: Green(<=tol), Red(>tol)", (bev_w_vis + 10, 25),
         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA
     )
     cv2.putText(
-        vis_img, f"Raw Overlap: {overlap_pct_raw:.1f}% | Rem Pixel RMSE: {pixel_rmse:.1f}", (10, bev_h_vis - 15),
+        vis_img, f"Raw Overlap: {overlap_pct_raw:.1f}% | RMSE: {pixel_rmse:.1f} | In-Tol: {pct_within_tol:.1f}% (tol={tolerance})", (10, bev_h_vis - 15),
         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1, cv2.LINE_AA
     )
 
@@ -399,6 +436,10 @@ def main():
         help="Resolution of the mosaic image in meters per pixel (default: 0.02)"
     )
     parser.add_argument(
+        "--tolerance", type=float, default=15.0,
+        help="Grayscale tolerance threshold (0-255) for pixel alignment comparison (default: 15.0)"
+    )
+    parser.add_argument(
         "--no-vis", action="store_true",
         help="Disable visualization window and only output statistics"
     )
@@ -416,6 +457,7 @@ def main():
         lane_width_fraction=args.lane_width_fraction,
         near=args.near,
         resolution=args.resolution,
+        tolerance=args.tolerance,
         no_vis=args.no_vis,
         save_debug=args.save_debug
     )
