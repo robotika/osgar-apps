@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from check_pair import parse_csv, transform_point
+from check_pair import parse_csv, transform_point, global_to_local, predict_pose
 
 
 class TestCheckPair(unittest.TestCase):
@@ -21,6 +21,41 @@ class TestCheckPair(unittest.TestCase):
         gx, gy = transform_point(2.0, 0.0, 10.0, 5.0, math.pi / 2.0)
         self.assertAlmostEqual(gx, 10.0)
         self.assertAlmostEqual(gy, 7.0)
+
+    def test_global_to_local_inverse(self):
+        # Test various positions and orientations to ensure global_to_local is the true mathematical inverse
+        test_cases = [
+            (1.0, 2.0, 0.0, 0.0, 0.0),
+            (2.0, -1.0, 10.0, 5.0, math.pi / 2.0),
+            (-3.5, 4.2, -20.0, 35.0, -math.pi / 4.0),
+            (0.0, 0.0, 100.0, -50.0, 2.5)
+        ]
+        for xl, yl, rx, ry, heading in test_cases:
+            gx, gy = transform_point(xl, yl, rx, ry, heading)
+            xl_inv, yl_inv = global_to_local(gx, gy, rx, ry, heading)
+            self.assertAlmostEqual(xl_inv, xl)
+            self.assertAlmostEqual(yl_inv, yl)
+
+    def test_predict_pose(self):
+        # Straight line translation
+        rec1 = {'x': 10.0, 'y': 5.0, 'heading': 0.1}
+        rec2 = {'x': 12.0, 'y': 6.0, 'heading': 0.1}
+        pred = predict_pose(rec1, rec2)
+        self.assertAlmostEqual(pred['x'], 14.0)
+        self.assertAlmostEqual(pred['y'], 7.0)
+        self.assertAlmostEqual(pred['heading'], 0.1)
+
+        # Rotation and translation with heading wrapping
+        rec1_wrap = {'x': 0.0, 'y': 0.0, 'heading': 3.1}
+        rec2_wrap = {'x': 1.0, 'y': -0.5, 'heading': -3.1}
+        # Heading wraps from +3.1 to -3.1.
+        # Shortest angular delta should be: -3.1 - 3.1 = -6.2 -> wrapped to ~0.0831853
+        # Extrapolated heading: -3.1 + 0.0831853 = -3.0168147
+        pred_wrap = predict_pose(rec1_wrap, rec2_wrap)
+        self.assertAlmostEqual(pred_wrap['x'], 2.0)
+        self.assertAlmostEqual(pred_wrap['y'], -1.0)
+        expected_heading = (-3.1 + ((-3.1 - 3.1 + math.pi) % (2 * math.pi) - math.pi))
+        self.assertAlmostEqual(pred_wrap['heading'], expected_heading)
 
     def test_parse_csv_valid_data(self):
         with tempfile.TemporaryDirectory() as tmpdir:
