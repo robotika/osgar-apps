@@ -408,6 +408,8 @@ def evaluate_pair(
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+    return vis_img
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -449,18 +451,71 @@ def main():
     )
     args = parser.parse_args()
 
-    evaluate_pair(
-        csv_path=args.csv_path,
-        index=args.index,
-        config=args.config,
-        road_width=args.road_width,
-        lane_width_fraction=args.lane_width_fraction,
-        near=args.near,
-        resolution=args.resolution,
-        tolerance=args.tolerance,
-        no_vis=args.no_vis,
-        save_debug=args.save_debug
-    )
+    # Parse records to get the total count for boundary checks
+    records = parse_csv(args.csv_path)
+    total_records = len(records)
+    if not records:
+        print("Error: No valid records found in overview CSV.")
+        sys.exit(1)
+
+    if args.no_vis:
+        evaluate_pair(
+            csv_path=args.csv_path,
+            index=args.index,
+            config=args.config,
+            road_width=args.road_width,
+            lane_width_fraction=args.lane_width_fraction,
+            near=args.near,
+            resolution=args.resolution,
+            tolerance=args.tolerance,
+            no_vis=True,
+            save_debug=args.save_debug
+        )
+    else:
+        index = args.index
+        win_name = "BEV Alignment Validator (Consecutive Frame Pair)"
+        cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+
+        while True:
+            vis_img = evaluate_pair(
+                csv_path=args.csv_path,
+                index=index,
+                config=args.config,
+                road_width=args.road_width,
+                lane_width_fraction=args.lane_width_fraction,
+                near=args.near,
+                resolution=args.resolution,
+                tolerance=args.tolerance,
+                no_vis=True,  # We handle display in the loop
+                save_debug=args.save_debug
+            )
+
+            if vis_img is None:
+                print(f"Error: Failed to evaluate pair for index {index}")
+                break
+
+            cv2.imshow(win_name, vis_img)
+            print(f"\n[Pair {index} shown] Controls: Right Arrow/'d'/'n' for Next, Left Arrow/'a'/'p' for Prev, ESC/'q' to Quit...")
+
+            key = cv2.waitKeyEx(0)
+
+            # ESC or 'q'
+            if key == 27 or (key & 0xFF) in [ord('q'), ord('Q')]:
+                break
+            # Right Arrow, 'd', or 'n' -> Next index
+            elif key == 2555904 or key == 65363 or (key & 0xFF) in [ord('d'), ord('D'), ord('n'), ord('N')]:
+                if index < total_records - 2:
+                    index += 1
+                else:
+                    print("Already at the last consecutive pair.")
+            # Left Arrow, 'a', or 'p' -> Prev index
+            elif key == 2424832 or key == 65361 or (key & 0xFF) in [ord('a'), ord('A'), ord('p'), ord('P')]:
+                if index > 0:
+                    index -= 1
+                else:
+                    print("Already at the first consecutive pair.")
+
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
