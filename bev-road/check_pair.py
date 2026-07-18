@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """
-  BEV Road Mapping - Consecutive Pair Stitching & Alignment Validator.
+  BEV Road Mapping - Consecutive Frame Pair Stitching & Alignment Validator.
   Loads two sequential images, warps them to BEV space, and calculates 
-  the geometric alignment displacement in meters, while filtering out 
-  dynamic objects (the leading robot) and 3D out-of-plane elements.
+  the geometric alignment displacement in meters.
 """
 import argparse
 import json
@@ -190,38 +189,18 @@ def evaluate_pair(
     bev1 = cv2.warpPerspective(img1, M, (bev_w, bev_h))
     bev2 = cv2.warpPerspective(img2, M, (bev_w, bev_h))
 
-    # 2. Design the "Anomalies/3D/Occlusion Filter" Mask
-    mask = np.full((bev_h, bev_w), 255, dtype=np.uint8)
-    
-    # Crop out the far field (top 40%)
-    far_field_h = int(bev_h * 0.4)
-    mask[0:far_field_h, :] = 0
-
-    # Crop out the central leading-robot corridor (middle 30% from 40% height to 75% height)
-    corridor_start_y = far_field_h
-    corridor_end_y = int(bev_h * 0.75)
-    cx = bev_w // 2
-    corridor_w = int(bev_w * 0.3)
-    mask[corridor_start_y:corridor_end_y, cx - corridor_w // 2 : cx + corridor_w // 2] = 0
-
     # Feature 1: Spatial & Size Analysis
-    selected_pixels = np.count_nonzero(mask)
-    selected_area_sq_m = selected_pixels * (m_per_pixel ** 2)
-    
     res = resolution
     patch_w_mosaic_px = bev_w_m / res
     patch_h_mosaic_px = bev_h_m / res
     patch_area_mosaic_px = patch_w_mosaic_px * patch_h_mosaic_px
-    selected_area_mosaic_px = selected_area_sq_m / (res ** 2)
 
     print("\nSpatial & Size Analysis:")
     print("-----------------------------------------")
     print(f"  BEV Local Resolution    : {m_per_pixel:.4f} m/pixel")
     print(f"  Mosaic Resolution       : {res:.4f} m/pixel")
     print(f"  BEV Patch Physical Size : {bev_w_m:.2f}m x {bev_h_m:.2f}m ({bev_w_m * bev_h_m:.2f} m²)")
-    print(f"  Source Selected Area    : {selected_pixels} pixels ({selected_area_sq_m:.4f} m²)")
     print(f"  BEV Patch in Mosaic     : {patch_w_mosaic_px:.1f} x {patch_h_mosaic_px:.1f} pixels ({patch_area_mosaic_px:.1f} pixels)")
-    print(f"  Selected Area in Mosaic : {selected_area_mosaic_px:.1f} pixels")
     print("-----------------------------------------")
 
     # Feature 2: Percentage of Overlap of the Two Images
@@ -252,20 +231,10 @@ def evaluate_pair(
     overlap_pixels_raw = np.count_nonzero(in_bounds2)
     overlap_pct_raw = 100.0 * overlap_pixels_raw / (bev_w * bev_h)
 
-    overlap_mask_masked = np.zeros((bev_h, bev_w), dtype=bool)
-    overlap_mask_masked[in_bounds2] = (mask[r2_all_int[in_bounds2], c2_all_int[in_bounds2]] > 0)
-    overlap_mask_masked = overlap_mask_masked & (mask > 0)
-
-    overlap_pixels_masked = np.count_nonzero(overlap_mask_masked)
-    total_mask_pixels = np.count_nonzero(mask)
-    overlap_pct_masked = 100.0 * overlap_pixels_masked / total_mask_pixels if total_mask_pixels > 0 else 0.0
-
     print("\nOverlap Analysis:")
     print("-----------------------------------------")
     print(f"  Raw Overlap Area        : {overlap_pixels_raw} pixels ({overlap_pixels_raw * (m_per_pixel**2):.4f} m²)")
     print(f"  Raw Overlap Percentage  : {overlap_pct_raw:.2f}% of full BEV image")
-    print(f"  Masked Overlap Area     : {overlap_pixels_masked} pixels ({overlap_pixels_masked * (m_per_pixel**2):.4f} m²)")
-    print(f"  Masked Overlap Percentage: {overlap_pct_masked:.2f}% of selected area")
     print("-----------------------------------------")
 
     # Feature 3: Predicted Frame N+2 (Pose Estimation)
@@ -304,10 +273,6 @@ def evaluate_pair(
     remaining_overlap_pixels = np.count_nonzero(remaining_overlap_mask)
     remaining_overlap_area_sq_m = remaining_overlap_pixels * (m_per_pixel ** 2)
 
-    remaining_masked_overlap_mask = overlap_mask_masked & (~is_in_n2)
-    remaining_masked_overlap_pixels = np.count_nonzero(remaining_masked_overlap_mask)
-    remaining_masked_overlap_area_sq_m = remaining_masked_overlap_pixels * (m_per_pixel ** 2)
-
     # Pixel intensity comparison
     gray1 = cv2.cvtColor(bev1, cv2.COLOR_BGR2GRAY)
     gray2 = cv2.cvtColor(bev2, cv2.COLOR_BGR2GRAY)
@@ -327,28 +292,12 @@ def evaluate_pair(
         pixel_mae = 0.0
         pixel_rmse = 0.0
 
-    r1_idx_m, c1_idx_m = np.where(remaining_masked_overlap_mask)
-    if len(r1_idx_m) > 0:
-        r2_idx_m = r2_all_int[r1_idx_m, c1_idx_m]
-        c2_idx_m = c2_all_int[r1_idx_m, c1_idx_m]
-
-        vals1_m = gray1[r1_idx_m, c1_idx_m].astype(float)
-        vals2_m = gray2[r2_idx_m, c2_idx_m].astype(float)
-
-        pixel_errors_m = np.abs(vals1_m - vals2_m)
-        pixel_mae_m = np.mean(pixel_errors_m)
-        pixel_rmse_m = np.sqrt(np.mean(pixel_errors_m ** 2))
-    else:
-        pixel_mae_m = 0.0
-        pixel_rmse_m = 0.0
-
     # Remaining Overlap Analysis Report
     print("\nRemaining Overlap Analysis (After N+2 Overwrite):")
     print("-----------------------------------------")
-    print(f"  Remaining Raw Overlap Area: {remaining_overlap_pixels} pixels ({remaining_overlap_area_sq_m:.4f} m²)")
-    print(f"  Remaining Masked Area     : {remaining_masked_overlap_pixels} pixels ({remaining_masked_overlap_area_sq_m:.4f} m²)")
-    print(f"  Pixel Grayscale MAE       : {pixel_mae:.2f} (masked: {pixel_mae_m:.2f})")
-    print(f"  Pixel Grayscale RMSE      : {pixel_rmse:.2f} (masked: {pixel_rmse_m:.2f})")
+    print(f"  Remaining Overlap Area  : {remaining_overlap_pixels} pixels ({remaining_overlap_area_sq_m:.4f} m²)")
+    print(f"  Pixel Grayscale MAE     : {pixel_mae:.2f}")
+    print(f"  Pixel Grayscale RMSE    : {pixel_rmse:.2f}")
     print("-----------------------------------------")
 
     # 5. Visualization
@@ -356,12 +305,6 @@ def evaluate_pair(
     vis_img = np.zeros((bev_h_vis, bev_w_vis * 2, 3), dtype=np.uint8)
     vis_img[:, :bev_w_vis] = bev1
     vis_img[:, bev_w_vis:] = bev2
-
-    # Draw the static evaluation mask outline in semi-transparent red on both images
-    mask_vis = np.zeros_like(bev1)
-    mask_vis[mask == 0] = [0, 0, 100]
-    vis_img[:, :bev_w_vis] = cv2.addWeighted(vis_img[:, :bev_w_vis], 0.8, mask_vis, 0.2, 0)
-    vis_img[:, bev_w_vis:] = cv2.addWeighted(vis_img[:, bev_w_vis:], 0.8, mask_vis, 0.2, 0)
 
     # Project N+2 corners back to BEV1/BEV2 pixels for drawing
     local_corners_3 = [
@@ -409,7 +352,7 @@ def evaluate_pair(
         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA
     )
     cv2.putText(
-        vis_img, f"Masked Overlap: {overlap_pct_masked:.1f}% | Rem Pixel RMSE: {pixel_rmse_m:.1f}", (10, bev_h_vis - 15),
+        vis_img, f"Raw Overlap: {overlap_pct_raw:.1f}% | Rem Pixel RMSE: {pixel_rmse:.1f}", (10, bev_h_vis - 15),
         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1, cv2.LINE_AA
     )
 
