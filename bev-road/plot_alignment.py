@@ -106,6 +106,7 @@ def main():
                 tolerance=args.tolerance,
                 no_vis=True,
                 save_debug=False,
+                verbose=False,
             )
             indices.append(index)
             pct_within_tols.append(metrics['pct_within_tol'])

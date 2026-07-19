@@ -91,11 +91,17 @@ def evaluate_pair(
     tolerance=15.0,
     no_vis=False,
     save_debug=False,
+    verbose=True,
 ):
     """
     Evaluates the alignment quality of consecutive frames at `index` and `index + 1`.
     Prints detailed spatial and overlap analysis reports, including predictions of N+2.
     """
+    def print(*args, **kwargs):
+        if verbose:
+            import builtins
+            builtins.print(*args, **kwargs)
+
     csv_path = Path(csv_path)
     imdir = csv_path.parent
 
