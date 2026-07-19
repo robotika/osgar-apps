@@ -499,8 +499,8 @@ def main():
 
             key = cv2.waitKeyEx(0)
 
-            # ESC or 'q'
-            if key == 27 or (key & 0xFF) in [ord('q'), ord('Q')]:
+            # ESC or standard ASCII 'q'/'Q' (not extended keys)
+            if key == 27 or (key < 256 and key in [ord('q'), ord('Q')]):
                 break
             # Right Arrow, 'd', or 'n' -> Next index
             elif key == 2555904 or key == 65363 or (key & 0xFF) in [ord('d'), ord('D'), ord('n'), ord('N')]:
