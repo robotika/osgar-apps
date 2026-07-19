@@ -403,7 +403,15 @@ def evaluate_pair(
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    return vis_img
+    metrics = {
+        'overlap_pct_raw': overlap_pct_raw,
+        'remaining_overlap_pixels': remaining_overlap_pixels,
+        'pixel_mae': pixel_mae,
+        'pixel_rmse': pixel_rmse,
+        'pct_within_tol': pct_within_tol,
+    }
+
+    return vis_img, metrics
 
 
 def main():
@@ -470,7 +478,7 @@ def main():
         cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
 
         while True:
-            vis_img = evaluate_pair(
+            vis_img, _ = evaluate_pair(
                 csv_path=args.csv_path,
                 index=index,
                 config=args.config,
