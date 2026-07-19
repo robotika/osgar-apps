@@ -105,9 +105,9 @@ def evaluate_pair(
         print('Error: No valid records found in overview CSV.')
         sys.exit(1)
 
-    if index < 0 or index >= len(records) - 1:
-        print(f'Error: Index {index} is out of bounds for {len(records)} records (0 to {len(records) - 2}).')
-        sys.exit(1)
+    assert index >= 0 and index + 2 < len(records), (
+        f'Index {index} is out of bounds for {len(records)} records (0 to {len(records) - 3}).'
+    )
 
     rec1 = records[index]
     rec2 = records[index + 1]
@@ -218,40 +218,30 @@ def evaluate_pair(
     print('-----------------------------------------')
 
     # Feature 3: Frame N+2 (Real Pose)
+    rec3 = records[index + 2]
+    pose3_x = rec3['x']
+    pose3_y = rec3['y']
+    pose3_heading = rec3['heading']
+
     print('\nFrame N+2 (Real Pose):')
     print('-----------------------------------------')
-    if index + 2 < len(records):
-        rec3 = records[index + 2]
-        pose3_x = rec3['x']
-        pose3_y = rec3['y']
-        pose3_heading = rec3['heading']
-        has_n2 = True
-        print(f'  Actual N+2 pose         : ({pose3_x:.3f}, {pose3_y:.3f}, heading={pose3_heading:.4f} rad)')
-    else:
-        pose3_x = 0.0
-        pose3_y = 0.0
-        pose3_heading = 0.0
-        has_n2 = False
-        print('  Actual N+2 pose         : (No actual N+2 frame available in CSV)')
+    print(f'  Actual N+2 pose         : ({pose3_x:.3f}, {pose3_y:.3f}, heading={pose3_heading:.4f} rad)')
     print('-----------------------------------------')
 
     # Check N+2 coverage
-    if has_n2:
-        dx_all_3 = gx_all - pose3_x
-        dy_all_3 = gy_all - pose3_y
-        c3 = math.cos(pose3_heading)
-        s3 = math.sin(pose3_heading)
-        xl3_all = dx_all_3 * c3 + dy_all_3 * s3
-        yl3_all = -dx_all_3 * s3 + dy_all_3 * c3
+    dx_all_3 = gx_all - pose3_x
+    dy_all_3 = gy_all - pose3_y
+    c3 = math.cos(pose3_heading)
+    s3 = math.sin(pose3_heading)
+    xl3_all = dx_all_3 * c3 + dy_all_3 * s3
+    yl3_all = -dx_all_3 * s3 + dy_all_3 * c3
 
-        is_in_n2 = (
-            (xl3_all >= d_near)
-            & (xl3_all <= d_near + bev_h * m_per_pixel)
-            & (yl3_all >= -bev_w_m / 2.0)
-            & (yl3_all <= bev_w_m / 2.0)
-        )
-    else:
-        is_in_n2 = np.zeros_like(gx_all, dtype=bool)
+    is_in_n2 = (
+        (xl3_all >= d_near)
+        & (xl3_all <= d_near + bev_h * m_per_pixel)
+        & (yl3_all >= -bev_w_m / 2.0)
+        & (yl3_all <= bev_w_m / 2.0)
+    )
 
     remaining_overlap_mask = in_bounds2 & (~is_in_n2)
     remaining_overlap_pixels = np.count_nonzero(remaining_overlap_mask)
@@ -329,48 +319,46 @@ def evaluate_pair(
     vis_img[:, :bev_w_vis] = vis_bev1
     vis_img[:, bev_w_vis:] = vis_bev2
 
-    if has_n2:
-        # Project N+2 corners back to BEV1/BEV2 pixels for drawing
-        local_corners_3 = [
-            (d_near + bev_h * m_per_pixel, bev_w_m / 2.0),  # Top-Left (d_far)
-            (d_near + bev_h * m_per_pixel, -bev_w_m / 2.0),  # Top-Right (d_far)
-            (d_near, -bev_w_m / 2.0),  # Bottom-Right (d_near)
-            (d_near, bev_w_m / 2.0),  # Bottom-Left (d_near)
-        ]
-        global_corners_3 = []
-        for lx, ly in local_corners_3:
-            gx, gy = transform_point(lx, ly, pose3_x, pose3_y, pose3_heading)
-            global_corners_3.append((gx, gy))
+    # Project N+2 corners back to BEV1/BEV2 pixels for drawing
+    local_corners_3 = [
+        (d_near + bev_h * m_per_pixel, bev_w_m / 2.0),  # Top-Left (d_far)
+        (d_near + bev_h * m_per_pixel, -bev_w_m / 2.0),  # Top-Right (d_far)
+        (d_near, -bev_w_m / 2.0),  # Bottom-Right (d_near)
+        (d_near, bev_w_m / 2.0),  # Bottom-Left (d_near)
+    ]
+    global_corners_3 = []
+    for lx, ly in local_corners_3:
+        gx, gy = transform_point(lx, ly, pose3_x, pose3_y, pose3_heading)
+        global_corners_3.append((gx, gy))
 
-        pts_bev1 = []
-        for gx, gy in global_corners_3:
-            xl1_c, yl1_c = global_to_local(gx, gy, rec1['x'], rec1['y'], rec1['heading'])
-            row1_c = (bev_h - 1) - (xl1_c - d_near) / m_per_pixel
-            col1_c = (bev_w_m / 2.0 - yl1_c) / m_per_pixel
-            pts_bev1.append([int(col1_c), int(row1_c)])
+    pts_bev1 = []
+    for gx, gy in global_corners_3:
+        xl1_c, yl1_c = global_to_local(gx, gy, rec1['x'], rec1['y'], rec1['heading'])
+        row1_c = (bev_h - 1) - (xl1_c - d_near) / m_per_pixel
+        col1_c = (bev_w_m / 2.0 - yl1_c) / m_per_pixel
+        pts_bev1.append([int(col1_c), int(row1_c)])
 
-        pts_bev2 = []
-        for gx, gy in global_corners_3:
-            xl2_c, yl2_c = global_to_local(gx, gy, rec2['x'], rec2['y'], rec2['heading'])
-            row2_c = (bev_h - 1) - (xl2_c - d_near) / m_per_pixel
-            col2_c = (bev_w_m / 2.0 - yl2_c) / m_per_pixel
-            pts_bev2.append([int(col2_c), int(row2_c)])
+    pts_bev2 = []
+    for gx, gy in global_corners_3:
+        xl2_c, yl2_c = global_to_local(gx, gy, rec2['x'], rec2['y'], rec2['heading'])
+        row2_c = (bev_h - 1) - (xl2_c - d_near) / m_per_pixel
+        col2_c = (bev_w_m / 2.0 - yl2_c) / m_per_pixel
+        pts_bev2.append([int(col2_c), int(row2_c)])
 
-        pts_bev1_arr = np.array(pts_bev1, dtype=np.int32).reshape((-1, 1, 2))
-        pts_bev2_arr = np.array(pts_bev2, dtype=np.int32).reshape((-1, 1, 2))
+    pts_bev1_arr = np.array(pts_bev1, dtype=np.int32).reshape((-1, 1, 2))
+    pts_bev2_arr = np.array(pts_bev2, dtype=np.int32).reshape((-1, 1, 2))
 
-        pts_bev2_vis = pts_bev2_arr.copy()
-        pts_bev2_vis[:, :, 0] += bev_w_vis
+    pts_bev2_vis = pts_bev2_arr.copy()
+    pts_bev2_vis[:, :, 0] += bev_w_vis
 
-        # Draw actual N+2 boundary as a cyan line
-        cv2.polylines(vis_img, [pts_bev1_arr], isClosed=True, color=(255, 255, 0), thickness=2)
-        cv2.polylines(vis_img, [pts_bev2_vis], isClosed=True, color=(255, 255, 0), thickness=2)
+    # Draw actual N+2 boundary as a cyan line
+    cv2.polylines(vis_img, [pts_bev1_arr], isClosed=True, color=(255, 255, 0), thickness=2)
+    cv2.polylines(vis_img, [pts_bev2_vis], isClosed=True, color=(255, 255, 0), thickness=2)
 
     # Overlay Text stats
-    cyan_label = 'Cyan: Actual N+2' if has_n2 else 'No N+2'
     cv2.putText(
         vis_img,
-        f'Frame {index} BEV | {cyan_label} | Overlay: Green(<=tol), Red(>tol)',
+        f'Frame {index} BEV | Cyan: Actual N+2 | Overlay: Green(<=tol), Red(>tol)',
         (10, 25),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.6,
@@ -380,7 +368,7 @@ def evaluate_pair(
     )
     cv2.putText(
         vis_img,
-        f'Frame {index + 1} BEV | {cyan_label} | Overlay: Green(<=tol), Red(>tol)',
+        f'Frame {index + 1} BEV | Cyan: Actual N+2 | Overlay: Green(<=tol), Red(>tol)',
         (bev_w_vis + 10, 25),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.6,
@@ -512,7 +500,7 @@ def main():
                 break
             # Right Arrow, 'd', or 'n' -> Next index
             elif key == 2555904 or key == 65363 or (key & 0xFF) in [ord('d'), ord('D'), ord('n'), ord('N')]:
-                if index < total_records - 2:
+                if index < total_records - 3:
                     index += 1
                 else:
                     print('Already at the last consecutive pair.')
