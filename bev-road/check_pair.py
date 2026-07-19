@@ -358,7 +358,7 @@ def evaluate_pair(
     # Overlay Text stats
     cv2.putText(
         vis_img,
-        f'Frame {index} BEV | Cyan: Actual N+2 | Overlay: Green(<=tol), Red(>tol)',
+        f'Frame {index} BEV | Cyan: Actual N+2',
         (10, 25),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.6,
@@ -368,7 +368,7 @@ def evaluate_pair(
     )
     cv2.putText(
         vis_img,
-        f'Frame {index + 1} BEV | Cyan: Actual N+2 | Overlay: Green(<=tol), Red(>tol)',
+        f'Frame {index + 1} BEV | Green(<=tol), Red(>tol)',
         (bev_w_vis + 10, 25),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.6,
