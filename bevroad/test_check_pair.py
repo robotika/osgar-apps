@@ -1,11 +1,9 @@
 import math
 import os
-import sys
 import tempfile
 import unittest
 
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from check_pair import global_to_local, parse_csv, transform_point
+from bevroad.check_pair import global_to_local, parse_csv, transform_point
 
 
 class TestCheckPair(unittest.TestCase):

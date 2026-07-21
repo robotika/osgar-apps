@@ -143,7 +143,7 @@ Below are the mathematical challenges and concrete engineering strategies to val
 To put these ideas into practice, we propose creating an automated tool: `validate_mosaic.py`.
 
 ```bash
-uv run python bev-road/validate_mosaic.py <mosaic-image-path> --csv <overview-csv-path> --resolution 0.02
+uv run python bevroad/validate_mosaic.py <mosaic-image-path> --csv <overview-csv-path> --resolution 0.02
 ```
 
 ### Planned Features:

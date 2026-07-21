@@ -8,7 +8,6 @@ alongside other metrics like Raw Overlap (%) and Grayscale RMSE.
 
 import argparse
 import csv
-import os
 import sys
 from pathlib import Path
 
@@ -18,9 +17,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-# Insert current directory into path to allow check_pair imports
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from check_pair import evaluate_pair, parse_csv
+from bevroad.check_pair import evaluate_pair, parse_csv
 
 
 def main():

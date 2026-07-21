@@ -1,11 +1,9 @@
 import math
 import os
-import sys
 import tempfile
 import unittest
 
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from mosaic import parse_csv, transform_point
+from bevroad.mosaic import parse_csv, transform_point
 
 
 class TestMosaic(unittest.TestCase):
@@ -29,27 +27,27 @@ class TestMosaic(unittest.TestCase):
 
     def test_parse_csv_valid_and_invalid(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            csv_path = os.path.join(tmpdir, "overview.csv")
-            with open(csv_path, "w", encoding="utf-8") as f:
-                f.write("img-0000.jpg,1.5,10.0,20.0,1.570796\n")
-                f.write("invalid_line,1.2\n") # Too short
-                f.write("img-0001.jpg,abc,30.0,40.0,0.0\n") # Invalid float
-                f.write("img-0002.jpg,3.5,30.0,40.0,0.0\n")
+            csv_path = os.path.join(tmpdir, 'overview.csv')
+            with open(csv_path, 'w', encoding='utf-8') as f:
+                f.write('img-0000.jpg,1.5,10.0,20.0,1.570796\n')
+                f.write('invalid_line,1.2\n')  # Too short
+                f.write('img-0001.jpg,abc,30.0,40.0,0.0\n')  # Invalid float
+                f.write('img-0002.jpg,3.5,30.0,40.0,0.0\n')
 
             records = parse_csv(csv_path)
             self.assertEqual(len(records), 2)
-            self.assertEqual(records[0]['filename'], "img-0000.jpg")
+            self.assertEqual(records[0]['filename'], 'img-0000.jpg')
             self.assertEqual(records[0]['ts'], 1.5)
             self.assertEqual(records[0]['x'], 10.0)
             self.assertEqual(records[0]['y'], 20.0)
             self.assertAlmostEqual(records[0]['heading'], 1.570796)
 
-            self.assertEqual(records[1]['filename'], "img-0002.jpg")
+            self.assertEqual(records[1]['filename'], 'img-0002.jpg')
             self.assertEqual(records[1]['ts'], 3.5)
             self.assertEqual(records[1]['x'], 30.0)
             self.assertEqual(records[1]['y'], 40.0)
             self.assertAlmostEqual(records[1]['heading'], 0.0)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

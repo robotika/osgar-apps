@@ -97,9 +97,11 @@ def evaluate_pair(
     Evaluates the alignment quality of consecutive frames at `index` and `index + 1`.
     Prints detailed spatial and overlap analysis reports, including predictions of N+2.
     """
+
     def print(*args, **kwargs):
         if verbose:
             import builtins
+
             builtins.print(*args, **kwargs)
 
     csv_path = Path(csv_path)
@@ -503,8 +505,7 @@ def main():
 
             cv2.imshow(win_name, vis_img)
             print(
-                f'\n[Pair {index} shown] Controls: Right Arrow/d/n for Next, '
-                f"Left Arrow/a/p for Prev, ESC/q to Quit..."
+                f'\n[Pair {index} shown] Controls: Right Arrow/d/n for Next, Left Arrow/a/p for Prev, ESC/q to Quit...'
             )
 
             key = cv2.waitKeyEx(0)

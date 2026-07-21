@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-  Bird's Eye View (BEV) road mapping - Mosaic Stitching.
-  Stitches multiple BEV-warped images into a global map using pose metadata.
+Bird's Eye View (BEV) road mapping - Mosaic Stitching.
+Stitches multiple BEV-warped images into a global map using pose metadata.
 """
+
 import argparse
 import json
 import math
@@ -21,7 +22,7 @@ def load_calibration(config_path):
         with open(config_path, 'r') as f:
             return json.load(f)
     except Exception as e:
-        print(f"Error loading calibration config {config_path}: {e}")
+        print(f'Error loading calibration config {config_path}: {e}')
         sys.exit(1)
 
 
@@ -38,7 +39,7 @@ def parse_csv(csv_path):
                 continue
             parts = line.split(',')
             if len(parts) < 5:
-                print(f"Warning: line {line_num} in CSV is invalid and will be skipped.")
+                print(f'Warning: line {line_num} in CSV is invalid and will be skipped.')
                 continue
             try:
                 filename = parts[0]
@@ -46,15 +47,9 @@ def parse_csv(csv_path):
                 x = float(parts[2])
                 y = float(parts[3])
                 heading = float(parts[4])
-                records.append({
-                    'filename': filename,
-                    'ts': ts,
-                    'x': x,
-                    'y': y,
-                    'heading': heading
-                })
+                records.append({'filename': filename, 'ts': ts, 'x': x, 'y': y, 'heading': heading})
             except ValueError as e:
-                print(f"Warning: line {line_num} parsing failed ({e}). Skipped.")
+                print(f'Warning: line {line_num} parsing failed ({e}). Skipped.')
     return records
 
 
@@ -71,44 +66,47 @@ def transform_point(x_local, y_local, robot_x, robot_y, heading):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="BEV Mosaic Map Stitcher")
-    parser.add_argument("imdir", help="Directory containing overview.csv and extracted images")
+    parser = argparse.ArgumentParser(description='BEV Mosaic Map Stitcher')
+    parser.add_argument('imdir', help='Directory containing overview.csv and extracted images')
     parser.add_argument(
-        "--config",
-        help="Path to calibration bev.json file (defaults to matching image calibration in the directory)"
+        '--config', help='Path to calibration bev.json file (defaults to matching image calibration in the directory)'
     )
     parser.add_argument(
-        "--road-width", type=float, default=2.0,
-        help="Physical width of the road in meters (default: 2.0)"
+        '--road-width', type=float, default=2.0, help='Physical width of the road in meters (default: 2.0)'
     )
     parser.add_argument(
-        "--lane-width-fraction", type=float, default=0.5,
-        help="Fraction of the BEV width that the road width occupies (default: 0.5)"
+        '--lane-width-fraction',
+        type=float,
+        default=0.5,
+        help='Fraction of the BEV width that the road width occupies (default: 0.5)',
     )
     parser.add_argument(
-        "--near", type=float, default=1.0,
-        help="Forward distance of the BEV image bottom edge from the robot center, in meters (default: 1.0)"
+        '--near',
+        type=float,
+        default=1.0,
+        help='Forward distance of the BEV image bottom edge from the robot center, in meters (default: 1.0)',
     )
     parser.add_argument(
-        "--margin", type=float, default=0.0,
-        help="Horizontal margin in meters to extend the BEV image on each side (default: 0.0)"
+        '--margin',
+        type=float,
+        default=0.0,
+        help='Horizontal margin in meters to extend the BEV image on each side (default: 0.0)',
     )
     parser.add_argument(
-        "--resolution", type=float, default=0.02,
-        help="Output mosaic map resolution in meters per pixel (default: 0.02)"
+        '--resolution',
+        type=float,
+        default=0.02,
+        help='Output mosaic map resolution in meters per pixel (default: 0.02)',
     )
-    parser.add_argument(
-        "-o", "--out",
-        help="Output image path (defaults to mosaic.png inside input directory)"
-    )
+    parser.add_argument('-o', '--out', help='Output image path (defaults to mosaic.png inside input directory)')
     args = parser.parse_args()
 
     imdir = args.imdir
-    csv_path = os.path.join(imdir, "overview.csv")
+    csv_path = os.path.join(imdir, 'overview.csv')
     records = parse_csv(csv_path)
 
     if not records:
-        print("Error: No valid records found in the overview CSV.")
+        print('Error: No valid records found in the overview CSV.')
         sys.exit(1)
 
     # Determine calibration config file path
@@ -116,45 +114,41 @@ def main():
         config_path = args.config
     else:
         # Look for any JSON file in the folder or a default bev_config.json
-        json_files = [f for f in os.listdir(imdir) if f.endswith(".json")]
+        json_files = [f for f in os.listdir(imdir) if f.endswith('.json')]
         if json_files:
             config_path = os.path.join(imdir, json_files[0])
         else:
             # Fallback search in parent directory or default
-            config_path = "bev_config.json"
+            config_path = 'bev_config.json'
             if not os.path.exists(config_path):
-                print("Error: No calibration config file specified, and no JSON files found in input folder.")
+                print('Error: No calibration config file specified, and no JSON files found in input folder.')
                 sys.exit(1)
 
-    print(f"Loading calibration from: {config_path}")
+    print(f'Loading calibration from: {config_path}')
     calib = load_calibration(config_path)
 
     # Extract transformation matrix M and dimensions from calib
-    if "matrix_M" not in calib or "bev_width" not in calib or "bev_height" not in calib:
-        print("Error: Calibration config is missing required fields (matrix_M, bev_width, bev_height).")
+    if 'matrix_M' not in calib or 'bev_width' not in calib or 'bev_height' not in calib:
+        print('Error: Calibration config is missing required fields (matrix_M, bev_width, bev_height).')
         sys.exit(1)
 
-    M_orig = np.array(calib["matrix_M"], dtype=np.float32)
-    bev_w_orig = calib["bev_width"]
-    bev_h = calib["bev_height"]
+    M_orig = np.array(calib['matrix_M'], dtype=np.float32)
+    bev_w_orig = calib['bev_width']
+    bev_h = calib['bev_height']
 
     # Calculate local spatial calibration
     # meters_per_pixel of BEV image
     m_per_pixel = args.road_width / (bev_w_orig * args.lane_width_fraction)
-    print(f"BEV local scale: {m_per_pixel:.4f} meters/pixel")
+    print(f'BEV local scale: {m_per_pixel:.4f} meters/pixel')
 
     # Apply margin to expand horizontal view if requested
     margin_pixels = int(args.margin / m_per_pixel) if args.margin > 0.0 else 0
     if margin_pixels > 0:
         # Translation matrix to shift output by margin_pixels to the right
-        T = np.array([
-            [1, 0, margin_pixels],
-            [0, 1, 0],
-            [0, 0, 1]
-        ], dtype=np.float32)
+        T = np.array([[1, 0, margin_pixels], [0, 1, 0], [0, 0, 1]], dtype=np.float32)
         M = T @ M_orig
         bev_w = bev_w_orig + 2 * margin_pixels
-        print(f"Applying horizontal margin: {args.margin}m ({margin_pixels}px on each side). New BEV width: {bev_w}px")
+        print(f'Applying horizontal margin: {args.margin}m ({margin_pixels}px on each side). New BEV width: {bev_w}px')
     else:
         M = M_orig
         bev_w = bev_w_orig
@@ -168,14 +162,14 @@ def main():
     # local corner coordinates (relative to robot center)
     # X is forward, Y is left
     local_corners = [
-        (d_far, bev_w_m / 2.0),   # Top-Left
+        (d_far, bev_w_m / 2.0),  # Top-Left
         (d_far, -bev_w_m / 2.0),  # Top-Right
-        (d_near, -bev_w_m / 2.0), # Bottom-Right
-        (d_near, bev_w_m / 2.0)   # Bottom-Left
+        (d_near, -bev_w_m / 2.0),  # Bottom-Right
+        (d_near, bev_w_m / 2.0),  # Bottom-Left
     ]
 
     # Find global bounding box of all warped images
-    print("Calculating global bounding box...")
+    print('Calculating global bounding box...')
     g_xs = []
     g_ys = []
 
@@ -189,14 +183,14 @@ def main():
     x_min, x_max = min(g_xs), max(g_xs)
     y_min, y_max = min(g_ys), max(g_ys)
 
-    print(f"Global bounds (meters): X = [{x_min:.2f}, {x_max:.2f}], Y = [{y_min:.2f}, {y_max:.2f}]")
+    print(f'Global bounds (meters): X = [{x_min:.2f}, {x_max:.2f}], Y = [{y_min:.2f}, {y_max:.2f}]')
 
     # Define mosaic canvas dimensions in pixels
     res = args.resolution
     canvas_w = int((y_max - y_min) / res) + 1
     canvas_h = int((x_max - x_min) / res) + 1
 
-    print(f"Creating global mosaic canvas of size: {canvas_w}x{canvas_h} pixels")
+    print(f'Creating global mosaic canvas of size: {canvas_w}x{canvas_h} pixels')
     canvas = np.zeros((canvas_h, canvas_w, 3), dtype=np.uint8)
 
     # Process and stitch each image
@@ -217,11 +211,14 @@ def main():
 
         # 2. Map BEV pixels to global canvas pixels using an affine transform
         # We define 3 control points on the BEV image
-        pts_src = np.array([
-            [0, 0],              # Top-Left of BEV
-            [bev_w - 1, 0],      # Top-Right of BEV
-            [0, bev_h - 1]       # Bottom-Left of BEV
-        ], dtype=np.float32)
+        pts_src = np.array(
+            [
+                [0, 0],  # Top-Left of BEV
+                [bev_w - 1, 0],  # Top-Right of BEV
+                [0, bev_h - 1],  # Bottom-Left of BEV
+            ],
+            dtype=np.float32,
+        )
 
         # Map these 3 control points to global coordinates, and then to canvas pixel coordinates
         pts_dst = []
@@ -255,13 +252,13 @@ def main():
         canvas[mask] = warped[mask]
 
         if (idx + 1) % 10 == 0 or (idx + 1) == len(records):
-            print(f"Stitched {idx + 1}/{len(records)} images...")
+            print(f'Stitched {idx + 1}/{len(records)} images...')
 
     # Save output mosaic map
-    output_path = args.out if args.out else os.path.join(imdir, "mosaic.png")
+    output_path = args.out if args.out else os.path.join(imdir, 'mosaic.png')
     cv2.imwrite(output_path, canvas)
-    print(f"Successfully generated global mosaic: {output_path}")
+    print(f'Successfully generated global mosaic: {output_path}')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
