@@ -6,78 +6,14 @@ the geometric alignment displacement in meters.
 """
 
 import argparse
-import json
 import math
-import os
 import sys
 from pathlib import Path
 
 import cv2
 import numpy as np
 
-
-def load_calibration(config_path):
-    if not os.path.exists(config_path):
-        print(f"Error: Calibration config file '{config_path}' does not exist.")
-        sys.exit(1)
-    try:
-        with open(config_path, 'r') as f:
-            return json.load(f)
-    except Exception as e:
-        print(f'Error loading calibration config {config_path}: {e}')
-        sys.exit(1)
-
-
-def parse_csv(csv_path):
-    if not os.path.exists(csv_path):
-        print(f"Error: Metadata CSV file '{csv_path}' does not exist.")
-        sys.exit(1)
-
-    records = []
-    with open(csv_path, 'r', encoding='utf-8') as f:
-        for line_num, line in enumerate(f, 1):
-            line = line.strip()
-            if not line:
-                continue
-            parts = line.split(',')
-            if len(parts) < 5:
-                continue
-            try:
-                filename = parts[0]
-                ts = float(parts[1])
-                x = float(parts[2])
-                y = float(parts[3])
-                heading = float(parts[4])
-                records.append({'filename': filename, 'ts': ts, 'x': x, 'y': y, 'heading': heading})
-            except ValueError:
-                pass
-    return records
-
-
-def transform_point(x_local, y_local, robot_x, robot_y, heading):
-    """
-    Transforms local robot-frame coordinates (X=forward, Y=left)
-    to global coordinates based on robot's position and heading (radians).
-    """
-    c = math.cos(heading)
-    s = math.sin(heading)
-    x_global = robot_x + x_local * c - y_local * s
-    y_global = robot_y + x_local * s + y_local * c
-    return x_global, y_global
-
-
-def global_to_local(gx, gy, rx, ry, heading):
-    """
-    Transforms global coordinates to local robot-frame coordinates (X=forward, Y=left)
-    based on the robot's position and heading (radians).
-    """
-    dx = gx - rx
-    dy = gy - ry
-    c = math.cos(heading)
-    s = math.sin(heading)
-    xl = dx * c + dy * s
-    yl = -dx * s + dy * c
-    return xl, yl
+from bevroad.utils import global_to_local, load_calibration, parse_csv, transform_point
 
 
 def evaluate_pair(

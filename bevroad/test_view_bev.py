@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest
 
-from bevroad.view_bev import load_config, save_config
+from bevroad.utils import load_config, save_config
 
 
 class TestViewBev(unittest.TestCase):

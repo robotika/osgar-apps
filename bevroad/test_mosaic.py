@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest
 
-from bevroad.mosaic import parse_csv, transform_point
+from bevroad.utils import parse_csv, transform_point
 
 
 class TestMosaic(unittest.TestCase):

@@ -5,31 +5,13 @@ Allows interactive perspective transform calibration using trackbars.
 """
 
 import argparse
-import json
 import os
 import sys
 
 import cv2
 import numpy as np
 
-
-def load_config(config_path):
-    if os.path.exists(config_path):
-        try:
-            with open(config_path, 'r') as f:
-                return json.load(f)
-        except Exception as e:
-            print(f'Error loading config {config_path}: {e}')
-    return {}
-
-
-def save_config(config_path, data):
-    try:
-        with open(config_path, 'w') as f:
-            json.dump(data, f, indent=4)
-        print(f'Config successfully saved to: {config_path}')
-    except Exception as e:
-        print(f'Error saving config {config_path}: {e}')
+from bevroad.utils import load_config, save_config
 
 
 def main():

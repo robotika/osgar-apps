@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest
 
-from bevroad.check_pair import global_to_local, parse_csv, transform_point
+from bevroad.utils import global_to_local, parse_csv, transform_point
 
 
 class TestCheckPair(unittest.TestCase):

@@ -17,7 +17,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from bevroad.check_pair import evaluate_pair, parse_csv
+from bevroad.check_pair import evaluate_pair
+from bevroad.utils import parse_csv
 
 
 def main():
