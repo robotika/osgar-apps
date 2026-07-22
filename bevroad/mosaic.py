@@ -14,11 +14,12 @@ import numpy as np
 from bevroad.utils import load_calibration, parse_csv, transform_point
 
 
-def main():
-    parser = argparse.ArgumentParser(description='BEV Mosaic Map Stitcher')
-    parser.add_argument('imdir', help='Directory containing overview.csv and extracted images')
+def add_common_arguments(parser, include_tolerance=False, include_margin=False):
+    """
+    Adds common perspective, calibration, and mapping command-line arguments to an ArgumentParser.
+    """
     parser.add_argument(
-        '--config', help='Path to calibration bev.json file (defaults to matching image calibration in the directory)'
+        '--config', default=None, help='Path to calibration bev.json file (defaults to matching JSON in CSV folder)'
     )
     parser.add_argument(
         '--road-width', type=float, default=2.0, help='Physical width of the road in meters (default: 2.0)'
@@ -36,17 +37,33 @@ def main():
         help='Forward distance of the BEV image bottom edge from the robot center, in meters (default: 1.0)',
     )
     parser.add_argument(
-        '--margin',
-        type=float,
-        default=0.0,
-        help='Horizontal margin in meters to extend the BEV image on each side (default: 0.0)',
-    )
-    parser.add_argument(
         '--resolution',
         type=float,
         default=0.02,
-        help='Output mosaic map resolution in meters per pixel (default: 0.02)',
+        help='Resolution of the mosaic image in meters per pixel (default: 0.02)',
     )
+    if include_tolerance:
+        parser.add_argument(
+            '--tolerance',
+            type=float,
+            default=15.0,
+            help='Grayscale tolerance threshold (0-255) for pixel alignment comparison (default: 15.0)',
+        )
+    if include_margin:
+        parser.add_argument(
+            '--margin',
+            type=float,
+            default=0.0,
+            help='Horizontal margin in meters to extend the BEV image on each side (default: 0.0)',
+        )
+
+
+def main():
+    parser = argparse.ArgumentParser(description='BEV Mosaic Map Stitcher')
+    parser.add_argument('imdir', help='Directory containing overview.csv and extracted images')
+
+    add_common_arguments(parser, include_margin=True)
+
     parser.add_argument('-o', '--out', help='Output image path (defaults to mosaic.png inside input directory)')
     args = parser.parse_args()
 

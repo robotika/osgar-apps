@@ -22,40 +22,15 @@ from bevroad.utils import parse_csv
 
 
 def main():
+    from bevroad.mosaic import add_common_arguments
+
     parser = argparse.ArgumentParser(
         description='Processes all consecutive pairs in a BEV road mapping dataset and plots alignment stats.'
     )
     parser.add_argument('csv_path', help='Path to overview.csv metadata file')
-    parser.add_argument(
-        '--config', default=None, help='Path to calibration bev.json file (defaults to matching JSON in CSV folder)'
-    )
-    parser.add_argument(
-        '--road-width', type=float, default=2.0, help='Physical width of the road in meters (default: 2.0)'
-    )
-    parser.add_argument(
-        '--lane-width-fraction',
-        type=float,
-        default=0.5,
-        help='Fraction of the BEV width that the road width occupies (default: 0.5)',
-    )
-    parser.add_argument(
-        '--near',
-        type=float,
-        default=1.0,
-        help='Forward distance of the BEV image bottom edge from the robot center, in meters (default: 1.0)',
-    )
-    parser.add_argument(
-        '--resolution',
-        type=float,
-        default=0.02,
-        help='Resolution of the mosaic image in meters per pixel (default: 0.02)',
-    )
-    parser.add_argument(
-        '--tolerance',
-        type=float,
-        default=15.0,
-        help='Grayscale tolerance threshold (0-255) for pixel alignment comparison (default: 15.0)',
-    )
+
+    add_common_arguments(parser, include_tolerance=True)
+
     parser.add_argument(
         '--output', default=None, help='Path to save the plotted image (default: <imdir>/alignment_plot.png)'
     )
