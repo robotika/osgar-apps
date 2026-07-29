@@ -58,6 +58,72 @@ def add_common_arguments(parser, include_tolerance=False, include_margin=False):
         )
 
 
+def load_calibration_data(imdir, config=None, verbose=True):
+    """
+    Finds, loads, and validates the BEV calibration config file.
+    Returns (calib, config_path).
+    """
+    if config:
+        config_path = config
+    else:
+        # Support both Path objects and strings for imdir
+        if hasattr(imdir, 'glob'):
+            json_files = list(imdir.glob('*.json'))
+            if json_files:
+                config_path = str(json_files[0])
+            else:
+                config_path = 'bev_config.json'
+        else:
+            json_files = [f for f in os.listdir(imdir) if f.endswith('.json')]
+            if json_files:
+                config_path = os.path.join(imdir, json_files[0])
+            else:
+                config_path = 'bev_config.json'
+                if not os.path.exists(config_path):
+                    if verbose:
+                        print('Error: No calibration config file specified, and no JSON files found in input folder.')
+                    sys.exit(1)
+
+    if verbose:
+        print(f'Loading calibration from: {config_path}')
+    calib = load_calibration(config_path)
+
+    # Validate calibration fields
+    for field in ['matrix_M', 'bev_width', 'bev_height']:
+        if field not in calib:
+            if verbose:
+                print(f"Error: Calibration JSON is missing required field '{field}'")
+            sys.exit(1)
+
+    return calib, str(config_path)
+
+
+def calculate_spatial_parameters(road_width, bev_width, lane_width_fraction, bev_height, near):
+    """
+    Calculates resolution (m_per_pixel) and spatial dimensions in meters for the BEV grid.
+    Returns (m_per_pixel, bev_w_m, bev_h_m, d_near, d_far).
+    """
+    m_per_pixel = road_width / (bev_width * lane_width_fraction)
+    bev_w_m = bev_width * m_per_pixel
+    bev_h_m = bev_height * m_per_pixel
+    d_near = near
+    d_far = d_near + bev_h_m
+    return m_per_pixel, bev_w_m, bev_h_m, d_near, d_far
+
+
+def get_bev_corners(d_near, d_far, bev_w_m):
+    """
+    Defines the corner coordinates of the BEV image in local robot frame (X=forward, Y=left).
+    Returns list of 4 tuples (lx, ly): Top-Left, Top-Right, Bottom-Right, Bottom-Left.
+    """
+    return [
+        (d_far, bev_w_m / 2.0),   # Top-Left
+        (d_far, -bev_w_m / 2.0),  # Top-Right
+        (d_near, -bev_w_m / 2.0), # Bottom-Right
+        (d_near, bev_w_m / 2.0),  # Bottom-Left
+    ]
+
+
 def main():
     parser = argparse.ArgumentParser(description='BEV Mosaic Map Stitcher')
     parser.add_argument('imdir', help='Directory containing overview.csv and extracted images')
@@ -75,36 +141,16 @@ def main():
         print('Error: No valid records found in the overview CSV.')
         sys.exit(1)
 
-    # Determine calibration config file path
-    if args.config:
-        config_path = args.config
-    else:
-        # Look for any JSON file in the folder or a default bev_config.json
-        json_files = [f for f in os.listdir(imdir) if f.endswith('.json')]
-        if json_files:
-            config_path = os.path.join(imdir, json_files[0])
-        else:
-            # Fallback search in parent directory or default
-            config_path = 'bev_config.json'
-            if not os.path.exists(config_path):
-                print('Error: No calibration config file specified, and no JSON files found in input folder.')
-                sys.exit(1)
-
-    print(f'Loading calibration from: {config_path}')
-    calib = load_calibration(config_path)
-
-    # Extract transformation matrix M and dimensions from calib
-    if 'matrix_M' not in calib or 'bev_width' not in calib or 'bev_height' not in calib:
-        print('Error: Calibration config is missing required fields (matrix_M, bev_width, bev_height).')
-        sys.exit(1)
+    calib, config_path = load_calibration_data(imdir, args.config)
 
     M_orig = np.array(calib['matrix_M'], dtype=np.float32)
     bev_w_orig = calib['bev_width']
     bev_h = calib['bev_height']
 
-    # Calculate local spatial calibration
-    # meters_per_pixel of BEV image
-    m_per_pixel = args.road_width / (bev_w_orig * args.lane_width_fraction)
+    # Calculate local spatial calibration using helper
+    m_per_pixel, _, _, _, _ = calculate_spatial_parameters(
+        args.road_width, bev_w_orig, args.lane_width_fraction, bev_h, args.near
+    )
     print(f'BEV local scale: {m_per_pixel:.4f} meters/pixel')
 
     # Apply margin to expand horizontal view if requested
@@ -119,20 +165,13 @@ def main():
         M = M_orig
         bev_w = bev_w_orig
 
-    # Local dimensions in meters
-    bev_w_m = bev_w * m_per_pixel
-    bev_h_m = bev_h * m_per_pixel
-    d_near = args.near
-    d_far = d_near + bev_h_m
+    # Calculate final local spatial parameters with possibly adjusted bev_w (with margin)
+    _, bev_w_m, bev_h_m, d_near, d_far = calculate_spatial_parameters(
+        args.road_width, bev_w, args.lane_width_fraction, bev_h, args.near
+    )
 
-    # local corner coordinates (relative to robot center)
-    # X is forward, Y is left
-    local_corners = [
-        (d_far, bev_w_m / 2.0),  # Top-Left
-        (d_far, -bev_w_m / 2.0),  # Top-Right
-        (d_near, -bev_w_m / 2.0),  # Bottom-Right
-        (d_near, bev_w_m / 2.0),  # Bottom-Left
-    ]
+    # local corner coordinates (relative to robot center) using helper
+    local_corners = get_bev_corners(d_near, d_far, bev_w_m)
 
     # Find global bounding box of all warped images
     print('Calculating global bounding box...')

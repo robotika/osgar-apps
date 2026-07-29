@@ -13,7 +13,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from bevroad.utils import global_to_local, load_calibration, parse_csv, transform_point
+from bevroad.utils import global_to_local, parse_csv, transform_point
+from bevroad.mosaic import load_calibration_data, calculate_spatial_parameters, get_bev_corners
 
 
 def evaluate_pair(
@@ -76,35 +77,16 @@ def evaluate_pair(
         print(f'Error: Failed to read image files: {img1_path} or {img2_path}')
         sys.exit(1)
 
-    # Determine calibration config file path
-    if config:
-        config_path = config
-    else:
-        # Search for any JSON file in the same directory as the CSV
-        json_files = list(imdir.glob('*.json'))
-        if json_files:
-            config_path = str(json_files[0])
-        else:
-            config_path = 'bev_config.json'
-
-    print(f'Loading calibration config: {config_path}')
-    calib = load_calibration(config_path)
-
-    # Validate calibration fields
-    for field in ['matrix_M', 'bev_width', 'bev_height']:
-        if field not in calib:
-            print(f"Error: Calibration JSON is missing required field '{field}'")
-            sys.exit(1)
+    calib, config_path = load_calibration_data(imdir, config, verbose=verbose)
 
     M = np.array(calib['matrix_M'], dtype=np.float32)
     bev_w = calib['bev_width']
     bev_h = calib['bev_height']
 
-    # Calculate local spatial parameters
-    m_per_pixel = road_width / (bev_w * lane_width_fraction)
-    bev_w_m = bev_w * m_per_pixel
-    bev_h_m = bev_h * m_per_pixel
-    d_near = near
+    # Calculate local spatial parameters using helper
+    m_per_pixel, bev_w_m, bev_h_m, d_near, d_far = calculate_spatial_parameters(
+        road_width, bev_w, lane_width_fraction, bev_h, near
+    )
 
     # 1. Warp both input images to local BEV space
     bev1 = cv2.warpPerspective(img1, M, (bev_w, bev_h))
@@ -264,12 +246,7 @@ def evaluate_pair(
     vis_img[:, bev_w_vis:] = vis_bev2
 
     # Project N+2 corners back to BEV1/BEV2 pixels for drawing
-    local_corners_3 = [
-        (d_near + bev_h * m_per_pixel, bev_w_m / 2.0),  # Top-Left (d_far)
-        (d_near + bev_h * m_per_pixel, -bev_w_m / 2.0),  # Top-Right (d_far)
-        (d_near, -bev_w_m / 2.0),  # Bottom-Right (d_near)
-        (d_near, bev_w_m / 2.0),  # Bottom-Left (d_near)
-    ]
+    local_corners_3 = get_bev_corners(d_near, d_far, bev_w_m)
     global_corners_3 = []
     for lx, ly in local_corners_3:
         gx, gy = transform_point(lx, ly, pose3_x, pose3_y, pose3_heading)
