@@ -1,6 +1,5 @@
 import argparse
 import json
-import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -63,42 +62,46 @@ class TestMosaicHelpers(unittest.TestCase):
 
     def test_load_calibration_data_valid(self):
         with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
             config_data = {
                 "matrix_M": [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
                 "bev_width": 400,
                 "bev_height": 600,
             }
-            config_path = os.path.join(tmpdir, "bev_config.json")
+            config_path = tmp_path / "bev_config.json"
             with open(config_path, "w") as f:
                 json.dump(config_data, f)
 
+            config_path_str = str(config_path)
+
             # Load specifying config
-            calib, resolved_path = load_calibration_data(tmpdir, config_path, verbose=False)
+            calib, resolved_path = load_calibration_data(tmpdir, config_path_str, verbose=False)
             self.assertEqual(calib["bev_width"], 400)
-            self.assertEqual(resolved_path, config_path)
+            self.assertEqual(resolved_path, config_path_str)
 
             # Load automatically searching directory
             calib_auto, resolved_path_auto = load_calibration_data(tmpdir, None, verbose=False)
             self.assertEqual(calib_auto["bev_width"], 400)
-            self.assertEqual(resolved_path_auto, config_path)
+            self.assertEqual(resolved_path_auto, config_path_str)
 
             # Also check support for pathlib.Path as imdir
-            calib_pathlib, resolved_path_pathlib = load_calibration_data(Path(tmpdir), None, verbose=False)
+            calib_pathlib, resolved_path_pathlib = load_calibration_data(tmp_path, None, verbose=False)
             self.assertEqual(calib_pathlib["bev_width"], 400)
-            self.assertEqual(resolved_path_pathlib, config_path)
+            self.assertEqual(resolved_path_pathlib, config_path_str)
 
     def test_load_calibration_data_missing_fields(self):
         with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
             config_data = {
                 "bev_width": 400,
                 "bev_height": 600,
             }
-            config_path = os.path.join(tmpdir, "bev_config.json")
+            config_path = tmp_path / "bev_config.json"
             with open(config_path, "w") as f:
                 json.dump(config_data, f)
 
             with self.assertRaises(SystemExit):
-                load_calibration_data(tmpdir, config_path, verbose=False)
+                load_calibration_data(tmpdir, str(config_path), verbose=False)
 
 
 if __name__ == '__main__':
