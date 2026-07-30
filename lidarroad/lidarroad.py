@@ -64,6 +64,31 @@ def draw_batch(timestamps, from_indices, to_indices):
     plt.show()
 
 
+def batch_processing(logfile, start_sec, end_sec, tolerance, window_size):
+    start_time = timedelta(seconds=start_sec)
+    end_time = timedelta(seconds=end_sec)
+
+    times = []
+    from_indices = []
+    to_indices = []
+
+    with LogReaderEx(logfile, ['vanjee.scan10']) as log:
+        for timestamp, name, data in log:
+            if timestamp < start_time:
+                continue
+            if timestamp > end_time:
+                break
+
+            diff, from_i, to_i = analyze_scan(data, tolerance=tolerance, window_size=window_size)
+            print(timestamp, len(data), from_i, to_i)
+
+            times.append(timestamp.total_seconds())
+            from_indices.append(from_i)
+            to_indices.append(to_i)
+
+    return times, from_indices, to_indices
+
+
 def main():
     parser = argparse.ArgumentParser(description='Analyze smoothness of the road/scan10')
     parser.add_argument('logfile', help='logfile path')
@@ -76,34 +101,15 @@ def main():
     window_size = int(args.width * 100)  # simplified conversion to scan indexes - TODO proper calibration
     tolerance = args.tolerance
 
-    with LogReaderEx(args.logfile, ['vanjee.scan10']) as log:
-        if args.batch is not None:
-            start_sec, end_sec = args.batch
-            start_time = timedelta(seconds=start_sec)
-            end_time = timedelta(seconds=end_sec)
-
-            times = []
-            from_indices = []
-            to_indices = []
-
-            for timestamp, name, data in log:
-                if timestamp < start_time:
-                    continue
-                if timestamp > end_time:
-                    break
-
-                diff, from_i, to_i = analyze_scan(data, tolerance=tolerance, window_size=window_size)
-                print(timestamp, len(data), from_i, to_i)
-
-                times.append(timestamp.total_seconds())
-                from_indices.append(from_i)
-                to_indices.append(to_i)
-
-            if times:
-                draw_batch(times, from_indices, to_indices)
-            else:
-                print("No scans found in the specified time range.")
+    if args.batch is not None:
+        start_sec, end_sec = args.batch
+        times, from_indices, to_indices = batch_processing(args.logfile, start_sec, end_sec, tolerance, window_size)
+        if times:
+            draw_batch(times, from_indices, to_indices)
         else:
+            print("No scans found in the specified time range.")
+    else:
+        with LogReaderEx(args.logfile, ['vanjee.scan10']) as log:
             for timestamp, name, data in log:
                 if args.jump is not None and timestamp < timedelta(seconds=args.jump):
                     continue
