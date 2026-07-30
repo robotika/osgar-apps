@@ -6,9 +6,23 @@ import numpy as np
 from osgar.logger import LogReaderEx
 
 
-def analyze_scan(scan):
+def get_best_match(mask, window_size):
+    best_i = 0
+    best_sum = None
+    for i in range(0, len(mask) - window_size):
+        value = sum(mask[i:i+window_size])
+        if best_sum is None or value > best_sum:
+            best_sum = value
+            best_i = i
+    return best_i, best_i + window_size
+
+
+def analyze_scan(scan, tolerance=10, window_size = 500):
     assert len(scan)==1800, len(scan)
     diff = np.diff(scan) #[450:-450])
+    mask = np.abs(diff) < tolerance
+    from_i, to_i = get_best_match(mask, window_size)
+    print(from_i, to_i)
     draw_scan(diff)
 
 
