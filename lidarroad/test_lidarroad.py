@@ -44,17 +44,14 @@ class TestLidarRoad(unittest.TestCase):
         mock_axvline.assert_not_called()
         mock_show.assert_called_once()
 
-    @patch('lidarroad.draw_scan')
-    def test_analyze_scan(self, mock_draw_scan):
+    def test_analyze_scan(self):
         # scan of length 1800
         scan = [10] * 1800
-        analyze_scan(scan, tolerance=10, window_size=500)
+        diff, from_i, to_i = analyze_scan(scan, tolerance=10, window_size=500)
         # Expected diff of [10] * 1800 is an array of 1799 zeros
-        mock_draw_scan.assert_called_once()
-        called_args, called_kwargs = mock_draw_scan.call_args
-        np.testing.assert_array_equal(called_args[0], np.zeros(1799))
-        self.assertEqual(called_args[1], 10)
-        self.assertEqual(called_kwargs.get('interval'), (0, 500))
+        np.testing.assert_array_equal(diff, np.zeros(1799))
+        self.assertEqual(from_i, 0)
+        self.assertEqual(to_i, 500)
 
 
 if __name__ == '__main__':

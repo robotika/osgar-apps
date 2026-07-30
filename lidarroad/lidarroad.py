@@ -22,8 +22,7 @@ def analyze_scan(scan, tolerance=10, window_size = 300):
     diff = np.diff(scan) #[450:-450])
     mask = np.abs(diff) < tolerance
     from_i, to_i = get_best_match(mask, window_size)
-    print(from_i, to_i)
-    draw_scan(diff, tolerance, interval=(from_i, to_i))
+    return diff, from_i, to_i
 
 
 def draw_scan(scan, tolerance=None, interval=None):
@@ -48,13 +47,16 @@ def main():
     args = parser.parse_args()
 
     window_size = int(args.width * 100)  # simplified conversion to scan indexes - TODO proper calibration
+    tolerance = 10
 
     with LogReaderEx(args.logfile, ['vanjee.scan10']) as log:
         for timestamp, name, data in log:
             if args.jump is not None and timestamp < timedelta(seconds=args.jump):
                 continue
             print(timestamp, len(data))
-            analyze_scan(data, window_size=window_size)
+            diff, from_i, to_i = analyze_scan(data, tolerance=tolerance, window_size=window_size)
+            print(from_i, to_i)
+            draw_scan(diff, tolerance=tolerance, interval=(from_i, to_i))
             break
 
 
