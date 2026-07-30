@@ -26,7 +26,11 @@ requires = ["uv_build>=0.9.8,<0.13.0"]
 build-backend = "uv_build"
 
 [tool.uv]
-package = false
+package = true
+
+[tool.uv.build-backend]
+module-name = ["bevroad"]
+module-root = ""
 
 [tool.uv.sources]
 osgar = { git = "https://github.com/robotika/osgar.git", rev = "master" }

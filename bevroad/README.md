@@ -30,15 +30,15 @@ This project provides tools for Bird's Eye View (BEV) road mapping, perspective 
 Run the script inside your `uv` environment, passing the path to a road image:
 
 ```bash
-uv run python bev-road/view_bev.py bev-road/610633206-1fbf3fa1-f417-46ce-ba58-e497ecc988e8.png
+uv run python bevroad/view_bev.py bevroad/610633206-1fbf3fa1-f417-46ce-ba58-e497ecc988e8.png
 ```
 
-By default, calibration parameters are loaded from and saved to a file matching the image name (e.g., `bev-road/610633206-1fbf3fa1-f417-46ce-ba58-e497ecc988e8_bev.json`).
+By default, calibration parameters are loaded from and saved to a file matching the image name (e.g., `bevroad/610633206-1fbf3fa1-f417-46ce-ba58-e497ecc988e8_bev.json`).
 
 You can also specify a custom config file and output dimensions:
 
 ```bash
-uv run python bev-road/view_bev.py <image-path> --config my_custom_calib.json --width 400 --height 600
+uv run python bevroad/view_bev.py <image-path> --config my_custom_calib.json --width 400 --height 600
 ```
 
 ## log2imdir.py
@@ -56,7 +56,7 @@ uv run python bev-road/view_bev.py <image-path> --config my_custom_calib.json --
 Run the script to extract images from a log file:
 
 ```bash
-uv run python bev-road/log2imdir.py path/to/logfile.log
+uv run python bevroad/log2imdir.py path/to/logfile.log
 ```
 
 ### Options
@@ -97,7 +97,7 @@ img-0001.jpg,3.480,2.985,0.032,1.571210
 Stitch extracted images in a folder using the default config:
 
 ```bash
-uv run python bev-road/mosaic.py my_extracted_log_folder
+uv run python bevroad/mosaic.py my_extracted_log_folder
 ```
 
 This will look for the calibration config JSON inside the folder (or fall back to `bev_config.json`) and output `mosaic.png` in the input folder.

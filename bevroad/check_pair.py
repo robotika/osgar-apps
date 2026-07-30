@@ -6,78 +6,15 @@ the geometric alignment displacement in meters.
 """
 
 import argparse
-import json
 import math
-import os
 import sys
 from pathlib import Path
 
 import cv2
 import numpy as np
 
-
-def load_calibration(config_path):
-    if not os.path.exists(config_path):
-        print(f"Error: Calibration config file '{config_path}' does not exist.")
-        sys.exit(1)
-    try:
-        with open(config_path, 'r') as f:
-            return json.load(f)
-    except Exception as e:
-        print(f'Error loading calibration config {config_path}: {e}')
-        sys.exit(1)
-
-
-def parse_csv(csv_path):
-    if not os.path.exists(csv_path):
-        print(f"Error: Metadata CSV file '{csv_path}' does not exist.")
-        sys.exit(1)
-
-    records = []
-    with open(csv_path, 'r', encoding='utf-8') as f:
-        for line_num, line in enumerate(f, 1):
-            line = line.strip()
-            if not line:
-                continue
-            parts = line.split(',')
-            if len(parts) < 5:
-                continue
-            try:
-                filename = parts[0]
-                ts = float(parts[1])
-                x = float(parts[2])
-                y = float(parts[3])
-                heading = float(parts[4])
-                records.append({'filename': filename, 'ts': ts, 'x': x, 'y': y, 'heading': heading})
-            except ValueError:
-                pass
-    return records
-
-
-def transform_point(x_local, y_local, robot_x, robot_y, heading):
-    """
-    Transforms local robot-frame coordinates (X=forward, Y=left)
-    to global coordinates based on robot's position and heading (radians).
-    """
-    c = math.cos(heading)
-    s = math.sin(heading)
-    x_global = robot_x + x_local * c - y_local * s
-    y_global = robot_y + x_local * s + y_local * c
-    return x_global, y_global
-
-
-def global_to_local(gx, gy, rx, ry, heading):
-    """
-    Transforms global coordinates to local robot-frame coordinates (X=forward, Y=left)
-    based on the robot's position and heading (radians).
-    """
-    dx = gx - rx
-    dy = gy - ry
-    c = math.cos(heading)
-    s = math.sin(heading)
-    xl = dx * c + dy * s
-    yl = -dx * s + dy * c
-    return xl, yl
+from bevroad.utils import global_to_local, parse_csv, transform_point
+from bevroad.mosaic import load_calibration_data, calculate_spatial_parameters, get_bev_corners
 
 
 def evaluate_pair(
@@ -97,9 +34,11 @@ def evaluate_pair(
     Evaluates the alignment quality of consecutive frames at `index` and `index + 1`.
     Prints detailed spatial and overlap analysis reports, including predictions of N+2.
     """
+
     def print(*args, **kwargs):
         if verbose:
             import builtins
+
             builtins.print(*args, **kwargs)
 
     csv_path = Path(csv_path)
@@ -138,35 +77,16 @@ def evaluate_pair(
         print(f'Error: Failed to read image files: {img1_path} or {img2_path}')
         sys.exit(1)
 
-    # Determine calibration config file path
-    if config:
-        config_path = config
-    else:
-        # Search for any JSON file in the same directory as the CSV
-        json_files = list(imdir.glob('*.json'))
-        if json_files:
-            config_path = str(json_files[0])
-        else:
-            config_path = 'bev_config.json'
-
-    print(f'Loading calibration config: {config_path}')
-    calib = load_calibration(config_path)
-
-    # Validate calibration fields
-    for field in ['matrix_M', 'bev_width', 'bev_height']:
-        if field not in calib:
-            print(f"Error: Calibration JSON is missing required field '{field}'")
-            sys.exit(1)
+    calib, config_path = load_calibration_data(imdir, config, verbose=verbose)
 
     M = np.array(calib['matrix_M'], dtype=np.float32)
     bev_w = calib['bev_width']
     bev_h = calib['bev_height']
 
-    # Calculate local spatial parameters
-    m_per_pixel = road_width / (bev_w * lane_width_fraction)
-    bev_w_m = bev_w * m_per_pixel
-    bev_h_m = bev_h * m_per_pixel
-    d_near = near
+    # Calculate local spatial parameters using helper
+    m_per_pixel, bev_w_m, bev_h_m, d_near, d_far = calculate_spatial_parameters(
+        road_width, bev_w, lane_width_fraction, bev_h, near
+    )
 
     # 1. Warp both input images to local BEV space
     bev1 = cv2.warpPerspective(img1, M, (bev_w, bev_h))
@@ -326,12 +246,7 @@ def evaluate_pair(
     vis_img[:, bev_w_vis:] = vis_bev2
 
     # Project N+2 corners back to BEV1/BEV2 pixels for drawing
-    local_corners_3 = [
-        (d_near + bev_h * m_per_pixel, bev_w_m / 2.0),  # Top-Left (d_far)
-        (d_near + bev_h * m_per_pixel, -bev_w_m / 2.0),  # Top-Right (d_far)
-        (d_near, -bev_w_m / 2.0),  # Bottom-Right (d_near)
-        (d_near, bev_w_m / 2.0),  # Bottom-Left (d_near)
-    ]
+    local_corners_3 = get_bev_corners(d_near, d_far, bev_w_m)
     global_corners_3 = []
     for lx, ly in local_corners_3:
         gx, gy = transform_point(lx, ly, pose3_x, pose3_y, pose3_heading)
@@ -421,39 +336,14 @@ def evaluate_pair(
 
 
 def main():
+    from bevroad.mosaic import add_common_arguments
+
     parser = argparse.ArgumentParser(description='Verify stitching & alignment quality of two consecutive frames')
     parser.add_argument('csv_path', help='Path to overview.csv metadata file')
     parser.add_argument('index', type=int, help='Index of the first image (0-based)')
-    parser.add_argument(
-        '--config', default=None, help='Path to calibration bev.json file (defaults to matching JSON in CSV folder)'
-    )
-    parser.add_argument(
-        '--road-width', type=float, default=2.0, help='Physical width of the road in meters (default: 2.0)'
-    )
-    parser.add_argument(
-        '--lane-width-fraction',
-        type=float,
-        default=0.5,
-        help='Fraction of the BEV width that the road width occupies (default: 0.5)',
-    )
-    parser.add_argument(
-        '--near',
-        type=float,
-        default=1.0,
-        help='Forward distance of the BEV image bottom edge from the robot center, in meters (default: 1.0)',
-    )
-    parser.add_argument(
-        '--resolution',
-        type=float,
-        default=0.02,
-        help='Resolution of the mosaic image in meters per pixel (default: 0.02)',
-    )
-    parser.add_argument(
-        '--tolerance',
-        type=float,
-        default=15.0,
-        help='Grayscale tolerance threshold (0-255) for pixel alignment comparison (default: 15.0)',
-    )
+
+    add_common_arguments(parser, include_tolerance=True)
+
     parser.add_argument('--no-vis', action='store_true', help='Disable visualization window and only output statistics')
     parser.add_argument('--save-debug', action='store_true', help='Save a visualization match image to the disk')
     args = parser.parse_args()
@@ -503,8 +393,7 @@ def main():
 
             cv2.imshow(win_name, vis_img)
             print(
-                f'\n[Pair {index} shown] Controls: Right Arrow/d/n for Next, '
-                f"Left Arrow/a/p for Prev, ESC/q to Quit..."
+                f'\n[Pair {index} shown] Controls: Right Arrow/d/n for Next, Left Arrow/a/p for Prev, ESC/q to Quit...'
             )
 
             key = cv2.waitKeyEx(0)
