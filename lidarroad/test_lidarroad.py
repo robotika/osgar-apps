@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 import numpy as np
 
-from lidarroad import get_best_match, slow_get_best_match, analyze_scan, draw_scan
+from lidarroad import get_best_match, slow_get_best_match, analyze_scan, draw_scan, draw_batch
 
 class TestLidarRoad(unittest.TestCase):
     def test_get_best_match(self):
@@ -62,6 +62,28 @@ class TestLidarRoad(unittest.TestCase):
         mock_plot.assert_called_once_with(scan)
         mock_axhline.assert_not_called()
         mock_axvline.assert_not_called()
+        mock_show.assert_called_once()
+
+    @patch('matplotlib.pyplot.show')
+    @patch('matplotlib.pyplot.legend')
+    @patch('matplotlib.pyplot.ylabel')
+    @patch('matplotlib.pyplot.xlabel')
+    @patch('matplotlib.pyplot.title')
+    @patch('matplotlib.pyplot.plot')
+    def test_draw_batch(self, mock_plot, mock_title, mock_xlabel, mock_ylabel, mock_legend, mock_show):
+        times = [1.0, 2.0, 3.0]
+        from_i = [100, 110, 120]
+        to_i = [400, 410, 420]
+        draw_batch(times, from_i, to_i)
+        
+        self.assertEqual(mock_plot.call_count, 2)
+        mock_plot.assert_any_call(times, from_i, 'g.-', label='from_i')
+        mock_plot.assert_any_call(times, to_i, 'b.-', label='to_i')
+        
+        mock_xlabel.assert_called_once_with('Time (s)')
+        mock_ylabel.assert_called_once_with('Scan Index')
+        mock_title.assert_called_once_with('Best Matching Interval Boundaries Over Time')
+        mock_legend.assert_called_once()
         mock_show.assert_called_once()
 
     def test_analyze_scan(self):

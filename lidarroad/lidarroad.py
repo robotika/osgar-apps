@@ -52,26 +52,66 @@ def draw_scan(scan, tolerance=None, interval=None):
     plt.show()
 
 
+def draw_batch(timestamps, from_indices, to_indices):
+    import matplotlib.pyplot as plt
+
+    plt.plot(timestamps, from_indices, 'g.-', label='from_i')
+    plt.plot(timestamps, to_indices, 'b.-', label='to_i')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Scan Index')
+    plt.legend()
+    plt.title('Best Matching Interval Boundaries Over Time')
+    plt.show()
+
+
 def main():
     parser = argparse.ArgumentParser(description='Analyze smoothness of the road/scan10')
     parser.add_argument('logfile', help='logfile path')
     parser.add_argument('--jump', '-j', help='jump in seconds', type=float)
     parser.add_argument('--width', '-w', help='width in meters', type=float, default=3.0)
     parser.add_argument('--tolerance', '-t', help='tolerance in millimeters', type=int, default=10)
+    parser.add_argument('--batch', nargs=2, type=float, metavar=('START', 'END'), help='run in batch mode for time range in seconds')
     args = parser.parse_args()
 
     window_size = int(args.width * 100)  # simplified conversion to scan indexes - TODO proper calibration
     tolerance = args.tolerance
 
     with LogReaderEx(args.logfile, ['vanjee.scan10']) as log:
-        for timestamp, name, data in log:
-            if args.jump is not None and timestamp < timedelta(seconds=args.jump):
-                continue
-            print(timestamp, len(data))
-            diff, from_i, to_i = analyze_scan(data, tolerance=tolerance, window_size=window_size)
-            print(from_i, to_i)
-            draw_scan(diff, tolerance=tolerance, interval=(from_i, to_i))
-            break
+        if args.batch is not None:
+            start_sec, end_sec = args.batch
+            start_time = timedelta(seconds=start_sec)
+            end_time = timedelta(seconds=end_sec)
+
+            times = []
+            from_indices = []
+            to_indices = []
+
+            for timestamp, name, data in log:
+                if timestamp < start_time:
+                    continue
+                if timestamp > end_time:
+                    break
+
+                diff, from_i, to_i = analyze_scan(data, tolerance=tolerance, window_size=window_size)
+                print(timestamp, len(data), from_i, to_i)
+
+                times.append(timestamp.total_seconds())
+                from_indices.append(from_i)
+                to_indices.append(to_i)
+
+            if times:
+                draw_batch(times, from_indices, to_indices)
+            else:
+                print("No scans found in the specified time range.")
+        else:
+            for timestamp, name, data in log:
+                if args.jump is not None and timestamp < timedelta(seconds=args.jump):
+                    continue
+                print(timestamp, len(data))
+                diff, from_i, to_i = analyze_scan(data, tolerance=tolerance, window_size=window_size)
+                print(from_i, to_i)
+                draw_scan(diff, tolerance=tolerance, interval=(from_i, to_i))
+                break
 
 
 
