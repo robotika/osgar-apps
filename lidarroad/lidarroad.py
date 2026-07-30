@@ -44,10 +44,11 @@ def main():
     parser.add_argument('logfile', help='logfile path')
     parser.add_argument('--jump', '-j', help='jump in seconds', type=float)
     parser.add_argument('--width', '-w', help='width in meters', type=float, default=3.0)
+    parser.add_argument('--tolerance', '-t', help='tolerance in millimeters', type=int, default=10)
     args = parser.parse_args()
 
     window_size = int(args.width * 100)  # simplified conversion to scan indexes - TODO proper calibration
-    tolerance = 10
+    tolerance = args.tolerance
 
     with LogReaderEx(args.logfile, ['vanjee.scan10']) as log:
         for timestamp, name, data in log:
