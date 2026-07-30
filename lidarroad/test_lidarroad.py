@@ -87,10 +87,9 @@ class TestLidarRoad(unittest.TestCase):
         mock_legend.assert_called_once()
         mock_show.assert_called_once()
 
-    @patch('lidarroad.LogReaderEx')
-    def test_batch_processing(self, mock_log_reader):
+    def test_batch_processing(self):
         mock_scan = [10] * 1800
-        mock_log_reader.return_value.__enter__.return_value = [
+        log = [
             (timedelta(seconds=1.0), 'vanjee.scan10', mock_scan),
             (timedelta(seconds=2.0), 'vanjee.scan10', mock_scan),
             (timedelta(seconds=3.0), 'vanjee.scan10', mock_scan),
@@ -98,13 +97,12 @@ class TestLidarRoad(unittest.TestCase):
         ]
         
         times, from_indices, to_indices = batch_processing(
-            'mock_log_path.log', start_sec=1.5, end_sec=3.5, tolerance=10, window_size=500
+            log, start_sec=1.5, end_sec=3.5, tolerance=10, window_size=500
         )
         
         self.assertEqual(times, [2.0, 3.0])
         self.assertEqual(from_indices, [0, 0])
         self.assertEqual(to_indices, [500, 500])
-        mock_log_reader.assert_called_once_with('mock_log_path.log', ['vanjee.scan10'])
 
     def test_analyze_scan(self):
         # scan of length 1800
