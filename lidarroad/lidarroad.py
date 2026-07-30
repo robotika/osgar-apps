@@ -6,7 +6,7 @@ import numpy as np
 from osgar.logger import LogReaderEx
 
 
-def get_best_match(mask, window_size):
+def slow_get_best_match(mask, window_size):
     best_i = 0
     best_sum = None
     for i in range(0, len(mask) - window_size):
@@ -17,11 +17,24 @@ def get_best_match(mask, window_size):
     return best_i, best_i + window_size
 
 
+def get_best_match(mask, window_size):
+    if len(mask) <= window_size:
+        return 0, window_size
+    cum = np.cumsum(np.asarray(mask))
+    window_sums = np.empty(len(mask) - window_size, dtype=cum.dtype)
+    window_sums[0] = cum[window_size - 1]
+    window_sums[1:] = cum[window_size:-1] - cum[:-window_size-1]
+    best_i = int(np.argmax(window_sums))
+    return best_i, best_i + window_size
+
+
 def analyze_scan(scan, tolerance=10, window_size = 300):
     assert len(scan)==1800, len(scan)
     diff = np.diff(scan) #[450:-450])
     mask = np.abs(diff) < tolerance
     from_i, to_i = get_best_match(mask, window_size)
+    from_i_slow, to_i_slow = slow_get_best_match(mask, window_size)
+    assert (from_i, to_i) == (from_i_slow, to_i_slow), f"Optimization mismatch: {(from_i, to_i)} != {(from_i_slow, to_i_slow)}"
     return diff, from_i, to_i
 
 

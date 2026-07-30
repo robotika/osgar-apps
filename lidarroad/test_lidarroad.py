@@ -2,14 +2,34 @@ import unittest
 from unittest.mock import patch
 import numpy as np
 
-from lidarroad import get_best_match, analyze_scan, draw_scan
+from lidarroad import get_best_match, slow_get_best_match, analyze_scan, draw_scan
 
 class TestLidarRoad(unittest.TestCase):
     def test_get_best_match(self):
+        # Basic validation case
         mask = [0, 0, 1, 1, 1, 0, 0]
         from_i, to_i = get_best_match(mask, 3)
         self.assertEqual(from_i, 2)
         self.assertEqual(to_i, 5)
+
+        # Extended comparative validation between fast and slow implementations
+        np.random.seed(42)  # For deterministic reproducibility
+        masks = [
+            [0, 0, 1, 1, 1, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1],
+            np.random.randint(0, 2, 1000).tolist()
+        ]
+        for m in masks:
+            for window_size in [1, 3, 5, 50, 100]:
+                if len(m) > window_size:
+                    from_fast, to_fast = get_best_match(m, window_size)
+                    from_slow, to_slow = slow_get_best_match(m, window_size)
+                    self.assertEqual(
+                        (from_fast, to_fast), (from_slow, to_slow),
+                        f"Mismatch for window_size {window_size} on mask {m if len(m) < 20 else 'random'}"
+                    )
 
     @patch('matplotlib.pyplot.show')
     @patch('matplotlib.pyplot.axvline')
