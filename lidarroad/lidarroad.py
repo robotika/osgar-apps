@@ -22,11 +22,12 @@ def draw_scan(scan):
 def main():
     parser = argparse.ArgumentParser(description='Analyze smoothness of the road/scan10')
     parser.add_argument('logfile', help='logfile path')
+    parser.add_argument('--jump', '-j', help='jump in seconds', type=float)
     args = parser.parse_args()
 
     with LogReaderEx(args.logfile, ['vanjee.scan10']) as log:
         for timestamp, name, data in log:
-            if timestamp < timedelta(seconds=100):
+            if args.jump is not None and timestamp < timedelta(seconds=args.jump):
                 continue
             print(timestamp, len(data))
             analyze_scan(data)
