@@ -96,22 +96,42 @@ class TestLidarRoad(unittest.TestCase):
             (timedelta(seconds=4.0), 'vanjee.scan10', mock_scan)
         ]
         
+        # Test standard batch processing
         times, from_indices, to_indices = batch_processing(
-            log, start_sec=1.5, end_sec=3.5, tolerance=10, window_size=500
+            log, start_sec=1.5, end_sec=3.5, tolerance=10, window_size=500, fast=False
         )
-        
         self.assertEqual(times, [2.0, 3.0])
         self.assertEqual(from_indices, [0, 0])
         self.assertEqual(to_indices, [500, 500])
 
-    def test_analyze_scan(self):
-        # scan of length 1800
+        # Test fast batch processing
+        times_f, from_indices_f, to_indices_f = batch_processing(
+            log, start_sec=1.5, end_sec=3.5, tolerance=10, window_size=500, fast=True
+        )
+        self.assertEqual(times_f, [2.0, 3.0])
+        self.assertEqual(from_indices_f, [0, 0])
+        self.assertEqual(to_indices_f, [500, 500])
+
+    @patch('lidarroad.slow_get_best_match')
+    def test_analyze_scan(self, mock_slow):
+        mock_slow.return_value = (0, 500)
         scan = [10] * 1800
-        diff, from_i, to_i = analyze_scan(scan, tolerance=10, window_size=500)
-        # Expected diff of [10] * 1800 is an array of 1799 zeros
+        
+        # Standard mode (runs and asserts slow version matches)
+        diff, from_i, to_i = analyze_scan(scan, tolerance=10, window_size=500, fast=False)
         np.testing.assert_array_equal(diff, np.zeros(1799))
         self.assertEqual(from_i, 0)
         self.assertEqual(to_i, 500)
+        mock_slow.assert_called_once()
+
+        mock_slow.reset_mock()
+
+        # Fast mode (skips slow match calculation and assertion)
+        diff_fast, from_i_fast, to_i_fast = analyze_scan(scan, tolerance=10, window_size=500, fast=True)
+        np.testing.assert_array_equal(diff_fast, np.zeros(1799))
+        self.assertEqual(from_i_fast, 0)
+        self.assertEqual(to_i_fast, 500)
+        mock_slow.assert_not_called()
 
 
 if __name__ == '__main__':
