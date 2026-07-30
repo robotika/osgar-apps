@@ -12,26 +12,36 @@ class TestLidarRoad(unittest.TestCase):
         self.assertEqual(to_i, 5)
 
     @patch('matplotlib.pyplot.show')
+    @patch('matplotlib.pyplot.axvline')
     @patch('matplotlib.pyplot.axhline')
     @patch('matplotlib.pyplot.plot')
-    def test_draw_scan_with_tolerance(self, mock_plot, mock_axhline, mock_show):
+    def test_draw_scan_with_tolerance_and_interval(self, mock_plot, mock_axhline, mock_axvline, mock_show):
         scan = [1, 2, 3]
-        draw_scan(scan, tolerance=15)
+        draw_scan(scan, tolerance=15, interval=(10, 20))
         mock_plot.assert_called_once_with(scan)
-        # Check that plt.axhline was called with tolerance and -tolerance
+        
+        # Check horizontal lines
         self.assertEqual(mock_axhline.call_count, 2)
         mock_axhline.assert_any_call(y=15, color='r', linestyle='--')
         mock_axhline.assert_any_call(y=-15, color='r', linestyle='--')
+        
+        # Check vertical lines
+        self.assertEqual(mock_axvline.call_count, 2)
+        mock_axvline.assert_any_call(x=10, color='g', linestyle='--')
+        mock_axvline.assert_any_call(x=20, color='g', linestyle='--')
+        
         mock_show.assert_called_once()
 
     @patch('matplotlib.pyplot.show')
+    @patch('matplotlib.pyplot.axvline')
     @patch('matplotlib.pyplot.axhline')
     @patch('matplotlib.pyplot.plot')
-    def test_draw_scan_without_tolerance(self, mock_plot, mock_axhline, mock_show):
+    def test_draw_scan_without_tolerance_and_interval(self, mock_plot, mock_axhline, mock_axvline, mock_show):
         scan = [1, 2, 3]
-        draw_scan(scan, tolerance=None)
+        draw_scan(scan, tolerance=None, interval=None)
         mock_plot.assert_called_once_with(scan)
         mock_axhline.assert_not_called()
+        mock_axvline.assert_not_called()
         mock_show.assert_called_once()
 
     @patch('lidarroad.draw_scan')
@@ -44,6 +54,7 @@ class TestLidarRoad(unittest.TestCase):
         called_args, called_kwargs = mock_draw_scan.call_args
         np.testing.assert_array_equal(called_args[0], np.zeros(1799))
         self.assertEqual(called_args[1], 10)
+        self.assertEqual(called_kwargs.get('interval'), (0, 500))
 
 
 if __name__ == '__main__':

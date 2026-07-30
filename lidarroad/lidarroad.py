@@ -23,16 +23,20 @@ def analyze_scan(scan, tolerance=10, window_size = 500):
     mask = np.abs(diff) < tolerance
     from_i, to_i = get_best_match(mask, window_size)
     print(from_i, to_i)
-    draw_scan(diff, tolerance)
+    draw_scan(diff, tolerance, interval=(from_i, to_i))
 
 
-def draw_scan(scan, tolerance=None):
+def draw_scan(scan, tolerance=None, interval=None):
     import matplotlib.pyplot as plt
 
     plt.plot(scan)
     if tolerance is not None:
         plt.axhline(y=tolerance, color='r', linestyle='--')
         plt.axhline(y=-tolerance, color='r', linestyle='--')
+    if interval is not None:
+        from_i, to_i = interval
+        plt.axvline(x=from_i, color='g', linestyle='--')
+        plt.axvline(x=to_i, color='g', linestyle='--')
     plt.show()
 
 
