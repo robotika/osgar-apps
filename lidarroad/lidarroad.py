@@ -2,7 +2,6 @@ import argparse
 from datetime import timedelta
 
 import numpy as np
-
 from osgar.logger import LogReaderEx
 
 
@@ -35,7 +34,9 @@ def analyze_scan(scan, tolerance=10, window_size = 300, fast=False):
     from_i, to_i = get_best_match(mask, window_size)
     if not fast:
         from_i_slow, to_i_slow = slow_get_best_match(mask, window_size)
-        assert (from_i, to_i) == (from_i_slow, to_i_slow), f"Optimization mismatch: {(from_i, to_i)} != {(from_i_slow, to_i_slow)}"
+        assert (from_i, to_i) == (from_i_slow, to_i_slow), (
+            f"Optimization mismatch: {(from_i, to_i)} != {(from_i_slow, to_i_slow)}"
+        )
     return diff, from_i, to_i
 
 
@@ -95,7 +96,10 @@ def main():
     parser.add_argument('--jump', '-j', help='jump in seconds', type=float)
     parser.add_argument('--width', '-w', help='width in meters', type=float, default=3.0)
     parser.add_argument('--tolerance', '-t', help='tolerance in millimeters', type=int, default=10)
-    parser.add_argument('--batch', nargs=2, type=float, metavar=('START', 'END'), help='run in batch mode for time range in seconds')
+    parser.add_argument(
+        '--batch', nargs=2, type=float, metavar=('START', 'END'),
+        help='run in batch mode for time range in seconds'
+    )
     parser.add_argument('--fast', action='store_true', help='skip slow match calculation and assertion')
     args = parser.parse_args()
 
@@ -106,7 +110,9 @@ def main():
     with LogReaderEx(args.logfile, ['vanjee.scan10']) as log:
         if args.batch is not None:
             start_sec, end_sec = args.batch
-            times, from_indices, to_indices = batch_processing(log, start_sec, end_sec, tolerance, window_size, fast=fast)
+            times, from_indices, to_indices = batch_processing(
+                log, start_sec, end_sec, tolerance, window_size, fast=fast
+            )
             if times:
                 draw_batch(times, from_indices, to_indices)
             else:

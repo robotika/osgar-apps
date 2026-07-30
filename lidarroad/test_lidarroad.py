@@ -1,9 +1,11 @@
 import unittest
-from unittest.mock import patch
-import numpy as np
 from datetime import timedelta
+from unittest.mock import patch
 
-from lidarroad import get_best_match, slow_get_best_match, analyze_scan, draw_scan, draw_batch, batch_processing
+import numpy as np
+
+from lidarroad import analyze_scan, batch_processing, draw_batch, draw_scan, get_best_match, slow_get_best_match
+
 
 class TestLidarRoad(unittest.TestCase):
     def test_get_best_match(self):
@@ -40,17 +42,17 @@ class TestLidarRoad(unittest.TestCase):
         scan = [1, 2, 3]
         draw_scan(scan, tolerance=15, interval=(10, 20))
         mock_plot.assert_called_once_with(scan)
-        
+
         # Check horizontal lines
         self.assertEqual(mock_axhline.call_count, 2)
         mock_axhline.assert_any_call(y=15, color='r', linestyle='--')
         mock_axhline.assert_any_call(y=-15, color='r', linestyle='--')
-        
+
         # Check vertical lines
         self.assertEqual(mock_axvline.call_count, 2)
         mock_axvline.assert_any_call(x=10, color='g', linestyle='--')
         mock_axvline.assert_any_call(x=20, color='g', linestyle='--')
-        
+
         mock_show.assert_called_once()
 
     @patch('matplotlib.pyplot.show')
@@ -76,11 +78,11 @@ class TestLidarRoad(unittest.TestCase):
         from_i = [100, 110, 120]
         to_i = [400, 410, 420]
         draw_batch(times, from_i, to_i)
-        
+
         self.assertEqual(mock_plot.call_count, 2)
         mock_plot.assert_any_call(times, from_i, 'g.-', label='from_i')
         mock_plot.assert_any_call(times, to_i, 'b.-', label='to_i')
-        
+
         mock_xlabel.assert_called_once_with('Time (s)')
         mock_ylabel.assert_called_once_with('Scan Index')
         mock_title.assert_called_once_with('Best Matching Interval Boundaries Over Time')
@@ -95,7 +97,7 @@ class TestLidarRoad(unittest.TestCase):
             (timedelta(seconds=3.0), 'vanjee.scan10', mock_scan),
             (timedelta(seconds=4.0), 'vanjee.scan10', mock_scan)
         ]
-        
+
         # Test standard batch processing
         times, from_indices, to_indices = batch_processing(
             log, start_sec=1.5, end_sec=3.5, tolerance=10, window_size=500, fast=False
@@ -116,7 +118,7 @@ class TestLidarRoad(unittest.TestCase):
     def test_analyze_scan(self, mock_slow):
         mock_slow.return_value = (0, 500)
         scan = [10] * 1800
-        
+
         # Standard mode (runs and asserts slow version matches)
         diff, from_i, to_i = analyze_scan(scan, tolerance=10, window_size=500, fast=False)
         np.testing.assert_array_equal(diff, np.zeros(1799))
