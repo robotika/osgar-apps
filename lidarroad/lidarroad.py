@@ -100,16 +100,15 @@ def main():
     window_size = int(args.width * 100)  # simplified conversion to scan indexes - TODO proper calibration
     tolerance = args.tolerance
 
-    if args.batch is not None:
-        start_sec, end_sec = args.batch
-        with LogReaderEx(args.logfile, ['vanjee.scan10']) as log:
+    with LogReaderEx(args.logfile, ['vanjee.scan10']) as log:
+        if args.batch is not None:
+            start_sec, end_sec = args.batch
             times, from_indices, to_indices = batch_processing(log, start_sec, end_sec, tolerance, window_size)
-        if times:
-            draw_batch(times, from_indices, to_indices)
+            if times:
+                draw_batch(times, from_indices, to_indices)
+            else:
+                print("No scans found in the specified time range.")
         else:
-            print("No scans found in the specified time range.")
-    else:
-        with LogReaderEx(args.logfile, ['vanjee.scan10']) as log:
             for timestamp, name, data in log:
                 if args.jump is not None and timestamp < timedelta(seconds=args.jump):
                     continue
