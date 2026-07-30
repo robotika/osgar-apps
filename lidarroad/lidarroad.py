@@ -17,7 +17,7 @@ def get_best_match(mask, window_size):
     return best_i, best_i + window_size
 
 
-def analyze_scan(scan, tolerance=10, window_size = 500):
+def analyze_scan(scan, tolerance=10, window_size = 300):
     assert len(scan)==1800, len(scan)
     diff = np.diff(scan) #[450:-450])
     mask = np.abs(diff) < tolerance
@@ -44,14 +44,17 @@ def main():
     parser = argparse.ArgumentParser(description='Analyze smoothness of the road/scan10')
     parser.add_argument('logfile', help='logfile path')
     parser.add_argument('--jump', '-j', help='jump in seconds', type=float)
+    parser.add_argument('--width', '-w', help='width in meters', type=float, default=3.0)
     args = parser.parse_args()
+
+    window_size = int(args.width * 100)  # simplified conversion to scan indexes - TODO proper calibration
 
     with LogReaderEx(args.logfile, ['vanjee.scan10']) as log:
         for timestamp, name, data in log:
             if args.jump is not None and timestamp < timedelta(seconds=args.jump):
                 continue
             print(timestamp, len(data))
-            analyze_scan(data)
+            analyze_scan(data, window_size=window_size)
             break
 
 
