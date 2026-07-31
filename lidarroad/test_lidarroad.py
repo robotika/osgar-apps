@@ -4,7 +4,8 @@ from unittest.mock import patch
 
 import numpy as np
 
-from lidarroad import analyze_scan, batch_processing, draw_batch, draw_scan, get_best_match, slow_get_best_match
+from lidarroad.lidarroad import (analyze_scan, batch_processing, draw_batch, draw_scan,
+                                 get_best_match, slow_get_best_match)
 
 
 class TestLidarRoad(unittest.TestCase):
@@ -114,7 +115,7 @@ class TestLidarRoad(unittest.TestCase):
         self.assertEqual(from_indices_f, [0, 0])
         self.assertEqual(to_indices_f, [500, 500])
 
-    @patch('lidarroad.slow_get_best_match')
+    @patch('lidarroad.lidarroad.slow_get_best_match')
     def test_analyze_scan(self, mock_slow):
         mock_slow.return_value = (0, 500)
         scan = [10] * 1800
