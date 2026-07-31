@@ -36,13 +36,12 @@ class TestLidarRoad(unittest.TestCase):
         ]
         for m in masks:
             for window_size in [1, 3, 5, 50, 100]:
-                if len(m) > window_size:
-                    from_fast, to_fast = get_best_match(m, window_size)
-                    from_slow, to_slow = slow_get_best_match(m, window_size)
-                    self.assertEqual(
-                        (from_fast, to_fast), (from_slow, to_slow),
-                        f"Mismatch for window_size {window_size} on mask {m if len(m) < 20 else 'random'}"
-                    )
+                from_fast, to_fast = get_best_match(m, window_size)
+                from_slow, to_slow = slow_get_best_match(m, window_size)
+                self.assertEqual(
+                    (from_fast, to_fast), (from_slow, to_slow),
+                    f"Mismatch for window_size {window_size} on mask {m if len(m) < 20 else 'random'}"
+                )
 
     @patch('matplotlib.pyplot.show')
     @patch('matplotlib.pyplot.axvline')
