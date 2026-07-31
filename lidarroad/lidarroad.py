@@ -8,7 +8,7 @@ from osgar.logger import LogReaderEx
 def slow_get_best_match(mask, window_size):
     best_i = 0
     best_sum = None
-    for i in range(0, len(mask) - window_size):
+    for i in range(0, len(mask) - window_size + 1):
         value = sum(mask[i:i+window_size])
         if best_sum is None or value > best_sum:
             best_sum = value
@@ -20,9 +20,9 @@ def get_best_match(mask, window_size):
     if len(mask) <= window_size:
         return 0, window_size
     cum = np.cumsum(np.asarray(mask))
-    window_sums = np.empty(len(mask) - window_size, dtype=cum.dtype)
+    window_sums = np.empty(len(mask) - window_size + 1, dtype=cum.dtype)
     window_sums[0] = cum[window_size - 1]
-    window_sums[1:] = cum[window_size:-1] - cum[:-window_size-1]
+    window_sums[1:] = cum[window_size:] - cum[:-window_size]
     best_i = int(np.argmax(window_sums))
     return best_i, best_i + window_size
 

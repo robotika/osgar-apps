@@ -15,6 +15,16 @@ class TestLidarRoad(unittest.TestCase):
         self.assertEqual(from_i, 2)
         self.assertEqual(to_i, 5)
 
+        # Bug reproduction: optimal window is at the very end of the array
+        mask_end = [0, 0, 1, 1, 1]
+        from_i_end, to_i_end = get_best_match(mask_end, 3)
+        self.assertEqual(from_i_end, 2)
+        self.assertEqual(to_i_end, 5)
+
+        from_i_slow, to_i_slow = slow_get_best_match(mask_end, 3)
+        self.assertEqual(from_i_slow, 2)
+        self.assertEqual(to_i_slow, 5)
+
         # Extended comparative validation between fast and slow implementations
         np.random.seed(42)  # For deterministic reproducibility
         masks = [
