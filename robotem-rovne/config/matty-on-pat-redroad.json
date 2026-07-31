@@ -12,6 +12,14 @@
             "terminate_on_stop": true
           }
       },
+      "remote": {
+          "driver": "osgar.drivers.push:Push",
+              "init": {
+              "endpoint": "tcp://*:5555",
+              "pubsub": true,
+              "bind": true
+          }
+      },
       "platform": {
         "driver": "osgar.platforms.matty:Matty",
         "in": ["esp_data"],
@@ -112,7 +120,7 @@
       }
     },
     "links": [
-      ["app.desired_steering", "platform.desired_steering"],
+      ["app.desired_steering", "remote.desired_steering"],
       ["platform.pose2d", "app.pose2d"],
       ["platform.emergency_stop", "app.emergency_stop"],
       ["serial.raw", "platform.esp_data"],
