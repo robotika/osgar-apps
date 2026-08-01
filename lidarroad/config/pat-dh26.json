@@ -7,13 +7,7 @@
           "in": ["encoders", "scan", "emergency_stop", "pose2d"],
           "out": ["desired_speed"],
           "init": {
-            "max_speed": 0.7,
-            "max_dist_limit": 3.0,
-            "desired_dist": 1.5,
-            "laser_pose2d": [0.13, 0.055, 0],
-            "scan_size": 1800,
-            "scan_fov_deg": -360,
-            "track_front_deg": 90
+            "max_speed": 0.3
           }
       },
       "platform": {
@@ -64,7 +58,7 @@
     "links": [
       ["can.can", "platform.can"],
       ["platform.can", "can.can"],
-      ["app.desired_speed", "platform.desired_steering"],
+      ["app.desired_steering", "platform.desired_steering"],
       ["platform.emergency_stop", "app.emergency_stop"],
       ["platform.pose2d", "app.pose2d"],
 
