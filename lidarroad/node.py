@@ -1,6 +1,8 @@
 import numpy as np
 
 from osgar.node import Node
+from osgar.exceptions import EmergencyStopException
+
 from lidarroad.lidarroad import analyze_scan
 
 
@@ -11,7 +13,8 @@ class LidarRoad(Node):
         self.max_speed = config.get('max_speed', 0.1)
 
     def on_emergency_stop(self, data):
-        pass
+        if data:
+            raise EmergencyStopException()
 
     def on_pose2d(self, data):
         pass
