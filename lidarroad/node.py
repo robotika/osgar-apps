@@ -18,8 +18,8 @@ class LidarRoad(Node):
 
     def on_scan(self, data):
         assert len(data) == 1800, len(data)
-        _, from_i, to_i = analyze_scan(data, fast=True)
-        direction_i = (from_i + to_i) // 2
+        _, from_i, to_i = analyze_scan(data[450:-450], fast=True)
+        direction_i = 450 + (from_i + to_i) // 2
         width = 100
         safe_dist = 1.0
         selection = np.array(data[direction_i-width:direction_i+width], dtype=int)
@@ -30,6 +30,6 @@ class LidarRoad(Node):
             near_obstacle = 0.0
         direction_deg = 360 * (900 - direction_i) / 1800
         if self.verbose:
-            print(self.time, direction_deg, near_obstacle)
+            print(self.time, from_i, to_i, direction_deg, near_obstacle)
         speed = self.max_speed if near_obstacle < safe_dist else 0
         self.publish('desired_steering', [speed, int(direction_deg * 100)])
