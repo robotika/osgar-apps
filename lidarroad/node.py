@@ -32,4 +32,4 @@ class LidarRoad(Node):
         speed = self.max_speed if near_obstacle > safe_dist else 0
         if self.verbose:
             print(self.time, from_i, to_i, direction_deg, speed, near_obstacle)
-        self.publish('desired_steering', [speed, int(direction_deg * 100)])
+        self.publish('desired_steering', [int(1000 * speed), int(direction_deg * 100)])
