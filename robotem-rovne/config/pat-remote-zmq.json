@@ -1,0 +1,64 @@
+{
+  "version": 2,
+  "robot": {
+    "modules": {
+      "remote": {
+          "driver": "osgar.drivers.pull:Pull",
+              "init": {
+              "endpoint": "tcp://m03-odroid:5555",
+              "pubsub": true,
+              "bind": false,
+              "outputs": ["desired_steering"]
+          }
+      },
+      "platform": {
+        "driver": "osgar.platforms.yuhesen:FR07",
+        "in": ["can"],
+        "out": ["can"],
+        "init": {
+            "max_speed": 0.1
+        }
+      },
+      "can": {
+        "driver": "pcan",
+        "in": ["can"],
+        "out": ["can"],
+        "init": {}
+      },
+      "gps": {
+          "driver": "gps",
+          "in": ["raw"],
+          "out": ["position"],
+          "init": {}
+      },
+      "gps_serial": {
+          "driver": "serial",
+          "in": [],
+          "out": ["raw"],
+          "init": {"port": "/dev/ttyUSB0", "speed": 4800}
+      },
+      "vanjee": {
+          "driver": "vanjee",
+          "in": ["raw"],
+          "out": ["raw", "xyz"],
+          "init": {}
+      },
+      "vanjee_udp": {
+          "driver": "udp",
+          "in": ["raw"],
+          "out": ["raw"],
+          "init": {"host": "192.168.0.2", "port": 6050, "timeout": 3.0, "bufsize": 100000}
+      }
+    },
+    "links": [
+      ["can.can", "platform.can"],
+      ["platform.can", "can.can"],
+      ["remote.desired_steering", "platform.desired_steering"],
+
+      ["gps_serial.raw", "gps.raw"],
+
+      ["vanjee_udp.raw", "vanjee.raw"],
+      ["vanjee.raw", "vanjee_udp.raw"]
+    ]
+  }
+}
