@@ -144,6 +144,33 @@ class TestLidarRoad(unittest.TestCase):
         self.assertEqual(to_i_fast, 500)
         mock_slow.assert_not_called()
 
+    @patch('matplotlib.pyplot.subplots')
+    @patch('matplotlib.pyplot.show')
+    def test_draw_scan_with_original(self, mock_show, mock_subplots):
+        from unittest.mock import MagicMock
+
+        mock_ax1 = MagicMock()
+        mock_ax2 = MagicMock()
+        mock_subplots.return_value = (MagicMock(), (mock_ax1, mock_ax2))
+
+        scan = [1, 2, 3]
+        original = [10, 11, 12, 13]
+        draw_scan(scan, tolerance=15, interval=(1, 2), original_scan=original)
+
+        mock_subplots.assert_called_once_with(1, 2, sharex=True)
+        mock_ax1.plot.assert_called_once_with(original)
+        mock_ax2.plot.assert_called_once_with(scan)
+
+        # Check boundary/tolerance overlays
+        mock_ax1.axvline.assert_any_call(x=1, color='g', linestyle='--')
+        mock_ax1.axvline.assert_any_call(x=2, color='g', linestyle='--')
+
+        mock_ax2.axhline.assert_any_call(y=15, color='r', linestyle='--')
+        mock_ax2.axhline.assert_any_call(y=-15, color='r', linestyle='--')
+        mock_ax2.axvline.assert_any_call(x=1, color='g', linestyle='--')
+        mock_ax2.axvline.assert_any_call(x=2, color='g', linestyle='--')
+        mock_show.assert_called_once()
+
 
 if __name__ == '__main__':
     unittest.main()

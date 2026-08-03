@@ -39,17 +39,44 @@ def analyze_scan(scan, tolerance=10, window_size = 300, fast=False):
     return diff, from_i, to_i
 
 
-def draw_scan(scan, tolerance=None, interval=None):
+def draw_scan(scan, tolerance=None, interval=None, original_scan=None):
     import matplotlib.pyplot as plt
 
-    plt.plot(scan)
-    if tolerance is not None:
-        plt.axhline(y=tolerance, color='r', linestyle='--')
-        plt.axhline(y=-tolerance, color='r', linestyle='--')
-    if interval is not None:
-        from_i, to_i = interval
-        plt.axvline(x=from_i, color='g', linestyle='--')
-        plt.axvline(x=to_i, color='g', linestyle='--')
+    if original_scan is not None:
+        fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
+
+        ax1.plot(original_scan)
+        ax1.set_title('Original Scan')
+        ax1.set_xlabel('Scan Index')
+        ax1.set_ylabel('Range')
+        if interval is not None:
+            from_i, to_i = interval
+            ax1.axvline(x=from_i, color='g', linestyle='--')
+            ax1.axvline(x=to_i, color='g', linestyle='--')
+
+        ax2.plot(scan)
+        ax2.set_title('np.diff')
+        ax2.set_xlabel('Scan Index')
+        ax2.set_ylabel('Difference')
+        if tolerance is not None:
+            ax2.axhline(y=tolerance, color='r', linestyle='--')
+            ax2.axhline(y=-tolerance, color='r', linestyle='--')
+        if interval is not None:
+            from_i, to_i = interval
+            ax2.axvline(x=from_i, color='g', linestyle='--')
+            ax2.axvline(x=to_i, color='g', linestyle='--')
+    else:
+        plt.plot(scan)
+        plt.title('np.diff')
+        plt.xlabel('Scan Index')
+        plt.ylabel('Difference')
+        if tolerance is not None:
+            plt.axhline(y=tolerance, color='r', linestyle='--')
+            plt.axhline(y=-tolerance, color='r', linestyle='--')
+        if interval is not None:
+            from_i, to_i = interval
+            plt.axvline(x=from_i, color='g', linestyle='--')
+            plt.axvline(x=to_i, color='g', linestyle='--')
     plt.show()
 
 
@@ -100,6 +127,7 @@ def main():
         help='run in batch mode for time range in seconds'
     )
     parser.add_argument('--fast', action='store_true', help='skip slow match calculation and assertion')
+    parser.add_argument('--show-original', action='store_true', help='show original range data next to np.diff')
     args = parser.parse_args()
 
     window_size = int(args.width * 100)  # simplified conversion to scan indexes - TODO proper calibration
@@ -124,7 +152,12 @@ def main():
                 selected = data[450:-450]
                 diff, from_i, to_i = analyze_scan(selected, tolerance=tolerance, window_size=window_size, fast=fast)
                 print(from_i, to_i)
-                draw_scan(diff, tolerance=tolerance, interval=(from_i, to_i))
+                draw_scan(
+                    diff,
+                    tolerance=tolerance,
+                    interval=(from_i, to_i),
+                    original_scan=selected if args.show_original else None
+                )
                 break
 
 
