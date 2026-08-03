@@ -4,7 +4,7 @@
     "modules": {
       "app": {
           "driver": "lidarroad.node:LidarRoad",
-          "in": ["encoders", "scan", "emergency_stop", "pose2d"],
+          "in": ["scan", "emergency_stop", "pose2d"],
           "out": ["desired_steering"],
           "init": {
             "max_speed": 0.3
