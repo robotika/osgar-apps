@@ -53,7 +53,7 @@
     "links": [
       ["can.can", "platform.can"],
       ["platform.can", "can.can"],
-      ["remote.desired_speed", "platform.desired_steering"],
+      ["remote.desired_steering", "platform.desired_steering"],
 
       ["gps_serial.raw", "gps.raw"],
 
