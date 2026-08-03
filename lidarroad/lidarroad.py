@@ -121,7 +121,8 @@ def main():
                 if args.jump is not None and timestamp < timedelta(seconds=args.jump):
                     continue
                 print(timestamp, len(data))
-                diff, from_i, to_i = analyze_scan(data, tolerance=tolerance, window_size=window_size, fast=fast)
+                selected = data[450:-450]
+                diff, from_i, to_i = analyze_scan(selected, tolerance=tolerance, window_size=window_size, fast=fast)
                 print(from_i, to_i)
                 draw_scan(diff, tolerance=tolerance, interval=(from_i, to_i))
                 break
