@@ -28,8 +28,7 @@ def get_best_match(mask, window_size):
 
 
 def analyze_scan(scan, tolerance=10, window_size = 300, fast=False):
-#    assert len(scan)==1800, len(scan)
-    diff = np.diff(scan) #[450:-450])
+    diff = np.diff(scan)
     mask = np.abs(diff) < tolerance
     from_i, to_i = get_best_match(mask, window_size)
     if not fast:
