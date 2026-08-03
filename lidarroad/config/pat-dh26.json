@@ -39,7 +39,7 @@
       "vanjee": {
           "driver": "vanjee",
           "in": ["raw"],
-          "out": ["raw", "xyz"],
+          "out": ["raw", "scan10"],
           "init": {}
       },
       "vanjee_udp": {
