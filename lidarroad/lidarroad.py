@@ -193,7 +193,9 @@ def draw_batch(timestamps, from_indices, to_indices):
     plt.show()
 
 
-def batch_processing(log, start_sec, end_sec, tolerance, window_size, fast=False, penalty_weight=0.0):
+def batch_processing(
+    log, start_sec, end_sec, tolerance, window_size, fast=False, penalty_weight=0.0, initial_prev=None
+):
     start_time = timedelta(seconds=start_sec)
     end_time = timedelta(seconds=end_sec)
 
@@ -201,7 +203,7 @@ def batch_processing(log, start_sec, end_sec, tolerance, window_size, fast=False
     from_indices = []
     to_indices = []
 
-    prev_from_i = None
+    prev_from_i = initial_prev
 
     for timestamp, name, data in log:
         if timestamp < start_time:
@@ -240,6 +242,10 @@ def main():
         '--weight', type=float, default=0.0,
         help='penalty weight for distance from previous window position'
     )
+    parser.add_argument(
+        '--prev', type=int,
+        help='simulate starting window index from previous scan'
+    )
     args = parser.parse_args()
 
     window_size = int(args.width * 100)  # simplified conversion to scan indexes - TODO proper calibration
@@ -250,14 +256,15 @@ def main():
         if args.batch is not None:
             start_sec, end_sec = args.batch
             times, from_indices, to_indices = batch_processing(
-                log, start_sec, end_sec, tolerance, window_size, fast=fast, penalty_weight=args.weight
+                log, start_sec, end_sec, tolerance, window_size, fast=fast,
+                penalty_weight=args.weight, initial_prev=args.prev
             )
             if times:
                 draw_batch(times, from_indices, to_indices)
             else:
                 print("No scans found in the specified time range.")
         else:
-            prev_from_i = None
+            prev_from_i = args.prev
             for timestamp, name, data in log:
                 if args.jump is not None and timestamp < timedelta(seconds=args.jump):
                     continue
