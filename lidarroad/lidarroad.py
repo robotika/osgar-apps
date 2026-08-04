@@ -211,11 +211,12 @@ def batch_processing(
         if timestamp > end_time:
             break
 
+        selected = data[450:-450]
         diff, from_i, to_i = analyze_scan(
-            data, tolerance=tolerance, window_size=window_size, fast=fast,
+            selected, tolerance=tolerance, window_size=window_size, fast=fast,
             prev_from_i=prev_from_i, penalty_weight=penalty_weight
         )
-        width = calculate_road_width(data, from_i, to_i, is_sliced=False)
+        width = calculate_road_width(data, from_i, to_i, is_sliced=True)
         print(timestamp, len(data), from_i, to_i, f"width: {width:.2f}m")
 
         times.append(timestamp.total_seconds())
