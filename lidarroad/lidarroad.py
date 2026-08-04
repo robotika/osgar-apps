@@ -39,6 +39,34 @@ def analyze_scan(scan, tolerance=10, window_size = 300, fast=False):
     return diff, from_i, to_i
 
 
+def calculate_road_width(data, from_i, to_i, tilt_deg=10.0, is_sliced=True):
+    """Calculate the road width in meters based on the matching window boundaries."""
+    if is_sliced:
+        i_L = 450 + from_i
+        i_R = 450 + to_i
+        theta_L = np.pi * (0.5 - from_i / 900.0)
+        theta_R = np.pi * (0.5 - to_i / 900.0)
+    else:
+        i_L = from_i
+        i_R = to_i
+        theta_L = np.pi * (1.0 - i_L / 900.0)
+        theta_R = np.pi * (1.0 - i_R / 900.0)
+
+    r_L = data[i_L] / 1000.0  # Convert mm to meters
+    r_R = data[i_R] / 1000.0
+
+    proj_factor = np.cos(np.radians(tilt_deg))
+
+    x_L = r_L * proj_factor * np.cos(theta_L)
+    y_L = r_L * proj_factor * np.sin(theta_L)
+
+    x_R = r_R * proj_factor * np.cos(theta_R)
+    y_R = r_R * proj_factor * np.sin(theta_R)
+
+    width = np.hypot(x_L - x_R, y_L - y_R)
+    return width
+
+
 def draw_scan(scan, tolerance=None, interval=None, original_scan=None):
     import matplotlib.pyplot as plt
 
@@ -130,7 +158,8 @@ def batch_processing(log, start_sec, end_sec, tolerance, window_size, fast=False
             break
 
         diff, from_i, to_i = analyze_scan(data, tolerance=tolerance, window_size=window_size, fast=fast)
-        print(timestamp, len(data), from_i, to_i)
+        width = calculate_road_width(data, from_i, to_i, is_sliced=False)
+        print(timestamp, len(data), from_i, to_i, f"width: {width:.2f}m")
 
         times.append(timestamp.total_seconds())
         from_indices.append(from_i)
@@ -175,6 +204,8 @@ def main():
                 selected = data[450:-450]
                 diff, from_i, to_i = analyze_scan(selected, tolerance=tolerance, window_size=window_size, fast=fast)
                 print(from_i, to_i)
+                width = calculate_road_width(data, from_i, to_i, is_sliced=True)
+                print(f"Calculated Road Width: {width:.2f}m")
                 draw_scan(
                     diff,
                     tolerance=tolerance,

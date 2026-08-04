@@ -4,7 +4,15 @@ from unittest.mock import patch
 
 import numpy as np
 
-from lidarroad import analyze_scan, batch_processing, draw_batch, draw_scan, get_best_match, slow_get_best_match
+from lidarroad import (
+    analyze_scan,
+    batch_processing,
+    calculate_road_width,
+    draw_batch,
+    draw_scan,
+    get_best_match,
+    slow_get_best_match,
+)
 
 
 class TestLidarRoad(unittest.TestCase):
@@ -175,6 +183,14 @@ class TestLidarRoad(unittest.TestCase):
         self.assertEqual(mock_ax3.plot.call_count, 2)  # plot window_sums and plot argmax point
         mock_ax3.axvline.assert_called_once_with(x=1, color='g', linestyle='--')
         mock_show.assert_called_once()
+
+    def test_calculate_road_width(self):
+        scan = [1500] * 1800
+        width_sliced = calculate_road_width(scan, from_i=0, to_i=900, tilt_deg=10.0, is_sliced=True)
+        self.assertAlmostEqual(width_sliced, 2.954423259)
+
+        width_unsliced = calculate_road_width(scan, from_i=450, to_i=1350, tilt_deg=10.0, is_sliced=False)
+        self.assertAlmostEqual(width_unsliced, 2.954423259)
 
 
 if __name__ == '__main__':
