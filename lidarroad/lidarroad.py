@@ -18,21 +18,26 @@ def slow_get_best_match(mask, window_size, prev_from_i=None, penalty_weight=0.0)
     return best_i, best_i + window_size
 
 
-def get_best_match(mask, window_size, prev_from_i=None, penalty_weight=0.0):
-    if len(mask) <= window_size:
-        return 0, window_size
+def calculate_window_costs(mask, window_size, prev_from_i=None, penalty_weight=0.0):
     cum = np.cumsum(np.asarray(mask))
     window_sums = np.empty(len(mask) - window_size + 1, dtype=cum.dtype)
     window_sums[0] = cum[window_size - 1]
     window_sums[1:] = cum[window_size:] - cum[:-window_size]
 
+    penalized_sums = window_sums
     if prev_from_i is not None and penalty_weight > 0.0:
         indices = np.arange(len(window_sums))
         penalty = penalty_weight * np.abs(indices - prev_from_i)
         penalized_sums = window_sums - penalty
-        best_i = int(np.argmax(penalized_sums))
-    else:
-        best_i = int(np.argmax(window_sums))
+
+    return window_sums, penalized_sums
+
+
+def get_best_match(mask, window_size, prev_from_i=None, penalty_weight=0.0):
+    if len(mask) <= window_size:
+        return 0, window_size
+    _, penalized_sums = calculate_window_costs(mask, window_size, prev_from_i, penalty_weight)
+    best_i = int(np.argmax(penalized_sums))
     return best_i, best_i + window_size
 
 
@@ -105,10 +110,7 @@ def draw_scan(scan, tolerance=None, interval=None, original_scan=None, prev_from
             window_size = to_i_tracked - from_i_tracked
 
             if len(mask) > window_size:
-                cum = np.cumsum(np.asarray(mask))
-                window_sums = np.empty(len(mask) - window_size + 1, dtype=cum.dtype)
-                window_sums[0] = cum[window_size - 1]
-                window_sums[1:] = cum[window_size:] - cum[:-window_size]
+                window_sums, penalized_sums = calculate_window_costs(mask, window_size, prev_from_i, penalty_weight)
 
                 # 1. Unpenalized Global argmax
                 from_i_global = int(np.argmax(window_sums))
@@ -129,11 +131,7 @@ def draw_scan(scan, tolerance=None, interval=None, original_scan=None, prev_from
                 # Cost functions plot
                 ax3.plot(window_sums, color='gray', linestyle=':', label='Unpenalized Cost')
 
-                penalized_sums = window_sums
                 if prev_from_i is not None and penalty_weight > 0.0:
-                    indices = np.arange(len(window_sums))
-                    penalty = penalty_weight * np.abs(indices - prev_from_i)
-                    penalized_sums = window_sums - penalty
                     ax3.plot(penalized_sums, color='b', label='Penalized Cost')
 
                 ax3.set_title('Window Cost Function')

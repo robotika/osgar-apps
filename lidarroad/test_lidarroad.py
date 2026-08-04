@@ -8,6 +8,7 @@ from lidarroad import (
     analyze_scan,
     batch_processing,
     calculate_road_width,
+    calculate_window_costs,
     draw_batch,
     draw_scan,
     get_best_match,
@@ -206,6 +207,21 @@ class TestLidarRoad(unittest.TestCase):
 
         width_unsliced = calculate_road_width(scan, from_i=450, to_i=1350, tilt_deg=10.0, is_sliced=False)
         self.assertAlmostEqual(width_unsliced, 2.954423259)
+
+    def test_calculate_window_costs(self):
+        mask = [0, 0, 1, 1, 1, 0, 0]
+        # Basic without penalty
+        window_sums, penalized_sums = calculate_window_costs(mask, window_size=3)
+        np.testing.assert_array_equal(window_sums, [1, 2, 3, 2, 1])
+        np.testing.assert_array_equal(penalized_sums, [1, 2, 3, 2, 1])
+
+        # With penalty
+        window_sums_p, penalized_sums_p = calculate_window_costs(
+            mask, window_size=3, prev_from_i=2, penalty_weight=0.5
+        )
+        np.testing.assert_array_equal(window_sums_p, [1, 2, 3, 2, 1])
+        expected_penalized = [1 - 1.0, 2 - 0.5, 3 - 0.0, 2 - 0.5, 1 - 1.0]
+        np.testing.assert_array_equal(penalized_sums_p, expected_penalized)
 
 
 if __name__ == '__main__':
