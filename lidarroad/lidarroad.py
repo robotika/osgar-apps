@@ -194,7 +194,7 @@ def draw_batch(timestamps, from_indices, to_indices):
 
 
 def batch_processing(
-    log, start_sec, end_sec, tolerance, window_size, fast=False, penalty_weight=0.0, initial_prev=None
+    log, start_sec, end_sec, tolerance, window_size, fast=False, penalty_weight=0.0, initial_prev=None, slicing=False
 ):
     start_time = timedelta(seconds=start_sec)
     end_time = timedelta(seconds=end_sec)
@@ -211,12 +211,16 @@ def batch_processing(
         if timestamp > end_time:
             break
 
-        selected = data[450:-450]
+        if slicing:
+            selected = data[450:-450]
+        else:
+            selected = data
+
         diff, from_i, to_i = analyze_scan(
             selected, tolerance=tolerance, window_size=window_size, fast=fast,
             prev_from_i=prev_from_i, penalty_weight=penalty_weight
         )
-        width = calculate_road_width(data, from_i, to_i, is_sliced=True)
+        width = calculate_road_width(data, from_i, to_i, is_sliced=slicing)
         print(timestamp, len(data), from_i, to_i, f"width: {width:.2f}m")
 
         times.append(timestamp.total_seconds())
@@ -247,6 +251,7 @@ def main():
         '--prev', type=int,
         help='simulate starting window index from previous scan'
     )
+    parser.add_argument('--slicing', action='store_true', help='apply [450:-450] slicing to the input scans')
     args = parser.parse_args()
 
     window_size = int(args.width * 100)  # simplified conversion to scan indexes - TODO proper calibration
@@ -258,7 +263,7 @@ def main():
             start_sec, end_sec = args.batch
             times, from_indices, to_indices = batch_processing(
                 log, start_sec, end_sec, tolerance, window_size, fast=fast,
-                penalty_weight=args.weight, initial_prev=args.prev
+                penalty_weight=args.weight, initial_prev=args.prev, slicing=args.slicing
             )
             if times:
                 draw_batch(times, from_indices, to_indices)
@@ -270,13 +275,16 @@ def main():
                 if args.jump is not None and timestamp < timedelta(seconds=args.jump):
                     continue
                 print(timestamp, len(data))
-                selected = data[450:-450]
+                if args.slicing:
+                    selected = data[450:-450]
+                else:
+                    selected = data
                 diff, from_i, to_i = analyze_scan(
                     selected, tolerance=tolerance, window_size=window_size, fast=fast,
                     prev_from_i=prev_from_i, penalty_weight=args.weight
                 )
                 print(from_i, to_i)
-                width = calculate_road_width(data, from_i, to_i, is_sliced=True)
+                width = calculate_road_width(data, from_i, to_i, is_sliced=args.slicing)
                 print(f"Calculated Road Width: {width:.2f}m")
                 draw_scan(
                     diff,

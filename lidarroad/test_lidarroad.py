@@ -122,7 +122,7 @@ class TestLidarRoad(unittest.TestCase):
             (timedelta(seconds=4.0), 'vanjee.scan10', mock_scan)
         ]
 
-        # Test standard batch processing
+        # Test standard batch processing (slicing=False by default)
         times, from_indices, to_indices = batch_processing(
             log, start_sec=1.5, end_sec=3.5, tolerance=10, window_size=500, fast=False
         )
@@ -137,6 +137,14 @@ class TestLidarRoad(unittest.TestCase):
         self.assertEqual(times_f, [2.0, 3.0])
         self.assertEqual(from_indices_f, [0, 0])
         self.assertEqual(to_indices_f, [500, 500])
+
+        # Test batch processing with slicing=True
+        times_s, from_indices_s, to_indices_s = batch_processing(
+            log, start_sec=1.5, end_sec=3.5, tolerance=10, window_size=500, fast=False, slicing=True
+        )
+        self.assertEqual(times_s, [2.0, 3.0])
+        self.assertEqual(from_indices_s, [0, 0])
+        self.assertEqual(to_indices_s, [500, 500])
 
     @patch('lidarroad.lidarroad.slow_get_best_match')
     def test_analyze_scan(self, mock_slow):
