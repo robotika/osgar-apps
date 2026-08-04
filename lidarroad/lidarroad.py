@@ -43,7 +43,7 @@ def draw_scan(scan, tolerance=None, interval=None, original_scan=None):
     import matplotlib.pyplot as plt
 
     if original_scan is not None:
-        fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, sharex=True)
 
         ax1.plot(original_scan)
         ax1.set_title('Original Scan')
@@ -65,6 +65,29 @@ def draw_scan(scan, tolerance=None, interval=None, original_scan=None):
             from_i, to_i = interval
             ax2.axvline(x=from_i, color='g', linestyle='--')
             ax2.axvline(x=to_i, color='g', linestyle='--')
+
+        if tolerance is not None and interval is not None:
+            mask = np.abs(scan) < tolerance
+            from_i, to_i = interval
+            window_size = to_i - from_i
+
+            if len(mask) > window_size:
+                cum = np.cumsum(np.asarray(mask))
+                window_sums = np.empty(len(mask) - window_size + 1, dtype=cum.dtype)
+                window_sums[0] = cum[window_size - 1]
+                window_sums[1:] = cum[window_size:] - cum[:-window_size]
+
+                ax3.plot(window_sums, color='b', label='Cost Function')
+                ax3.set_title('Window Cost Function')
+                ax3.set_xlabel('Window Start Index')
+                ax3.set_ylabel('Points in Window')
+                if 0 <= from_i < len(window_sums):
+                    ax3.plot(from_i, window_sums[from_i], 'ro', label=f'Argmax ({from_i})')
+                    ax3.axvline(x=from_i, color='g', linestyle='--')
+                    ax3.legend()
+            else:
+                ax3.text(0.5, 0.5, 'Window size too large', ha='center', va='center')
+                ax3.set_title('Window Cost Function')
     else:
         plt.plot(scan)
         plt.title('np.diff')

@@ -151,13 +151,14 @@ class TestLidarRoad(unittest.TestCase):
 
         mock_ax1 = MagicMock()
         mock_ax2 = MagicMock()
-        mock_subplots.return_value = (MagicMock(), (mock_ax1, mock_ax2))
+        mock_ax3 = MagicMock()
+        mock_subplots.return_value = (MagicMock(), (mock_ax1, mock_ax2, mock_ax3))
 
         scan = [1, 2, 3]
         original = [10, 11, 12, 13]
         draw_scan(scan, tolerance=15, interval=(1, 2), original_scan=original)
 
-        mock_subplots.assert_called_once_with(1, 2, sharex=True)
+        mock_subplots.assert_called_once_with(1, 3, sharex=True)
         mock_ax1.plot.assert_called_once_with(original)
         mock_ax2.plot.assert_called_once_with(scan)
 
@@ -169,6 +170,10 @@ class TestLidarRoad(unittest.TestCase):
         mock_ax2.axhline.assert_any_call(y=-15, color='r', linestyle='--')
         mock_ax2.axvline.assert_any_call(x=1, color='g', linestyle='--')
         mock_ax2.axvline.assert_any_call(x=2, color='g', linestyle='--')
+
+        # Check ax3 cost function plot
+        self.assertEqual(mock_ax3.plot.call_count, 2)  # plot window_sums and plot argmax point
+        mock_ax3.axvline.assert_called_once_with(x=1, color='g', linestyle='--')
         mock_show.assert_called_once()
 
 
