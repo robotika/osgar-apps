@@ -44,12 +44,19 @@ class TestLidarRoad(unittest.TestCase):
         ]
         for m in masks:
             for window_size in [1, 3, 5, 50, 100]:
-                from_fast, to_fast = get_best_match(m, window_size)
-                from_slow, to_slow = slow_get_best_match(m, window_size)
-                self.assertEqual(
-                    (from_fast, to_fast), (from_slow, to_slow),
-                    f"Mismatch for window_size {window_size} on mask {m if len(m) < 20 else 'random'}"
-                )
+                for prev_from_i, penalty_weight in [(None, 0.0), (10, 0.2), (50, 0.5), (0, 1.0)]:
+                    from_fast, to_fast = get_best_match(
+                        m, window_size, prev_from_i=prev_from_i, penalty_weight=penalty_weight
+                    )
+                    from_slow, to_slow = slow_get_best_match(
+                        m, window_size, prev_from_i=prev_from_i, penalty_weight=penalty_weight
+                    )
+                    msg = (
+                        f"Mismatch for window_size {window_size} on "
+                        f"mask {m if len(m) < 20 else 'random'} with "
+                        f"prev_from_i={prev_from_i}, weight={penalty_weight}"
+                    )
+                    self.assertEqual((from_fast, to_fast), (from_slow, to_slow), msg)
 
     @patch('matplotlib.pyplot.show')
     @patch('matplotlib.pyplot.axvline')
@@ -167,21 +174,21 @@ class TestLidarRoad(unittest.TestCase):
         draw_scan(scan, tolerance=15, interval=(1, 2), original_scan=original)
 
         mock_subplots.assert_called_once_with(1, 3, sharex=True)
-        mock_ax1.plot.assert_called_once_with(original)
+        mock_ax1.plot.assert_called_once_with(original, label='Scan')
         mock_ax2.plot.assert_called_once_with(scan)
 
         # Check boundary/tolerance overlays
-        mock_ax1.axvline.assert_any_call(x=1, color='g', linestyle='--')
+        mock_ax1.axvline.assert_any_call(x=1, color='g', linestyle='--', label='Tracked Match')
         mock_ax1.axvline.assert_any_call(x=2, color='g', linestyle='--')
 
         mock_ax2.axhline.assert_any_call(y=15, color='r', linestyle='--')
         mock_ax2.axhline.assert_any_call(y=-15, color='r', linestyle='--')
-        mock_ax2.axvline.assert_any_call(x=1, color='g', linestyle='--')
+        mock_ax2.axvline.assert_any_call(x=1, color='g', linestyle='--', label='Tracked Match')
         mock_ax2.axvline.assert_any_call(x=2, color='g', linestyle='--')
 
         # Check ax3 cost function plot
-        self.assertEqual(mock_ax3.plot.call_count, 2)  # plot window_sums and plot argmax point
-        mock_ax3.axvline.assert_called_once_with(x=1, color='g', linestyle='--')
+        self.assertEqual(mock_ax3.plot.call_count, 3)  # plot window_sums, global argmax, and tracked argmax
+        mock_ax3.axvline.assert_any_call(x=1, color='g', linestyle='--')
         mock_show.assert_called_once()
 
     def test_calculate_road_width(self):
