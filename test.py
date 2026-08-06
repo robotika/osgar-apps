@@ -4,13 +4,21 @@ if __name__ == "__main__":
     import logging
     logging.root.level = logging.CRITICAL
     import unittest
+    import unittest.loader
     from pathlib import Path
     import os
     import subprocess
     import sys
     root_dir = Path(__file__).parent
     for project_name in os.listdir(root_dir):
+        if project_name in ['lidarroad']:
+            continue  # already ported projects
         project_path = root_dir / project_name
         if project_path.is_dir() and not project_name.startswith(('.', '_')):
             print(project_path)
             subprocess.check_call([sys.executable, '-m', 'unittest'], cwd=project_path)
+
+    testLoader = unittest.loader.TestLoader()
+    top_level_dir = Path(__file__).parent
+    testLoader._top_level_dir = top_level_dir
+    unittest.main(module=None, testLoader=testLoader)

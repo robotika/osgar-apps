@@ -1,7 +1,6 @@
 import numpy as np
-
-from osgar.node import Node
 from osgar.exceptions import EmergencyStopException
+from osgar.node import Node
 
 from lidarroad.lidarroad import analyze_scan
 
