@@ -12,7 +12,32 @@ import datetime
 import os
 import sys
 
-from osgar.logger import LogReaderEx
+from osgar.logger import LogReader, LogReaderEx, LogIndexedReader
+
+
+def get_log_duration(logfile: str) -> float:
+    """
+    Get the overall duration of the log file in seconds.
+    Uses LogIndexedReader for speed and falls back to LogReader if needed.
+    """
+    try:
+        with LogIndexedReader(logfile) as reader:
+            if reader.index:
+                return reader.index[-1][1].total_seconds()
+    except Exception:
+        pass
+
+    try:
+        with LogReader(logfile) as log:
+            last_dt = None
+            for dt, _, _ in log:
+                last_dt = dt
+            if last_dt is not None:
+                return last_dt.total_seconds()
+    except Exception:
+        pass
+
+    return 0.0
 
 
 def format_srt_timestamp(seconds: float) -> str:
@@ -115,17 +140,17 @@ def process_log_to_subtitles(logfile: str, output_srt: str, offset_sec: float = 
     except ValueError:
         # If platform.manual stream does not exist in the log
         print(f"Warning: Stream '{manual_stream}' not found in log file '{logfile}'.")
-        # Find the overall duration of the log by reading all streams
-        with LogReaderEx(logfile) as log:
-            for dt, stream, data in log:
-                last_dt = dt
-        print(f'Total duration of log is {last_dt.total_seconds():.3f}s, but no mode events were found.')
+        log_end_time = get_log_duration(logfile)
+        print(f'Total duration of log is {log_end_time:.3f}s, but no mode events were found.')
 
     if not events:
         print("No 'platform.manual' events found. No subtitle file will be written.")
         return
 
-    log_end_time = last_dt.total_seconds()
+    log_end_time = get_log_duration(logfile)
+    if log_end_time == 0.0:
+        log_end_time = last_dt.total_seconds()
+
     # If the last event timestamp is greater than log_end_time, adjust log_end_time
     if events and events[-1][0] > log_end_time:
         log_end_time = events[-1][0]
