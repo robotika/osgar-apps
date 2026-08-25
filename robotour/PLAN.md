@@ -33,6 +33,30 @@ uv run robotour/osm_view.py --input stromovka.json --start 50.1055 14.4285 --end
 
 *Note: `--show` in `osm_view.py` requires a local GUI environment and will warn/fail in headless CLI environments.*
 
+## Step 2: Navigator Node [COMPLETED]
+
+### Goals
+- Create an OSGAR node `navigator.py` to trigger pathfinding. [DONE]
+- Provide distance and azimuth to the next waypoint. [DONE]
+- Report junction details (exit azimuth and roads to ignore). [DONE]
+- Use float degrees for GPS coordinates to simplify calculations. [DONE]
+
+### Accomplishments
+- `navigator.py`: Implements the `Navigator(Node)` class.
+- Verified with `test_navigator.py`.
+- Correctly handles OSGAR GPS input (1/10^7 deg) and converts to float degrees.
+
+### Configuration Example
+```json
+"navigator": {
+  "module": "robotour.navigator:Navigator",
+  "config": {
+    "osm_file": "stromovka.json",
+    "destination": [50.1085, 14.4150]
+  }
+}
+```
+
 ## Future Steps
 - Integration with OSGAR as a navigation node.
 - Obstacle avoidance and local planning.
