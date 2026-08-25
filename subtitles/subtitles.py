@@ -27,15 +27,12 @@ def get_log_duration(logfile: str) -> float:
     except Exception:
         pass
 
-    try:
-        with LogReader(logfile) as log:
-            last_dt = None
-            for dt, _, _ in log:
-                last_dt = dt
-            if last_dt is not None:
-                return last_dt.total_seconds()
-    except Exception:
-        pass
+    with LogReader(logfile) as log:
+        last_dt = None
+        for dt, _, _ in log:
+            last_dt = dt
+        if last_dt is not None:
+            return last_dt.total_seconds()
 
     return 0.0
 
@@ -74,7 +71,7 @@ def generate_segments(events, log_end_time):
 
     segments = []
     for i in range(len(dedup)):
-        start_time = 0.0 if i == 0 else dedup[i][0]
+        start_time = dedup[i][0]
         end_time = dedup[i + 1][0] if i + 1 < len(dedup) else log_end_time
 
         if start_time < end_time:
@@ -127,29 +124,26 @@ def process_log_to_subtitles(logfile: str, output_srt: str, offset_sec: float = 
 
     manual_stream = 'platform.manual'
     events = []
-    last_dt = datetime.timedelta(seconds=0.0)
 
     try:
         with LogReaderEx(logfile, names=[manual_stream]) as log:
             for dt, stream, data in log:
-                last_dt = dt
                 if stream == manual_stream:
                     # data is boolean
                     mode = 'MANUAL' if data else 'AUTONOMOUS'
                     events.append((dt.total_seconds(), mode))
     except ValueError:
         # If platform.manual stream does not exist in the log
-        print(f"Warning: Stream '{manual_stream}' not found in log file '{logfile}'.")
-        log_end_time = get_log_duration(logfile)
-        print(f'Total duration of log is {log_end_time:.3f}s, but no mode events were found.')
+        pass
 
     if not events:
+        log_duration = get_log_duration(logfile)
+        print(f"Warning: Stream '{manual_stream}' not found in log file '{logfile}'.")
+        print(f'Total duration of log is {log_duration:.3f}s, but no mode events were found.')
         print("No 'platform.manual' events found. No subtitle file will be written.")
         return
 
     log_end_time = get_log_duration(logfile)
-    if log_end_time == 0.0:
-        log_end_time = last_dt.total_seconds()
 
     # If the last event timestamp is greater than log_end_time, adjust log_end_time
     if events and events[-1][0] > log_end_time:

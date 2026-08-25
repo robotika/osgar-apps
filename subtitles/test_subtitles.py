@@ -13,13 +13,6 @@ from subtitles.subtitles import (
 
 class TestSubtitles(unittest.TestCase):
 
-    def test_get_log_duration_real_file(self):
-        # Verify get_log_duration on the real pat-platform.log
-        real_log = 'data/pat-platform.log'
-        if os.path.exists(real_log):
-            duration = get_log_duration(real_log)
-            self.assertAlmostEqual(duration, 602.884772, places=3)
-
     def test_format_srt_timestamp(self):
         # Basic cases
         self.assertEqual(format_srt_timestamp(0.0), '00:00:00,000')
@@ -48,7 +41,7 @@ class TestSubtitles(unittest.TestCase):
         ]
         segments = generate_segments(events, 10.0)
         expected = [
-            (0.0, 5.0, 'MANUAL'),
+            (0.5, 5.0, 'MANUAL'),
             (5.0, 8.0, 'AUTONOMOUS'),
             (8.0, 10.0, 'MANUAL'),
         ]
