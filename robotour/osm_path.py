@@ -2,6 +2,7 @@
   Robotour project - OSM Pathfinding
   Extract road segments from OSM data, build a graph, and find the shortest path.
 """
+import argparse
 import json
 import os
 import math
@@ -69,18 +70,22 @@ class OSMPath:
         try:
             path_nodes = nx.shortest_path(self.graph, source=start_node, target=end_node, weight='weight')
             return [self.nodes[node_id] for node_id in path_nodes]
-        except nx.NetworkXNoPath:
+        except (nx.NetworkXNoPath, nx.NodeNotFound):
             return None
 
 if __name__ == "__main__":
-    osm_file = os.path.join(os.path.dirname(__file__), "stromovka.json")
+    parser = argparse.ArgumentParser(description='Find path in OSM data.')
+    parser.add_argument('--input', default='stromovka.json', help='Input OSM JSON file')
+    parser.add_argument('--start', type=float, nargs=2, default=[50.1055, 14.4285],
+                        help='Start GPS: lat lon')
+    parser.add_argument('--end', type=float, nargs=2, default=[50.1085, 14.4150],
+                        help='End GPS: lat lon')
+    args = parser.parse_args()
+
+    osm_file = os.path.join(os.path.dirname(__file__), args.input)
     osm_path = OSMPath(osm_file)
     
-    # Example: From near Planetarium to near Crossroad
-    start = (50.1055, 14.4285)
-    end = (50.1085, 14.4150)
-    
-    path = osm_path.find_path(start, end)
+    path = osm_path.find_path(tuple(args.start), tuple(args.end))
     if path:
         print(f"Path found with {len(path)} waypoints")
         for lon, lat in path:

@@ -2,6 +2,7 @@
   Robotour project - OSM Data Acquisition
   Fetch OpenStreetMap (OSM) data for a given bounding box using Overpass API.
 """
+import argparse
 import requests
 import json
 import os
@@ -31,8 +32,12 @@ def fetch_osm_data(bbox, output_file):
         print(response.text)
 
 if __name__ == "__main__":
-    # Stromovka Park, Prague
-    # bbox = (south, west, north, east)
-    stromovka_bbox = (50.101, 14.406, 50.111, 14.435)
-    output_path = os.path.join(os.path.dirname(__file__), "stromovka.json")
-    fetch_osm_data(stromovka_bbox, output_path)
+    parser = argparse.ArgumentParser(description='Fetch OSM data for a given bounding box.')
+    parser.add_argument('--bbox', type=float, nargs=4, 
+                        default=[50.101, 14.406, 50.111, 14.435],
+                        help='Bounding box: south west north east (default: Stromovka)')
+    parser.add_argument('--output', default='stromovka.json', help='Output JSON file name')
+    args = parser.parse_args()
+
+    output_path = os.path.join(os.path.dirname(__file__), args.output)
+    fetch_osm_data(args.bbox, output_path)

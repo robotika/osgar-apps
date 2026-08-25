@@ -2,11 +2,12 @@
   Robotour project - OSM Visualization
   Plot the road network and calculated paths using matplotlib.
 """
+import argparse
 import matplotlib.pyplot as plt
 import os
 from osm_path import OSMPath
 
-def visualize(osm_file, path_gps=None):
+def visualize(osm_file, path_gps=None, show=False):
     osm_path = OSMPath(osm_file)
     
     # Plot all road segments
@@ -23,23 +24,31 @@ def visualize(osm_file, path_gps=None):
     
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
-    plt.title('Stromovka Park Road Network')
+    plt.title(f'Road Network: {os.path.basename(osm_file)}')
     plt.legend()
     plt.gca().set_aspect('equal', adjustable='box')
     
-    # Save the plot instead of showing it (since we are in a CLI environment)
-    output_img = os.path.join(os.path.dirname(__file__), "stromovka_path.png")
-    plt.savefig(output_img)
-    print(f"Visualization saved to {output_img}")
+    if show:
+        plt.show()
+    else:
+        output_img = osm_file.replace('.json', '.png')
+        plt.savefig(output_img)
+        print(f"Visualization saved to {output_img}")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Visualize OSM data and path.')
+    parser.add_argument('--input', default='stromovka.json', help='Input OSM JSON file')
+    parser.add_argument('--start', type=float, nargs=2, help='Start GPS: lat lon')
+    parser.add_argument('--end', type=float, nargs=2, help='End GPS: lat lon')
+    parser.add_argument('--show', action='store_true', help='Show interactive plot')
+    args = parser.parse_args()
+
     current_dir = os.path.dirname(__file__)
-    osm_file = os.path.join(current_dir, "stromovka.json")
+    osm_file = os.path.join(current_dir, args.input)
     
-    # Example path
-    osm_path = OSMPath(osm_file)
-    start = (50.1055, 14.4285)
-    end = (50.1085, 14.4150)
-    path = osm_path.find_path(start, end)
+    path = None
+    if args.start and args.end:
+        osm_path = OSMPath(osm_file)
+        path = osm_path.find_path(tuple(args.start), tuple(args.end))
     
-    visualize(osm_file, path)
+    visualize(osm_file, path, show=args.show)
