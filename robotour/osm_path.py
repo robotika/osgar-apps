@@ -1,3 +1,7 @@
+"""
+  Robotour project - OSM Pathfinding
+  Extract road segments from OSM data, build a graph, and find the shortest path.
+"""
 import json
 import os
 import math

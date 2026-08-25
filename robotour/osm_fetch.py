@@ -1,3 +1,7 @@
+"""
+  Robotour project - OSM Data Acquisition
+  Fetch OpenStreetMap (OSM) data for a given bounding box using Overpass API.
+"""
 import requests
 import json
 import os

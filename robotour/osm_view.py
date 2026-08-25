@@ -1,3 +1,7 @@
+"""
+  Robotour project - OSM Visualization
+  Plot the road network and calculated paths using matplotlib.
+"""
 import matplotlib.pyplot as plt
 import os
 from osm_path import OSMPath
