@@ -69,9 +69,16 @@ class OSMPath:
         
         try:
             path_nodes = nx.shortest_path(self.graph, source=start_node, target=end_node, weight='weight')
-            return [self.nodes[node_id] for node_id in path_nodes]
+            # Return node IDs to allow further analysis of the graph
+            return path_nodes
         except (nx.NetworkXNoPath, nx.NodeNotFound):
             return None
+
+    def get_node_gps(self, node_id):
+        return self.nodes.get(node_id)
+
+    def get_neighbors(self, node_id):
+        return list(self.graph.neighbors(node_id))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Find path in OSM data.')
@@ -88,7 +95,8 @@ if __name__ == "__main__":
     path = osm_path.find_path(tuple(args.start), tuple(args.end))
     if path:
         print(f"Path found with {len(path)} waypoints")
-        for lon, lat in path:
+        for node_id in path:
+            lon, lat = osm_path.get_node_gps(node_id)
             print(f"{lat}, {lon}")
     else:
         print("No path found")
