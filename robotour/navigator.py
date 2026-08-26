@@ -60,6 +60,16 @@ class Navigator(Node):
             if self.next_node_index < len(self.path_nodes):
                 # Report junction info if the new target node is a junction
                 self.report_junction(target_node_id, self.path_nodes[self.next_node_index])
+                
+                # Recalculate guidance for the new target node
+                target_node_id = self.path_nodes[self.next_node_index]
+                target_pos = self.osm_path.get_node_gps(target_node_id)
+                dist = geo_length(curr_pos, target_pos)
+                azimuth = geo_angle(curr_pos, target_pos)
+            else:
+                # We reached the final destination
+                dist = 0.0
+                azimuth = None
         
         if azimuth is not None:
             self.publish('navigator_info', {
