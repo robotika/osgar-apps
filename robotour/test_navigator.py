@@ -80,6 +80,19 @@ class NavigatorTest(unittest.TestCase):
         self.assertAlmostEqual(last_info['dist'], expected_dist, places=2)
         self.assertGreater(last_info['dist'], 2.0) # Should be significantly more than the 2m threshold
 
+        # 4. Simulate reaching all waypoints
+        # Fast-forward to the end of the path
+        navigator.next_node_index = len(path) - 1
+        last_node_gps = path[-1]
+        # Move to within 2m of the last waypoint
+        final_gps = [int(last_node_gps[0] * 10**7), int(last_node_gps[1] * 10**7)]
+        bus.publish.reset_mock()
+        navigator.on_gps(final_gps)
+
+        # Check for 'reached_destination' flag
+        reached_calls = [c for c in bus.publish.call_args_list if c[0][0] == 'navigator_info' and c[0][1].get('reached_destination')]
+        self.assertEqual(len(reached_calls), 1)
+
     def test_geo_logic(self):
         # Test internal geo functions
         from robotour.osm_path import geo_length, geo_angle

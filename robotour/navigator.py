@@ -70,6 +70,7 @@ class Navigator(Node):
                 # We reached the final destination
                 dist = 0.0
                 azimuth = None
+                self.publish('navigator_info', {'reached_destination': True})
         
         if azimuth is not None:
             self.publish('navigator_info', {
