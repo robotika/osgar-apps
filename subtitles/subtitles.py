@@ -171,11 +171,7 @@ def main():
     )
     args = parser.parse_args()
 
-    try:
-        process_log_to_subtitles(args.logfile, args.output_srt, args.offset)
-    except Exception as e:
-        print(f'Error: {e}', file=sys.stderr)
-        sys.exit(1)
+    process_log_to_subtitles(args.logfile, args.output_srt, args.offset)
 
 
 if __name__ == '__main__':
