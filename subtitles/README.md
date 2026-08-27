@@ -48,3 +48,11 @@ Generate subtitles with a video that is 12.5 seconds behind the log (offset of +
 ```bash
 python -m subtitles.subtitles data/pat-platform.log subtitles.srt --offset 12.5
 ```
+
+## Running Tests
+
+All unit tests are integrated with the global test suite and run automatically. You can also run them independently:
+
+```bash
+python -m unittest subtitles/test_subtitles.py
+```
