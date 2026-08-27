@@ -11,7 +11,7 @@ if __name__ == "__main__":
     import sys
     root_dir = Path(__file__).parent
     for project_name in os.listdir(root_dir):
-        if project_name in ['lidarroad']:
+        if project_name in ['lidarroad', 'subtitles']:
             continue  # already ported projects
         project_path = root_dir / project_name
         if project_path.is_dir() and not project_name.startswith(('.', '_')):
