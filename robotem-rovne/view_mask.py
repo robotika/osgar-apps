@@ -66,7 +66,7 @@ def read_logfile(logfile, writer=None, add_time=True, threshold=None, downscale=
                 mask = deserialize(data)
                 if threshold is not None:
                     mask = (mask > threshold).astype(np.uint8)
-                assert mask.shape in [(120, 160), (112,112)], mask.shape
+                assert mask.shape in [(120, 160), (112,112), (240, 320)], mask.shape
                 orig_height, orig_width = mask.shape
 #                mask[:height//2, :] = 0  # remove sky detections
                 center_y, center_x = mask_center(mask)
