@@ -70,7 +70,11 @@ def read_logfile(logfile, writer=None, add_time=True, threshold=None, downscale=
                 orig_height, orig_width = mask.shape
 #                mask[:height//2, :] = 0  # remove sky detections
                 center_y, center_x = mask_center(mask)
-                mask = cv2.resize(mask, (1920//downscale, 1080//downscale))
+#                mask = cv2.resize(mask, (1920//downscale, 1080//downscale))
+#                maskX = cv2.resize(mask, (1440//downscale, 1080//downscale))
+                mask = cv2.resize(mask, (1920//downscale, 1440//downscale))[180//downscale:-180//downscale, :]
+#                mask = np.zeros((1080//downscale, 1920//downscale), dtype='bool')
+#                mask[:, (1920-1440)//2//downscale:-(1920-1440)//2//downscale] = maskX
                 height, width = mask.shape
                 scale = width // orig_width  # 160 -> 640 -> 1920
                 center_x *= scale
