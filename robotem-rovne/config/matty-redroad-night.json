@@ -65,12 +65,12 @@
           "models": [
             {
               "model": {
-                "blob": "models/robotourist-093-redroad-20260409-224x224-rgb-chw-1shave.blob"
+                "blob": "../models/redroad-v2-20260826-rdrd-s-640x480-rgb-chw-2shaves.blob"
               },
               "nn_config": {
                 "output_format": "LayerFp16",
                 "NN_family": "robotourist",
-                "input_size": "224x224"
+                "input_size": "640x480"
               }
             },
             {
