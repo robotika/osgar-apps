@@ -12,6 +12,18 @@
             "terminate_on_stop": true
           }
       },
+      "navigator": {
+        "driver": "robotour.navigator:Navigator",
+        "in": ["gps"],
+        "out": [],
+        "init": {
+          "osm_file": "maps/studenec.json",
+          "destination": {
+            "lat": 50.5615125,
+            "lon": 15.5452363
+          }
+        }
+      },
       "platform": {
         "driver": "osgar.platforms.matty:Matty",
         "in": ["esp_data"],
@@ -121,6 +133,7 @@
       ["timer.tick", "platform.tick"],
 
       ["gps.nmea_data", "app.nmea_data"],
+      ["gps.position", "navigator.gps"],
 
       ["oak.nn_mask", "app.nn_mask"],
       ["oak.orientation_list", "app.orientation_list"],

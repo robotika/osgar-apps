@@ -22,14 +22,14 @@ class Navigator(Node):
         self.next_node_index = None
 
     def on_gps(self, data):
-        # OSGAR GPS data is [lat, lon] in 1/10^7 degrees
-        lat, lon = data[0] / 10000000.0, data[1] / 10000000.0
+        # OSGAR GPS data is [lat, lon] in ms
+        lon, lat = data[0] / 3_600_000.0, data[1] / 3_600_000.0
         curr_pos = (lon, lat)  # (lon, lat) in float degrees
-        
+
         if self.path_nodes is None and self.destination:
             # Trigger initial pathfinding
             start_gps = (lat, lon)
-            dest_gps = (self.destination[0], self.destination[1])
+            dest_gps = (self.destination['lat'], self.destination['lon'])
             self.path_nodes = self.osm_path.find_path(start_gps, dest_gps)
             if self.path_nodes:
                 # Debug publish path as GPS waypoints (lat, lon)
