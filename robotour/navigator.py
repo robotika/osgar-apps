@@ -47,6 +47,14 @@ class Navigator(Node):
         if self.next_node_index >= len(self.path_nodes):
             return
 
+        best_dist = float('inf')
+        for index in range(self.next_node_index, len(self.path_nodes)):
+            target_pos = self.osm_path.get_node_gps(self.path_nodes[index])  # (lon, lat)
+            dist = geo_length(curr_pos, target_pos)
+            if dist < best_dist:
+                best_dist = dist
+                self.next_node_index = index
+
         # Current target node
         target_node_id = self.path_nodes[self.next_node_index]
         target_pos = self.osm_path.get_node_gps(target_node_id) # (lon, lat)
