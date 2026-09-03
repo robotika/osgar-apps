@@ -3,6 +3,7 @@
   Extract road segments from OSM data, build a graph, and find the shortest path.
 """
 import argparse
+import gzip
 import json
 import os
 import math
@@ -24,8 +25,12 @@ def geo_angle(pos1, pos2):
 
 class OSMPath:
     def __init__(self, osm_file):
-        with open(osm_file, 'r') as f:
-            self.data = json.load(f)
+        if osm_file.endswith('.gz'):
+            with gzip.open(osm_file, 'rb') as f:
+                self.data = json.load(f)
+        else:
+            with open(osm_file, 'r') as f:
+                self.data = json.load(f)
         
         self.nodes = {}
         self.graph = nx.Graph()

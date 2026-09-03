@@ -13,8 +13,11 @@ class NavigatorTest(unittest.TestCase):
         bus = MagicMock()
         # Stromovka coordinates near Planetarium
         config = {
-            'osm_file': 'stromovka.json',
-            'destination': [50.1085, 14.4150]
+            'osm_file': 'maps/stromovka.json.gz',
+            'destination': {
+                'lat':50.1085,
+                'lon':14.4150
+            }
         }
         
         navigator = Navigator(config, bus)
@@ -22,7 +25,7 @@ class NavigatorTest(unittest.TestCase):
         # 1. Initial GPS update to trigger pathfinding
         # Coordinates in 1/10^7 degrees: [lat, lon]
         # 50.1055, 14.4285
-        start_gps = [501055000, 144285000]
+        start_gps = [14.4285000 * 3_600_000, 50.1055000 * 3_600_000]
         navigator.on_gps(start_gps)
         
         # Check if path was found and published
@@ -40,8 +43,8 @@ class NavigatorTest(unittest.TestCase):
         # Let's simulate being 10 meters away in latitude.
         # 1 degree of latitude is ~111km, so 1/10^7 deg is ~1.1cm.
         # 900 units is ~10 meters.
-        curr_gps = [int(next_node_gps[0] * 10**7) - 900, int(next_node_gps[1] * 10**7)]
-        
+        curr_gps = [int(next_node_gps[1] * 3_600_000) - 0.36 * 900, int(next_node_gps[0] * 3_600_000) - 0]
+
         # Reset mock to clear initial path publish
         bus.publish.reset_mock()
         navigator.on_gps(curr_gps)
@@ -58,7 +61,7 @@ class NavigatorTest(unittest.TestCase):
         
         # 3. Simulate reaching a node (dist < 2m)
         # Move to ~1m from the next waypoint
-        reached_gps = [int(next_node_gps[0] * 10**7) - 90, int(next_node_gps[1] * 10**7)]
+        reached_gps = [int(next_node_gps[1] * 3_600_000) - 0.36 * 90, int(next_node_gps[0] * 3_600_000)]
         bus.publish.reset_mock()
         navigator.on_gps(reached_gps)
         
@@ -75,7 +78,7 @@ class NavigatorTest(unittest.TestCase):
         # Calculate expected distance to path[2]
         from robotour.osm_path import geo_length
         p2_lat, p2_lon = path[2]
-        expected_dist = geo_length((reached_gps[1]/10**7, reached_gps[0]/10**7), (p2_lon, p2_lat))
+        expected_dist = geo_length((reached_gps[0]/3_600_000, reached_gps[1]/3_600_000), (p2_lon, p2_lat))
         
         self.assertAlmostEqual(last_info['dist'], expected_dist, places=2)
         self.assertGreater(last_info['dist'], 2.0) # Should be significantly more than the 2m threshold
@@ -85,7 +88,7 @@ class NavigatorTest(unittest.TestCase):
         navigator.next_node_index = len(path) - 1
         last_node_gps = path[-1]
         # Move to within 2m of the last waypoint
-        final_gps = [int(last_node_gps[0] * 10**7), int(last_node_gps[1] * 10**7)]
+        final_gps = [int(last_node_gps[1] * 3_600_000), int(last_node_gps[0] * 3_600_000)]
         bus.publish.reset_mock()
         navigator.on_gps(final_gps)
 
