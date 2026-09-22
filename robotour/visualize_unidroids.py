@@ -35,13 +35,19 @@ def visualize_combined(osm_file, unidroids_file, output_img):
     lats = [n['lat'] for n in unidroids['nodes']]
     plt.scatter(lons, lats, c='red', s=10, zorder=5, label='Unidroids Waypoints')
     
+    # Zoom to unidroids bounding box
+    margin = 0.0005
+    plt.xlim(min(lons) - margin, max(lons) + margin)
+    plt.ylim(min(lats) - margin, max(lats) + margin)
+
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
-    plt.title('Unidroids Waypoints Overlay on OSM')
+    plt.title('Unidroids Waypoints Overlay on OSM (Zoomed)')
     plt.legend()
     plt.gca().set_aspect('equal', adjustable='box')
     
-    plt.savefig(output_img)
+    # Save with higher DPI (default is usually 100, doubling to 200)
+    plt.savefig(output_img, dpi=200)
     print(f"Visualization saved to {output_img}")
 
 if __name__ == "__main__":
