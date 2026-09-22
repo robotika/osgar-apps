@@ -4,7 +4,7 @@ import os
 import math
 from osm_path import OSMPath
 
-def visualize_combined(osm_file, unidroids_file, distance_csv, output_img):
+def visualize_combined(osm_file, unidroids_file, distance_csv, gps_csv, output_img):
     # Load real OSM data
     osm_path = OSMPath(osm_file)
     
@@ -30,21 +30,44 @@ def visualize_combined(osm_file, unidroids_file, distance_csv, output_img):
 
     nodes = {n['id']: (n['lon'], n['lat']) for n in unidroids['nodes']}
     
-    # Plot unidroids edges in blue
+    # Plot unidroids edges in light blue
     for edge in unidroids.get('edges', []):
         u, v = edge['from'], edge['to']
         if u in nodes and v in nodes:
             lon1, lat1 = nodes[u]
             lon2, lat2 = nodes[v]
-            plt.plot([lon1, lon2], [lat1, lat2], 'b', alpha=0.4, linewidth=1, zorder=2)
+            plt.plot([lon1, lon2], [lat1, lat2], 'cyan', alpha=0.2, linewidth=1, zorder=1)
+
+    # Plot GPS tracks
+    if os.path.exists(gps_csv):
+        gps_tracks = {}
+        with open(gps_csv, 'r') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                src = row['source']
+                if src not in gps_tracks:
+                    gps_tracks[src] = {'lons': [], 'lats': []}
+                gps_tracks[src]['lons'].append(float(row['lon']))
+                gps_tracks[src]['lats'].append(float(row['lat']))
+        
+        gps_colors = {
+            'fusion': 'black',
+            'gnss_dual_primary': 'orange',
+            'gnss_dual_secondary': 'brown',
+            'gnss_gps': 'purple'
+        }
+        
+        for src, data in gps_tracks.items():
+            color = gps_colors.get(src, 'gray')
+            plt.plot(data['lons'], data['lats'], color=color, alpha=0.5, linewidth=0.8, label=f'Track: {src}', zorder=3)
             
     # Separate nodes by multi-level distance thresholds
     categories = [
-        {'label': '< 1.0m', 'color': 'green', 'lons': [], 'lats': [], 'threshold': 1.0},
-        {'label': '1.0m - 1.5m', 'color': 'blue', 'lons': [], 'lats': [], 'threshold': 1.5},
-        {'label': '1.5m - 2.0m', 'color': 'pink', 'lons': [], 'lats': [], 'threshold': 2.0},
-        {'label': '2.0m - 2.5m', 'color': 'magenta', 'lons': [], 'lats': [], 'threshold': 2.5},
-        {'label': '> 2.5m', 'color': 'red', 'lons': [], 'lats': [], 'threshold': float('inf')}
+        {'label': 'Way: < 1.0m', 'color': 'green', 'lons': [], 'lats': [], 'threshold': 1.0},
+        {'label': 'Way: 1.0m - 1.5m', 'color': 'blue', 'lons': [], 'lats': [], 'threshold': 1.5},
+        {'label': 'Way: 1.5m - 2.0m', 'color': 'pink', 'lons': [], 'lats': [], 'threshold': 2.0},
+        {'label': 'Way: 2.0m - 2.5m', 'color': 'magenta', 'lons': [], 'lats': [], 'threshold': 2.5},
+        {'label': 'Way: > 2.5m', 'color': 'red', 'lons': [], 'lats': [], 'threshold': float('inf')}
     ]
     
     for node in unidroids['nodes']:
@@ -57,7 +80,7 @@ def visualize_combined(osm_file, unidroids_file, distance_csv, output_img):
 
     for cat in categories:
         if cat['lons']:
-            plt.scatter(cat['lons'], cat['lats'], c=cat['color'], s=15, zorder=6, label=cat['label'])
+            plt.scatter(cat['lons'], cat['lats'], c=cat['color'], s=15, zorder=10, label=cat['label'])
     
     # Zoom to unidroids bounding box
     all_lons = [n['lon'] for n in unidroids['nodes']]
@@ -68,8 +91,8 @@ def visualize_combined(osm_file, unidroids_file, distance_csv, output_img):
 
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
-    plt.title('Unidroids Waypoints: Distance to OSM Edges')
-    plt.legend(title='Distance Thresholds')
+    plt.title('Unidroids Map & GPS Tracks Overlay')
+    plt.legend(title='Legend', loc='upper left', fontsize='small', ncol=2)
     plt.gca().set_aspect('equal', adjustable='box')
     
     # Save with higher DPI
@@ -81,6 +104,7 @@ if __name__ == "__main__":
     osm_file = os.path.join(current_dir, 'unidroids-stromovka.json')
     unidroids_file = os.path.join(current_dir, 'unidroids-map.json')
     distance_csv = os.path.join(current_dir, 'unidroids_distances.csv')
+    gps_csv = os.path.join(current_dir, 'gps_data.csv')
     output_img = os.path.join(current_dir, 'unidroids_visualization.png')
     
-    visualize_combined(osm_file, unidroids_file, distance_csv, output_img)
+    visualize_combined(osm_file, unidroids_file, distance_csv, gps_csv, output_img)
