@@ -38,21 +38,26 @@ def visualize_combined(osm_file, unidroids_file, distance_csv, output_img):
             lon2, lat2 = nodes[v]
             plt.plot([lon1, lon2], [lat1, lat2], 'b', alpha=0.4, linewidth=1, zorder=2)
             
-    # Separate nodes by distance threshold
-    green_lons, green_lats = [], []
-    red_lons, red_lats = [], []
+    # Separate nodes by multi-level distance thresholds
+    categories = [
+        {'label': '< 1.0m', 'color': 'green', 'lons': [], 'lats': [], 'threshold': 1.0},
+        {'label': '1.0m - 1.5m', 'color': 'blue', 'lons': [], 'lats': [], 'threshold': 1.5},
+        {'label': '1.5m - 2.0m', 'color': 'pink', 'lons': [], 'lats': [], 'threshold': 2.0},
+        {'label': '2.0m - 2.5m', 'color': 'magenta', 'lons': [], 'lats': [], 'threshold': 2.5},
+        {'label': '> 2.5m', 'color': 'red', 'lons': [], 'lats': [], 'threshold': float('inf')}
+    ]
     
     for node in unidroids['nodes']:
         dist = distances.get(node['id'], 999.0)
-        if dist < 1.0:
-            green_lons.append(node['lon'])
-            green_lats.append(node['lat'])
-        else:
-            red_lons.append(node['lon'])
-            red_lats.append(node['lat'])
+        for cat in categories:
+            if dist <= cat['threshold']:
+                cat['lons'].append(node['lon'])
+                cat['lats'].append(node['lat'])
+                break
 
-    plt.scatter(green_lons, green_lats, c='green', s=15, zorder=5, label='Dist < 1m')
-    plt.scatter(red_lons, red_lats, c='red', s=15, zorder=6, label='Dist >= 1m')
+    for cat in categories:
+        if cat['lons']:
+            plt.scatter(cat['lons'], cat['lats'], c=cat['color'], s=15, zorder=6, label=cat['label'])
     
     # Zoom to unidroids bounding box
     all_lons = [n['lon'] for n in unidroids['nodes']]
@@ -63,8 +68,8 @@ def visualize_combined(osm_file, unidroids_file, distance_csv, output_img):
 
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
-    plt.title('Unidroids Waypoints Overlay: Green < 1m error, Red >= 1m')
-    plt.legend()
+    plt.title('Unidroids Waypoints: Distance to OSM Edges')
+    plt.legend(title='Distance Thresholds')
     plt.gca().set_aspect('equal', adjustable='box')
     
     # Save with higher DPI
