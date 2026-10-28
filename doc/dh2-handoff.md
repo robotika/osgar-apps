@@ -15,7 +15,48 @@ osgar-apps. Reuse OSGAR interfaces without putting DH2 policy in the shared core
 **Recommendation:** start a new branch from current `master`, for example
 `feature/dh2-2026`. Adapt the depth/cone behavior in `roboorienteering/ro.py` into
 a separate DH2 application. Use the old castle branch as design history, not as
-a runnable starting point. No branch has been created by this review.
+a runnable starting point. The operator subsequently created `feature/dh2-2026`;
+the initial handoff was committed there as `6d93afd` by Aya Rain.
+
+## Operator additions: robots, recordings and perception
+
+The fleet contains five nominally identical Matty robots, distinguished by their
+3D-printed color and unique robot prefix. The DH2 pair is:
+
+| Robot prefix | Color | DH2 assignment |
+| --- | --- | --- |
+| `m04-` | Pink | Participating; left/right assignment still to be decided |
+| `m05-` | Orange | Participating; left/right assignment still to be decided |
+
+The confirmed identity setting is `OSGAR_LOGS_PREFIX`, consistent with
+`followme/config/matty-tulak.json` and `followme/follow_person.py`. Use `m04-`
+for pink and `m05-` for orange; preserve each robot's identity in recordings and
+reports.
+
+Many existing recordings are stored in `/data/matty`. The directory is accessible
+on this workstation, but its contents have not been indexed or replayed in this
+review. The recordings are unsorted; a searchable index is useful future work,
+not a prerequisite to inspect selected logs for DH2. A future index should record
+filename, robot prefix, date/duration, application/configuration, software revision
+where available, streams, model identity and useful scenario notes. Do not infer
+these details solely from filenames.
+
+Preferred perception setup: run the dedicated cone detector using a **superblob**
+alongside a general YOLO detector for information about people around the robot.
+The operator recalls that YOLO v26 worked and believes the superblob is probably
+the latest cone model; the exact artifacts/revisions remain to be confirmed.
+Repository candidates are `cones-challenge/coneslayer.rvc2.tar.xz` and
+`models/yolo26n.rvc2.tar.xz`. These filenames alone do not establish which model
+was used successfully or whether a newer cone model exists elsewhere.
+
+Use the `models` array in `robotem-rovne/config/matty-redroad.json` as a structural
+reference for parallel inference, replacing the road model with the selected cone
+model. Verify driver support, per-model preprocessing/crops, detection stream
+identity, frame rate and latency with both networks plus depth and IMU enabled.
+Keep cone observations distinct from person detections; older cone handlers
+assume every detection is a cone. Record both outputs for replay. People
+awareness is requested; a specific person-triggered motion policy has not yet
+been defined.
 
 ## Repository snapshot and branch inventory
 
@@ -135,7 +176,8 @@ prerequisites for the first field trial.
 1. Confirm field/rules: start location and heading; sector sketch and no-go areas;
    defender appearance; discovery/approach/dwell requirements; time limit;
    teleoperation and taught-route rules; expected finish behavior.
-2. Capture a short log on each actual robot: color, depth, detections, platform
+2. Select useful existing recordings from `/data/matty`, then capture any missing
+   coverage on m04/pink and m05/orange: color, depth, cone and YOLO detections, platform
    pose, GPS, both available IMU streams, front/rear bumpers, emergency stop and
    commands. Record robot ID, software revisions, firmware, camera mounting and
    calibration. Verify actual stream names and payloads against installed OSGAR.
@@ -157,8 +199,9 @@ prerequisites for the first field trial.
 ## Review scope and reproducibility
 
 This was a source/history/configuration review of all fetched branch references.
-No controller was executed, no model was run, and no robot logs or field tests
-were available for this review. Hardware behavior and compatibility remain
+No controller was executed, no model was run, and no robot logs were replayed or
+field tests performed. The operator subsequently identified `/data/matty` as an
+existing recording source. Hardware behavior and compatibility remain
 unverified. External event rules were not researched; event details above come
 from the operator.
 
@@ -172,5 +215,6 @@ git show origin/feature/dobyvani-hradu-2026:dobyvani-hradu/main.py
 git show origin/feature/safe-redroad:robotem-rovne/main.py
 ```
 
-Use branch-qualified `git show` for unmerged files. This handoff adds documentation
-only and leaves the checkout on `master`.
+Use branch-qualified `git show` for unmerged files. The branch inventory describes
+the original review on `master`; subsequent documentation work is on
+`feature/dh2-2026`.
