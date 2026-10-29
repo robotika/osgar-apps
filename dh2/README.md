@@ -1,9 +1,24 @@
-# DH2 cone-detection test
+# DH2 cone-approach image collection
 
-The active `config/dh2.json` is a stationary test using only the cone superblob
-and RGB video. Depth, camera IMU, IR illumination and the parallel YOLO model
-are disabled for now. There is no motion-command link. Detections are printed
-and logged on `app.cones`; no range estimation or defender counting is performed.
+The active `config/dh2.json` uses `ConeApproach` to collect RGB video while slowly
+approaching a cone. Depth, camera IMU, IR illumination and parallel YOLO remain
+disabled. Detections are printed and logged on `app.cones`; no metric range
+estimation or defender counting is performed.
+
+After three consistent detections with confidence at least 0.6, the robot steers
+toward the largest cone's image center. Speed is at most 0.1 m/s and decreases
+as the cone grows. Empty detections or 0.5 s without a detection stop motion;
+reacquisition requires three detections again. `target_timeout` handles target
+loss, rather than general sensor availability.
+
+The robot stops and waits for restart when the cone reaches 65% of detector image
+height (`stop_height`), it travels 2 m (`max_travel`), or either bumper is pressed.
+These are image-collection limits, not a calibrated 1 m stopping distance. No
+obstacle avoidance is available with depth disabled. It does not search or
+reverse. Use a clear approach path for this controlled collection test.
+
+Set `app.max_speed=0` with OSGAR's `--params` for a stationary run, or select
+`dh2.main:ConeDetector` as the application driver for detection-only work.
 
 `terminate_on_stop: true` makes a pressed emergency stop raise
 `EmergencyStopException` and end the application, allowing OSGAR to shut down
@@ -30,7 +45,7 @@ frames. The supplied camera output reports RGB-aligned depth width 2024 not
 being divisible by 16. Disabling depth removes that pipeline from this test;
 it does not repair the alignment setup for future ranging.
 
-Normal replay with the new config fails because the old recording has no
+Normal replay with the detection-only config failed because the old recording had no
 `app.cones` output. Forced replay terminates at the STOP event (0.244974 s).
 That verifies early termination, not cone recognition or the new hardware config.
 
@@ -39,8 +54,17 @@ uv run --locked python -m osgar.replay /data/matty/m04-dh2-261029_185946.log \
   --module app --config dh2/config/dh2.json -F
 ```
 
-For the next camera test release STOP before recording; a pressed STOP now ends
-the test. Hardware validation of the simplified camera configuration remains.
+Release STOP before recording; a pressed STOP ends the test. The stationary
+detector was validated with subsequent recordings, including cone detections in
+`m04-dh2-261029_192807.log` and `m04-dh2-261029_192829.log`. The approach controller
+is tested with those inputs offline; its actual motion remains to be validated.
+
+Baseline replay matched both detection recordings before the approach change.
+Normal replay with the approach config reports the new motion-output schema;
+forced replay produces forward/left commands after acquisition, at 0.03 m/s for
+these already-large cones, and a zero command at each recorded STOP event
+(11.108635 s and 8.618373 s respectively). Replay uses stationary observations
+and cannot validate how the image-based controller behaves as the robot moves.
 
 ## Roaming ver0 backup
 

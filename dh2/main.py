@@ -35,6 +35,99 @@ class ConeDetector(Node):
             print(self.time, 'cones:', cones)
 
 
+class ConeApproach(ConeDetector):
+    """Slow image-based approach for collecting samples, without depth ranging."""
+
+    def __init__(self, config, bus):
+        super().__init__(config, bus)
+        bus.register('desired_steering', 'status')
+        self.max_speed = config.get('max_speed', 0.1)
+        self.stop_height = config.get('stop_height', 0.65)
+        self.max_travel = config.get('max_travel', 2.0)
+        self.target_timeout = config.get('target_timeout', 0.5)
+        self.min_confidence = config.get('min_confidence', 0.6)
+        self.target = None
+        self.target_time = None
+        self.hits = 0
+        self.emergency_stop = True
+        self.done = False
+        self.pose = None
+        self.travelled = 0
+        self.moving = False
+        self.last_status = None
+
+    def command(self, speed, angle, reason):
+        if self.done or self.emergency_stop:
+            speed, angle = 0, 0
+        self.moving = speed > 0
+        self.publish('desired_steering', [round(speed * 1000), round(math.degrees(angle) * 100)])
+        if reason != self.last_status:
+            self.publish('status', reason)
+            print(self.time, reason)
+            self.last_status = reason
+
+    def on_emergency_stop(self, data):
+        self.emergency_stop = bool(data)
+        if data:
+            self.command(0, 0, 'emergency stop')
+        super().on_emergency_stop(data)
+
+    def on_bumpers_front(self, data):
+        if data:
+            self.done = True
+            self.command(0, 0, 'bumper: restart required')
+
+    on_bumpers_rear = on_bumpers_front
+
+    def on_pose2d(self, data):
+        point = (data[0] / 1000, data[1] / 1000)
+        if self.pose is not None and self.moving:
+            self.travelled += math.dist(point, self.pose)
+        self.pose = point
+        if self.travelled >= self.max_travel:
+            self.done = True
+            self.command(0, 0, 'travel limit: restart required')
+
+    def on_detections(self, data):
+        super().on_detections(data)
+        candidates = []
+        for label, confidence, bbox in data:
+            if label != 'cone' or confidence < self.min_confidence or len(bbox) != 4:
+                continue
+            if not np.isfinite(bbox).all():
+                continue
+            x1, y1, x2, y2 = np.clip(bbox, 0, 1)
+            if x1 < x2 and y1 < y2:
+                candidates.append((y2 - y1, (x1 + x2) / 2))
+        previous = self.target
+        elapsed = None if self.target_time is None else (self.time - self.target_time).total_seconds()
+        self.target = max(candidates, default=None)
+        self.target_time = self.time
+        if self.target is None:
+            self.hits = 0
+            self.command(0, 0, 'no cone')
+        else:
+            consistent = (previous is not None and elapsed <= self.target_timeout
+                          and abs(previous[1] - self.target[1]) < 0.15)
+            self.hits = self.hits + 1 if consistent else 1
+            if self.target[0] >= self.stop_height:
+                self.done = True
+                self.command(0, 0, 'cone large enough: restart required')
+
+    def on_tick(self, data):
+        if self.done or self.emergency_stop:
+            self.command(0, 0, 'stopped')
+        elif (self.target is None or self.hits < 3 or self.pose is None
+              or (self.time - self.target_time).total_seconds() > self.target_timeout):
+            self.command(0, 0, 'waiting for cone')
+        else:
+            height, center = self.target
+            angle = max(-math.radians(25), min(math.radians(25), (0.5 - center) * 2))
+            # Slow down as the cone grows in the image; steering left is positive.
+            speed = self.max_speed * max(0.3, 1 - height / self.stop_height)
+            self.command(speed, angle, 'approaching cone')
+
+
 class Castle(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)

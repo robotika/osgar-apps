@@ -3,9 +3,12 @@
   "robot": {
     "modules": {
       "app": {
-        "driver": "dh2.main:ConeDetector",
+        "driver": "dh2.main:ConeApproach",
         "init": {
-          "terminate_on_stop": true
+          "terminate_on_stop": true,
+          "max_speed": 0.1,
+          "stop_height": 0.65,
+          "max_travel": 2.0
         }
       },
       "platform": {
@@ -119,6 +122,26 @@
       [
         "oak.detections",
         "app.detections"
+      ],
+      [
+        "app.desired_steering",
+        "platform.desired_steering"
+      ],
+      [
+        "timer.tick",
+        "app.tick"
+      ],
+      [
+        "platform.pose2d",
+        "app.pose2d"
+      ],
+      [
+        "platform.bumpers_front",
+        "app.bumpers_front"
+      ],
+      [
+        "platform.bumpers_rear",
+        "app.bumpers_rear"
       ]
     ],
     "env": {

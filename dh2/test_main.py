@@ -7,7 +7,72 @@ from unittest.mock import MagicMock
 import numpy as np
 from osgar.exceptions import EmergencyStopException
 
-from dh2.main import Castle, ConeDetector
+from dh2.main import Castle, ConeApproach, ConeDetector
+
+
+class ConeApproachTest(unittest.TestCase):
+    def setUp(self):
+        self.bus = MagicMock()
+        self.node = ConeApproach({'terminate_on_stop': True}, self.bus)
+        self.node.time = datetime.timedelta(seconds=1)
+        self.node.on_emergency_stop(False)
+        self.node.on_pose2d([0, 0, 0])
+
+    def command(self):
+        return [c.args[1] for c in self.bus.publish.call_args_list
+                if c.args[0] == 'desired_steering'][-1]
+
+    def detect(self, bbox=(0.3, 0.2, 0.5, 0.5), count=3):
+        for _ in range(count):
+            self.node.time += datetime.timedelta(seconds=0.1)
+            self.node.on_detections([['cone', 0.9, list(bbox)]])
+            self.node.on_tick(None)
+
+    def test_acquire_and_steer(self):
+        self.detect(count=2)
+        self.assertEqual(self.command(), [0, 0])
+        self.detect(count=1)
+        self.assertGreater(self.command()[0], 0)
+        self.assertGreater(self.command()[1], 0)
+
+    def test_loss_and_detection_silence_stop(self):
+        self.detect()
+        self.node.time += datetime.timedelta(seconds=0.6)
+        self.node.on_tick(None)
+        self.assertEqual(self.command(), [0, 0])
+        self.detect()
+        self.node.on_detections([])
+        self.assertEqual(self.command(), [0, 0])
+
+    def test_large_cone_latches_stop(self):
+        self.detect(bbox=(0.2, 0.1, 0.7, 0.9))
+        self.assertEqual(self.command(), [0, 0])
+        self.detect()
+        self.assertEqual(self.command(), [0, 0])
+
+    def test_bumper_and_emergency_stop(self):
+        self.detect()
+        self.node.on_bumpers_front(True)
+        self.node.on_bumpers_front(False)
+        self.detect()
+        self.assertEqual(self.command(), [0, 0])
+        with self.assertRaises(EmergencyStopException):
+            self.node.on_emergency_stop(True)
+        self.assertEqual(self.command(), [0, 0])
+
+    def test_travel_limit(self):
+        self.detect()
+        self.node.on_pose2d([2100, 0, 0])
+        self.assertEqual(self.command(), [0, 0])
+        self.detect()
+        self.assertEqual(self.command(), [0, 0])
+
+    def test_low_confidence_and_wrong_label_do_not_drive(self):
+        for _ in range(4):
+            self.node.on_detections([['person', 0.99, [0.3, 0.2, 0.5, 0.5]],
+                                     ['cone', 0.5, [0.3, 0.2, 0.5, 0.5]]])
+            self.node.on_tick(None)
+        self.assertEqual(self.command(), [0, 0])
 
 
 class ConeDetectorTest(unittest.TestCase):
