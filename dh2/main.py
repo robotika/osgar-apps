@@ -21,7 +21,6 @@ class Castle(Node):
         self.speed = config.get('max_speed', 0.2)
         self.clearance = config.get('clearance', 0.8)
         self.timeout = config.get('sensor_timeout', 0.7)
-        self.duration = config.get('duration', 300)
         self.confirm_time = config.get('confirm_time', 2)
         self.report_distance = config.get('report_distance', 1.0)
         self.approach = config.get('approach', True)
@@ -36,7 +35,6 @@ class Castle(Node):
         self.stopped = False
         self.front = None
         self.rear = None
-        self.started = None
         self.confirm_started = None
         self.confirm_position = None
         self.confirm_pose = None
@@ -137,10 +135,6 @@ class Castle(Node):
         return min(candidates, default=None)
 
     def on_tick(self, data):
-        if self.started is None:
-            self.started = self.time
-        if (self.time - self.started).total_seconds() >= self.duration:
-            self.stopped = True
         scan = self.clearance_scan()
         if (self.stopped or self.front is not False or self.rear is not False
                 or not self.fresh(self.depth_time) or not self.fresh(self.pose_time) or scan is None):

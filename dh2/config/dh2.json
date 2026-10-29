@@ -7,7 +7,6 @@
         "init": {
           "search_side": "left",
           "max_speed": 0.2,
-          "duration": 300,
           "approach": true,
           "geometry_verified": false,
           "report_distance": 1.0,

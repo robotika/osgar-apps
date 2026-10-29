@@ -21,8 +21,9 @@ information, without an additional person-specific motion rule. Their common
 driver detection stream is filtered by label. Observations expire after 0.7 s.
 
 The robot stops on missing/stale pose or depth, insufficient valid depth,
-bumper contact, emergency stop, blocked recovery or the five-minute runtime
-limit. Contact, emergency stop, blockage and timeout latch until process restart.
+bumper contact, emergency stop or blocked recovery. Contact, emergency stop and
+blockage latch until process restart. OSGAR's `--duration` option controls the
+recording runtime; the application has no separate runtime limit.
 There is no automatic reverse. GPS and IMUs are recorded by the driver modules;
 the draft does not fuse them or use GPS for navigation.
 
