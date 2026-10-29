@@ -6,13 +6,40 @@ No reversing, GPS navigation, or guarantee of complete area coverage.
 import math
 
 import numpy as np
+from osgar.exceptions import EmergencyStopException
 from osgar.node import Node
+
+
+class ConeDetector(Node):
+    """Stationary cone-detection test; no motion output or range estimation."""
+
+    def __init__(self, config, bus):
+        super().__init__(config, bus)
+        bus.register('cones')
+        self.raise_exception_on_stop = config.get('terminate_on_stop', False)
+
+    def on_emergency_stop(self, data):
+        if self.raise_exception_on_stop and data:
+            raise EmergencyStopException()
+
+    def run(self):
+        try:
+            super().run()
+        except EmergencyStopException:
+            self.request_stop()
+
+    def on_detections(self, data):
+        cones = [d for d in data if d[0] == 'cone']
+        self.publish('cones', cones)
+        if cones:
+            print(self.time, 'cones:', cones)
 
 
 class Castle(Node):
     def __init__(self, config, bus):
         super().__init__(config, bus)
         bus.register('desired_steering', 'status', 'defender', 'people')
+        self.raise_exception_on_stop = config.get('terminate_on_stop', False)
         self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX') or ''
         self.side = config.get(self.system_name + 'search_side', config.get('search_side', 'left'))
         if self.side not in ('left', 'right'):
@@ -54,6 +81,14 @@ class Castle(Node):
         if data:
             self.stopped = True
             self.command(0, 0, 'emergency stop')
+            if self.raise_exception_on_stop:
+                raise EmergencyStopException()
+
+    def run(self):
+        try:
+            super().run()
+        except EmergencyStopException:
+            self.request_stop()
 
     def on_bumpers_front(self, data):
         self.front = bool(data)

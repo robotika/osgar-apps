@@ -5,13 +5,51 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import numpy as np
+from osgar.exceptions import EmergencyStopException
 
-from dh2.main import Castle
+from dh2.main import Castle, ConeDetector
+
+
+class ConeDetectorTest(unittest.TestCase):
+    def test_stop_ends_run_without_waiting_for_queued_data(self):
+        bus = MagicMock()
+        node = ConeDetector({'terminate_on_stop': True}, bus)
+        bus.listen.side_effect = [
+            (datetime.timedelta(seconds=0.245), 'emergency_stop', True),
+            (datetime.timedelta(seconds=0.3), 'detections', [['cone', 0.9, [0, 0, 1, 1]]]),
+        ]
+        node.run()
+        bus.shutdown.assert_called_once()
+        bus.publish.assert_not_called()
+        self.assertEqual(bus.listen.call_count, 1)
+
+    def test_detections_and_stop_release(self):
+        bus = MagicMock()
+        node = ConeDetector({}, bus)
+        node.on_emergency_stop(False)
+        bus.shutdown.assert_not_called()
+        cone = ['cone', 0.9, [0.4, 0.4, 0.6, 0.6]]
+        node.on_detections([cone, ['person', 0.9, [0, 0, 1, 1]]])
+        bus.publish.assert_called_with('cones', [cone])
+        node.on_detections([])
+        bus.publish.assert_called_with('cones', [])
+
+    def test_pressed_stop_requests_shutdown(self):
+        bus = MagicMock()
+        node = ConeDetector({'terminate_on_stop': True}, bus)
+        with self.assertRaises(EmergencyStopException):
+            node.on_emergency_stop(True)
+
+    def test_stop_termination_is_opt_in(self):
+        bus = MagicMock()
+        node = ConeDetector({}, bus)
+        node.on_emergency_stop(True)
+        bus.shutdown.assert_not_called()
 
 
 class CastleTest(unittest.TestCase):
     def test_shared_config_selects_side_from_environment(self):
-        path = Path(__file__).parent / 'config' / 'dh2.json'
+        path = Path(__file__).parent / 'config' / 'dh2-backup.json'
         config = json.loads(path.read_text())['robot']
         self.assertIsNone(config['env']['OSGAR_LOGS_PREFIX'])
         settings = config['modules']['app']['init']
