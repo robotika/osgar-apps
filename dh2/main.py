@@ -20,16 +20,14 @@ class Castle(Node):
         self.sign = 1 if self.side == 'left' else -1
         self.speed = config.get('max_speed', 0.2)
         self.clearance = config.get('clearance', 0.8)
-        self.timeout = config.get('sensor_timeout', 0.7)
+        self.target_timeout = config.get('target_timeout', 0.7)
         self.confirm_time = config.get('confirm_time', 2)
         self.report_distance = config.get('report_distance', 1.0)
         self.approach = config.get('approach', True)
         self.geometry_verified = config.get('geometry_verified', False)
         self.fov = math.radians(config.get('horizontal_fov_deg', 69))
         self.depth = None
-        self.depth_time = None
         self.pose = None
-        self.pose_time = None
         self.cones = []
         self.cone_time = None
         self.stopped = False
@@ -42,15 +40,10 @@ class Castle(Node):
         self.visited = []
         self.last_status = None
 
-    def fresh(self, timestamp):
-        return timestamp is not None and (self.time - timestamp).total_seconds() <= self.timeout
-
     def command(self, speed, angle, reason):
         # Every path to motion passes the same persistent interlocks.
         if self.stopped or self.front is not False or self.rear is not False:
             speed, angle, reason = 0, 0, 'stop/bumper interlock'
-        elif not self.fresh(self.depth_time) or not self.fresh(self.pose_time):
-            speed, angle, reason = 0, 0, 'waiting for fresh depth/pose'
         self.publish('desired_steering', [round(speed * 1000), round(math.degrees(angle) * 100)])
         if reason != self.last_status:
             self.publish('status', reason)
@@ -77,11 +70,9 @@ class Castle(Node):
     def on_pose2d(self, data):
         x, y, heading = data
         self.pose = (x / 1000, y / 1000, math.radians(heading / 100))
-        self.pose_time = self.time
 
     def on_depth(self, data):
         self.depth = np.asarray(data)
-        self.depth_time = self.time
 
     def on_detections(self, data):
         # Both networks share this stream. Empty YOLO messages must not erase cones.
@@ -107,7 +98,8 @@ class Castle(Node):
         return scan
 
     def target(self):
-        if not self.geometry_verified or not self.fresh(self.cone_time):
+        if (not self.geometry_verified or self.cone_time is None
+                or (self.time - self.cone_time).total_seconds() > self.target_timeout):
             return None
         h, w = self.depth.shape
         candidates = []
@@ -137,7 +129,7 @@ class Castle(Node):
     def on_tick(self, data):
         scan = self.clearance_scan()
         if (self.stopped or self.front is not False or self.rear is not False
-                or not self.fresh(self.depth_time) or not self.fresh(self.pose_time) or scan is None):
+                or self.pose is None or scan is None):
             self.confirm_started = None
             self.command(0, 0, 'stopped or missing sensors')
             return

@@ -42,11 +42,7 @@ class CastleTest(unittest.TestCase):
         self.node.on_tick(None)
         self.assertEqual(self.command(), [0, 0])
 
-    def test_stale_and_invalid_depth(self):
-        self.node.time += datetime.timedelta(seconds=1)
-        self.node.on_tick(None)
-        self.assertEqual(self.command(), [0, 0])
-        self.node.on_pose2d([0, 0, 0])
+    def test_invalid_depth(self):
         self.node.on_depth(np.zeros((400, 640)))
         self.node.on_tick(None)
         self.assertEqual(self.command(), [0, 0])

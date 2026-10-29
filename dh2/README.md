@@ -18,9 +18,12 @@ other prefixes use `search_side`. The prefix comes from the robot environment
 and is automatically included in log filenames. Both robots use the
 cone superblob and YOLO26 concurrently; person detections are logged as
 information, without an additional person-specific motion rule. Their common
-driver detection stream is filtered by label. Observations expire after 0.7 s.
+driver detection stream is filtered by label. Cone observations expire after
+0.7 s (`target_timeout`) so a lost target is no longer approached.
 
-The robot stops on missing/stale pose or depth, insufficient valid depth,
+OSGAR handles device initialization; the controller waits for its first pose and
+depth messages without maintaining a separate sensor-availability watchdog.
+The robot stops on insufficient valid depth,
 bumper contact, emergency stop or blocked recovery. Contact, emergency stop and
 blockage latch until process restart. OSGAR's `--duration` option controls the
 recording runtime; the application has no separate runtime limit.
@@ -63,7 +66,7 @@ uv run --locked python -m unittest dh2.test_main -v
 uv run --locked ruff check dh2
 ```
 
-These synthetic tests check persistent stops, sensor freshness, unknown depth,
+These synthetic tests check persistent stops, unknown depth, lost targets,
 side preference, parallel detection handling, empty boxes and repeat counting.
 No baseline robot log has been replayed for this new application yet. Follow
 `DEVELOPMENT.md` when selecting a log for replay-based changes.
