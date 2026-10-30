@@ -56,7 +56,7 @@ class ConeApproach(ConeDetector):
     def command(self, speed, angle, reason):
         if self.done or self.emergency_stop:
             speed, angle = 0, 0
-        self.moving = speed > 0
+        self.moving = speed != 0
         self.publish('desired_steering', [round(speed * 1000), round(math.degrees(angle) * 100)])
         if reason != self.last_status:
             self.publish('status', reason)
@@ -98,7 +98,7 @@ class ConeApproach(ConeDetector):
                 candidates.append((y2 - y1, (x1 + x2) / 2))
         previous = self.target
         elapsed = None if self.target_time is None else (self.time - self.target_time).total_seconds()
-        self.target = max(candidates, default=None)
+        self.target = self.select_target(candidates)
         self.target_time = self.time
         if self.target is None:
             self.hits = 0
@@ -108,8 +108,14 @@ class ConeApproach(ConeDetector):
                           and abs(previous[1] - self.target[1]) < 0.15)
             self.hits = self.hits + 1 if consistent else 1
             if self.target[0] >= self.stop_height:
-                self.done = True
-                self.command(0, 0, 'cone large enough: restart required')
+                self.handle_close_cone()
+
+    def select_target(self, candidates):
+        return max(candidates, default=None)
+
+    def handle_close_cone(self):
+        self.done = True
+        self.command(0, 0, 'cone large enough: restart required')
 
     def handle_target_loss(self):
         self.command(0, 0, 'no cone')
@@ -149,6 +155,33 @@ class ConeExplore(ConeApproach):
         self.steps = 0
         self.look_angle = 0
         self.last_steered = None
+        self.max_travel = config.get('max_travel', math.inf)
+        self.system_name = config.get('env', {}).get('OSGAR_LOGS_PREFIX') or ''
+        self.required_cones = config.get('required_cones', 4)
+        self.visit_wait = config.get('visit_wait', 3.0)
+        self.repeat_radius = config.get('repeat_radius', 1.0)
+        self.visited = []
+        self.heading = 0
+        self.front_pressed = False
+        self.rear_pressed = False
+        self.wait_started = None
+        self.wait_pose = None
+        self.wait_target = None
+        self.ignore_until_travel = 0
+        self.recovery_angles = [math.radians(a) for a in (30, -30, 0)]
+        self.recovery_options = []
+        self.recovery_cause = None
+        self.recovery_count = 0
+        self.escape_angle = 0
+        self.escape_started = None
+        self.depth_time = None
+        self.allow_reverse = config.get('allow_reverse', False)
+        self.reverse_distance = min(config.get('reverse_distance', 0.3), 0.3)
+        self.reverse_speed = min(config.get('reverse_speed', 0.1), 0.1)
+        if self.reverse_distance <= 0 or self.reverse_speed <= 0:
+            raise ValueError('reverse distance and speed must be positive')
+        self.reverse_used = False
+        self.reverse_started = None
         self.obstacle_stop_dist = config.get('obstacle_stop_dist', 0.0)
         self.obstacle_resume_dist = config.get('obstacle_resume_dist', self.obstacle_stop_dist + 0.3)
         self.obstacle_min_pixels = config.get('obstacle_min_pixels', 20)
@@ -156,9 +189,15 @@ class ConeExplore(ConeApproach):
             raise ValueError('obstacle_min_pixels must be positive')
         self.obstacle_blocked = True
         self.obstacle_distance = None
-        bus.register('clearance')
+        bus.register('clearance', 'defender')
 
     def command(self, speed, angle, reason):
+        if speed < 0 and self.rear_pressed:
+            speed = 0
+            reason = 'rear bumper: reverse motion stopped'
+        if speed > 0 and self.front_pressed:
+            speed = 0
+            reason = 'front bumper: forward motion stopped'
         if speed > 0 and self.obstacle_stop_dist > 0 and self.obstacle_blocked:
             speed = 0
             reason = 'obstacle or initial depth pending: forward motion stopped'
@@ -166,9 +205,124 @@ class ConeExplore(ConeApproach):
             self.look_angle = angle
         super().command(speed, angle, reason)
 
+    def on_pose2d(self, data):
+        self.heading = math.radians(data[2] / 100)
+        super().on_pose2d(data)
+        if self.state == 'reverse' and self.travelled - self.step_started_at >= self.reverse_distance:
+            self.start_recovery(self.recovery_cause)
+
+    def on_bumpers_front(self, data):
+        self.front_pressed = bool(data)
+        if data:
+            self.start_recovery('front bumper')
+
+    def on_bumpers_rear(self, data):
+        self.rear_pressed = bool(data)
+        if data:
+            self.start_recovery('rear bumper')
+
+    def target_position(self, target):
+        # Rough local association only: image-size stop is assumed to be about 1 m.
+        height, center = target
+        distance = self.stop_height / height
+        bearing = self.heading + self.look_angle + (0.5 - center) * math.radians(45)
+        return (self.pose[0] + distance * math.cos(bearing),
+                self.pose[1] + distance * math.sin(bearing))
+
+    def select_target(self, candidates):
+        if self.pose is None or self.travelled < self.ignore_until_travel:
+            return None
+        return max((target for target in candidates
+                    if not any(math.dist(self.target_position(target), old) < self.repeat_radius
+                               for old in self.visited)), default=None)
+
+    def handle_close_cone(self):
+        if self.hits >= 3 and self.state != 'wait' and abs(self.target[1] - 0.5) < 0.2:
+            self.state = 'wait'
+            self.wait_started = self.time
+            self.wait_pose = self.pose
+            self.wait_target = self.target_position(self.target)
+            self.command(0, self.look_angle, 'waiting 3s at cone')
+
+    def start_recovery(self, cause):
+        self.state = 'recover_scan'
+        self.recovery_cause = cause
+        self.recovery_count += 1
+        self.recovery_options = []
+        self.scan_index = 0
+        self.scan_started = self.time
+        self.target = None
+        self.hits = 0
+        self.command(0, self.recovery_angles[0], 'recovery scan: ' + cause)
+
+    def recovery_tick(self):
+        if self.state == 'recover_scan':
+            angle = self.recovery_angles[self.scan_index]
+            self.command(0, angle, 'recovery scan: ' + self.recovery_cause)
+            if (self.time - self.scan_started).total_seconds() < self.scan_dwell:
+                return
+            if (self.depth_time is not None
+                    and (self.depth_time - self.scan_started).total_seconds() >= self.scan_settle
+                    and not self.obstacle_blocked and not self.front_pressed
+                    and (self.recovery_cause != 'cone visited' or abs(angle) > 0.1)):
+                self.recovery_options.append((angle, self.obstacle_distance))
+            self.scan_index += 1
+            self.scan_started = self.time
+            if self.scan_index < len(self.recovery_angles):
+                self.command(0, self.recovery_angles[self.scan_index], 'recovery scan: ' + self.recovery_cause)
+                return
+            if not self.recovery_options:
+                if self.allow_reverse and not self.reverse_used and not self.rear_pressed:
+                    self.reverse_used = True
+                    self.reverse_started = self.time
+                    self.step_started_at = self.travelled
+                    self.state = 'reverse'
+                    self.command(-self.reverse_speed, 0, 'reversing for recovery')
+                    return
+                self.start_recovery(self.recovery_cause)
+                return
+            # Prefer more measured clearance; alternate the tie preference on retries.
+            preferred_sign = 1 if self.recovery_count % 2 else -1
+            self.escape_angle, _ = max(self.recovery_options,
+                                      key=lambda item: (math.inf if item[1] is None else item[1],
+                                                        item[0] * preferred_sign))
+            self.state = 'recover_orient'
+            self.command(0, self.escape_angle, 'orienting toward recovery path')
+        elif self.state == 'recover_orient':
+            self.command(0, self.escape_angle, 'orienting toward recovery path')
+            if (self.time - self.scan_started).total_seconds() < self.scan_settle:
+                return
+            if (self.depth_time is None
+                    or (self.depth_time - self.scan_started).total_seconds() < self.scan_settle):
+                return
+            if self.obstacle_blocked or self.front_pressed:
+                self.start_recovery(self.recovery_cause)
+                return
+            self.state = 'escape'
+            self.step_started_at = self.travelled
+            self.escape_started = self.time
+        elif self.state == 'reverse':
+            if (self.rear_pressed or self.travelled - self.step_started_at >= self.reverse_distance
+                    or (self.time - self.reverse_started).total_seconds()
+                    >= self.reverse_distance / self.reverse_speed + 1):
+                self.start_recovery(self.recovery_cause)
+            else:
+                self.command(-self.reverse_speed, 0, 'reversing for recovery')
+        else:  # escape: keep looking along the departure arc, ignoring cone attraction
+            if self.obstacle_blocked or self.front_pressed:
+                self.start_recovery(self.recovery_cause)
+            elif self.travelled - self.step_started_at >= self.step_distance:
+                self.reverse_used = False
+                self.start_scan()
+            elif (self.time - self.escape_started).total_seconds() >= 6:
+                self.start_recovery(self.recovery_cause)
+            else:
+                self.command(self.explore_speed, self.escape_angle, 'departing along recovery path')
+
     def on_depth(self, data):
         # Left-camera-aligned depth, in mm; independent of the RGB detector crop.
         depth = np.asarray(data)
+        self.depth_time = self.time
         assert depth.ndim == 2 and min(depth.shape) >= 10, depth.shape
         h, w = depth.shape
         # Stay above image center to reduce nearby ground/grass at the low mounting height.
@@ -188,7 +342,8 @@ class ConeExplore(ConeApproach):
                 self.obstacle_blocked = self.obstacle_distance <= self.obstacle_stop_dist
         self.publish('clearance', {'distance': self.obstacle_distance, 'valid_fraction': fraction,
                                    'blocked': self.obstacle_blocked})
-        if self.obstacle_stop_dist > 0 and self.obstacle_blocked and self.moving:
+        if (self.obstacle_stop_dist > 0 and self.obstacle_blocked and self.moving
+                and self.state != 'reverse'):
             self.command(0, self.look_angle, 'obstacle: forward motion stopped')
 
     def handle_target_loss(self):
@@ -196,8 +351,13 @@ class ConeExplore(ConeApproach):
             self.command(0, self.look_angle, 'looking for cone')
 
     def on_detections(self, data):
+        if (self.state in ('recover_orient', 'escape', 'reverse')
+                or (self.state == 'recover_scan' and self.recovery_cause == 'cone visited')):
+            ConeDetector.on_detections(self, data)
+            self.target_time = self.time
+            return
         # Ignore target acquisition while articulation is settling at a scan pose.
-        if (self.state == 'scan' and (self.scan_started is None
+        if (self.state in ('scan', 'recover_scan') and (self.scan_started is None
                 or (self.time - self.scan_started).total_seconds() < self.scan_settle)):
             ConeDetector.on_detections(self, data)
             self.target = None
@@ -221,6 +381,39 @@ class ConeExplore(ConeApproach):
         if self.pose is None or self.target_time is None:
             self.command(0, 0, 'waiting for initial observations')
             return
+        if self.state in ('recover_scan', 'recover_orient', 'escape', 'reverse'):
+            self.recovery_tick()
+            return
+        if self.state == 'wait':
+            visible = (self.target is not None and self.target[0] >= 0.9 * self.stop_height
+                       and (self.time - self.target_time).total_seconds() <= self.target_timeout
+                       and math.dist(self.target_position(self.target), self.wait_target) < 0.5)
+            if not visible:
+                self.start_scan()
+                return
+            if math.dist(self.pose, self.wait_pose) > 0.1:
+                self.wait_started = self.time
+                self.wait_pose = self.pose
+            self.command(0, self.look_angle, 'waiting 3s at cone')
+            if (self.time - self.wait_started).total_seconds() >= self.visit_wait:
+                self.visited.append(self.wait_target)
+                report = {'id': len(self.visited), 'robot': self.system_name,
+                          'position': list(self.wait_target), 'stop_pose': list(self.pose),
+                          'detection_time': self.target_time.total_seconds(),
+                          'wait_sec': (self.time - self.wait_started).total_seconds()}
+                self.publish('defender', report)
+                print(self.time, 'defender reported:', report)
+                self.ignore_until_travel = self.travelled + 0.75
+                if len(self.visited) >= self.required_cones:
+                    self.done = True
+                    self.command(0, 0, 'all defenders reported')
+                else:
+                    self.start_recovery('cone visited')
+            return
+        if (self.state in ('approach', 'advance') and self.obstacle_stop_dist > 0
+                and self.depth_time is not None and (self.obstacle_blocked or self.front_pressed)):
+            self.start_recovery('obstacle')
+            return
         acquired = (self.target is not None and self.hits >= 3
                     and (self.time - self.target_time).total_seconds() <= self.target_timeout)
         if acquired:
@@ -232,6 +425,9 @@ class ConeExplore(ConeApproach):
                 self.look_angle = max(-math.radians(35), min(math.radians(35),
                                                            self.look_angle + (0.5 - center) * 0.5))
                 self.last_steered = self.target_time
+            if height >= self.stop_height:
+                self.command(0, self.look_angle, 'centering near cone')
+                return
             speed = max(self.min_speed, self.max_speed * (1 - height / self.stop_height))
             self.command(speed, self.look_angle, 'approaching cone')
         elif self.state == 'approach':

@@ -10,13 +10,18 @@
           "min_speed": 0.15,
           "explore_speed": 0.2,
           "stop_height": 0.65,
-          "max_travel": 10.0,
           "step_distance": 0.5,
           "scan_dwell": 1.5,
           "scan_settle": 0.5,
           "obstacle_stop_dist": 0.7,
           "obstacle_resume_dist": 1.0,
-          "obstacle_min_pixels": 20
+          "obstacle_min_pixels": 20,
+          "required_cones": 4,
+          "visit_wait": 3.0,
+          "repeat_radius": 1.0,
+          "allow_reverse": true,
+          "reverse_distance": 0.3,
+          "reverse_speed": 0.1
         }
       },
       "platform": {

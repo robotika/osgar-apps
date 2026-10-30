@@ -2,8 +2,9 @@
 
 The active `config/dh2.json` uses `ConeExplore`, recording RGB, cone detections
 and stereo depth. Camera IMU, IR illumination and parallel YOLO remain disabled.
-Detections are printed and logged on `app.cones`; no metric cone range estimation
-or defender counting is performed.
+Detections are printed and logged on `app.cones`; completed visits are printed
+and logged on `app.defender`. Cone range is still an image-size approximation,
+not a measurement from aligned depth.
 
 Matty is a four-wheeled articulated terrain platform with a passive middle joint
 and a maximum speed of 0.5 m/s. Zero speed with nonzero steering lets the platform
@@ -24,11 +25,49 @@ The search ignores left/right robot assignments for now:
    scan. Reacquisition again requires three detections. `target_timeout` handles
    lost targets, not general sensor availability.
 
-The robot stops and waits for restart when the cone reaches 65% of detector image
-height (`stop_height`), it travels 10 m in total (`max_travel`), or either bumper
-is pressed. These are trial limits, not a calibrated 1 m stopping distance.
-The depth gate described below can stop earlier. There is no reversing or coverage
-guarantee. It stops at the first near cone rather than continuing to four defenders.
+When a centered cone reaches 65% of detector image height (`stop_height`), the
+robot stops and waits 3 s (`visit_wait`) with the cone still observed. Loss of
+the cone cancels the wait; more than 10 cm of robot movement resets the timer.
+After the wait, it emits one `app.defender` report and attempts to leave the cone.
+This remains an image-size stop, not a calibrated 1 m stopping distance.
+
+Search continues until four locally distinct visits (`required_cones`) are
+reported or STOP/OSGAR's external duration ends the run. The active configuration
+has no overall travel limit. After the fourth report, speed and steering are zero
+and the recording remains available until stopped.
+
+## Recovery and repeat sightings
+
+An obstacle or bumper contact interrupts motion and starts a recovery scan:
+
+1. Look left (+30 degrees), right (-30 degrees), then center while stationary.
+   Evaluate depth only after each scan pose has settled.
+2. Select a clear direction, preferring greater clearance and alternating the
+   tie preference on retries. After a cone visit, prefer a side departure.
+3. Reorient while stopped and check depth in the chosen direction again. Advance
+   one 0.5 m step with cone attraction suppressed, then resume normal scanning.
+   If blocked again, scan again. A stalled departure rescans after 6 s.
+4. If every direction is blocked, reverse up to 0.3 m at 0.1 m/s and scan again.
+   Rear-bumper contact immediately stops reverse motion and prevents further
+   reverse commands while pressed. A 4 s maneuver timeout also ends a stalled
+   reverse. Only one reverse attempt is allowed until a forward departure succeeds.
+   If still boxed in, remain stationary and keep scanning; do not end the search.
+
+`allow_reverse` is enabled in the shared config with the operator's approval.
+Front contact inhibits forward commands; rear contact inhibits backward commands.
+Emergency stop still ends the application. Ordinary obstacle/contact recovery
+does not permanently set the mission's done flag. No coverage guarantee or
+rear depth sensing is provided.
+
+For repeat-sighting suppression, the controller estimates cone position in the
+local odometry frame using heading, articulation command, image bearing and
+range scaled from the image-size stop (assumed roughly 1 m). Estimated positions
+within `repeat_radius` (1 m) of a reported cone are ignored. Cone attraction is
+also disabled for the first 0.75 m of travel after a report. Reports contain a
+local ID, robot prefix, estimated position, stop pose, observation time and actual
+wait duration. This registry is per run and per robot: odometry drift, uncalibrated
+articulation/range, and closely spaced cones can cause missed associations or
+merged targets. Counts are not deduplicated across robots.
 
 ## Depth recording and obstacle stop
 
@@ -65,7 +104,8 @@ cone itself can trigger the stop. Do not interpret the depth distance as cone
 range or a calibrated 1 m defender visit.
 
 Set `app.max_speed=0` with OSGAR's `--params` to disable forward travel (scanning
-still articulates the platform), or select
+still articulates the platform). For a fully stationary collection run also use
+`app.allow_reverse=False`, or select
 `dh2.main:ConeDetector` as the application driver for detection-only work.
 
 `terminate_on_stop: true` makes a pressed emergency stop raise
@@ -77,7 +117,8 @@ Run on the robot, using its existing environment prefix:
 
 ```bash
 cd dh2
-PYTHONPATH=.. ../.venv/bin/python -m osgar.record config/dh2.json --duration 30
+PYTHONPATH=.. ../.venv/bin/python -m osgar.record config/dh2.json
+# Add --duration 30 for a short trial.
 ```
 
 The original config is preserved unchanged in `config/dh2-backup.json`. It uses
@@ -167,6 +208,22 @@ with the active config produces forward commands for all three outdoor logs
 Depth blocked only 2/181, 2/335 and 0/188 frames respectively. The recordings were
 made along the old, largely stationary trajectory; this verifies decisions on
 those observations, not the new physical trajectory. Test again on the robot.
+
+## Recovery and multi-cone mission replay (2026-10-30)
+
+Baseline replay matched the five new recordings (`152808`, `152901`, `153023`,
+`153108`, `153146`). They expose both the indefinite obstacle stop and the old
+permanent image-size stop. Normal replay of the new mission differs because it
+adds `app.defender` and changes motion decisions. Forced replay exercises recovery,
+bounded reverse and zero commands on STOP in all five logs.
+
+`153023` reports one cone at 30.74 s after a 3.06 s wait, then begins departure
+recovery. `153108` reports one at 24.63 s after a 3.02 s wait and chooses a forward
+departure. Neither recording produces a duplicate report. Synthetic tests exercise
+four separate visits, target loss during the wait, repeat suppression, free-side
+selection, fully blocked rescanning, and reverse interruption by distance, timeout
+and rear contact. The new departure trajectories and unique-cone association
+still need field validation; old images follow the old trajectories.
 
 ## Roaming ver0 backup
 
