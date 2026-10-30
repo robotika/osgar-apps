@@ -1,5 +1,75 @@
 # DH2 scan-and-advance exploration
 
+## Offline local-map preparation
+
+`python -m dh2.mapping` builds an offline surface-map preview from `oak.depth`,
+`platform.pose2d` and measured `platform.joint_angle`. It does not change robot
+behavior. Depth points are projected into the run's local odometry frame and
+accumulated into 10 cm cells, preserving mean/min/max height, sample count and
+the number of contributing frames. Zero depth contributes nothing; unobserved
+space stays unknown. There is no free-space ray clearing or traversability claim.
+
+From the repository root, an explicitly approximate preview can be generated:
+
+```bash
+uv run --locked python -m dh2.mapping \
+  /data/matty/m04-dh2-261030_174455.log \
+  --output /tmp/dh2-map-174455 --hfov-deg 90 \
+  --pitch-deg 0 --camera-height 0.2
+```
+
+Here 90 degrees is a provisional depth HFOV assumption, not measured m04
+calibration. The mapper requires either this explicit `--hfov-deg` option or
+`--intrinsics FX FY CX CY` for the **rectified depth image at its recorded
+resolution**. RGB intrinsics and RGB detection boxes are not used. The repository's
+m03 calibration has not been substituted for m04 calibration.
+
+Outputs:
+
+- `map.png`: top-down mean observed surface height and observation counts, with
+  the odometry trajectory and any reported cone estimates overlaid. Heights are
+  relative to the assumed floor at the pose origin; blue is lower, red higher.
+- `surfaces.npz`: sparse cell indices/centers, mean/min/max heights, point counts,
+  contributing-frame counts, grid resolution, and the sampled poses/timestamps.
+- `metadata.json`: source path, geometry/sampling arguments, projection intrinsics,
+  counters, original defender reports and limitations.
+
+Sampling defaults to one frame every 0.5 s and every fourth depth pixel, using
+0.15–4 m optical depth and projected heights from -1 to +1.5 m. The plot displays
+cells seen in at least three frames; all cells remain in the NPZ. Use `--help`
+for range, sampling, time-window and grid options.
+
+Projection accounts for articulation with an **unverified** assumption that front
+camera yaw is pose heading plus half the measured joint angle
+(`--joint-yaw-scale 0.5`). Camera forward/left offsets default to zero and should
+be measured and set with `--camera-forward` / `--camera-left`. Positive
+`--pitch-deg` looks downward. These extrinsics, the pose-heading convention, and
+the depth intrinsics need verification before interpreting distances/heights as
+accurate. Changing pitch between recordings requires changing the argument.
+
+Poses and joint angles are interpolated at host depth-log time; yaw is unwrapped
+before interpolation. Gaps over 0.3 s and extrapolation are rejected. A known
+capture/pipeline offset can be supplied with `--depth-time-offset`. This does not
+use the OAK device capture clock or compensate for body roll/pitch yet.
+
+Initial smoke tests processed `174455` (53 sampled frames, 367,372 projected
+points, 1,819 cells) and `180742` (81 frames, 578,178 points, 3,578 cells). The first
+preview shows lower observed surfaces consistent with the known drop, but is not
+a validated drop detector. The latest controller log replayed normally before
+this offline work. Six focused tests cover projection axes, pitch, articulation,
+offsets, invalid ranges, temporal interpolation and grid aggregation:
+
+```bash
+uv run --locked python -m unittest dh2.test_mapping -v
+```
+
+Next: obtain m04 rectified depth intrinsics and mounting offsets, validate a
+stationary scan against a wall and level floor, then inspect outdoor runs.
+Odometry drift is not corrected; this is not SLAM. Separate runs have separate
+origins and are deliberately not merged or registered through low-precision GPS.
+
+## Current robot behavior
+
 The active `config/dh2.json` uses `ConeExplore`, recording RGB, cone detections
 and stereo depth. Camera IMU, IR illumination and parallel YOLO remain disabled.
 Detections are printed and logged on `app.cones`; completed visits are printed
