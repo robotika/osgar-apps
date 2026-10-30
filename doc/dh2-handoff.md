@@ -26,6 +26,32 @@ the initial handoff was committed there as `6d93afd` by Aya Rain.
 
 ## Operator additions: robots, recordings and perception
 
+### Zviretice site references (2026-10-30)
+
+Local map downloaded by the operator:
+
+- [Compressed OSM XML](../dh2/zviretice.osm.gz): `dh2/zviretice.osm.gz`.
+  JOSM can open it directly. It preserves the original XML losslessly, including
+  node/way IDs and tags. The uncompressed OSM and GeoJSON copies were removed.
+- Castle boundary reference: OSM way **24857326**. The downloaded feature is a
+  closed outline tagged `historic=castle`, `building=yes`, `ruins=yes`, named
+  "Zricenina zamku Zviretice". The operator identifies it as the castle boundary
+  for understanding the exploration area; it is not an active geofence or a
+  surveyed competition boundary.
+- Entry is via the bridge, OSM way **331858639**, tagged `bridge=yes`,
+  `highway=path`, `layer=1` in the local download.
+
+Approximate dimensions calculated from the downloaded coordinates using a local
+planar conversion: the castle outline spans **60 m east–west by 76 m north–south**,
+encloses about **2,800 m²**, and has a perimeter of about **227 m**. The bridge
+way is about **21 m** long. Polygon area is not the same as safely traversable
+ground: walls, passages, elevation changes and drops require on-site assessment.
+
+Use this map as site context and for planning the field review. No controller,
+geofence, route or localization configuration has been changed to use them.
+
+### Robot identity and recordings
+
 The fleet contains five nominally identical Matty robots, distinguished by their
 3D-printed color and unique robot prefix. The DH2 pair is:
 
