@@ -16,7 +16,7 @@
           "scan_settle": 0.5,
           "obstacle_stop_dist": 0.7,
           "obstacle_resume_dist": 1.0,
-          "depth_min_valid": 0.2
+          "obstacle_min_pixels": 20
         }
       },
       "platform": {

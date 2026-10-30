@@ -38,14 +38,20 @@ depth width and failed at camera startup. This configuration avoids that path
 without modifying OSGAR core. Depth is recorded even when forward motion is
 inhibited. It is not mapped into cone detection boxes.
 
-The central depth region (30–70% of width, 30–60% of height) is used for a basic
-obstacle stop. Its fifth percentile of positive finite depths is logged in meters
-on `app.clearance`, along with the valid fraction and blocked state.
+The central depth region (30–70% of width, 30–50% of height) is used for a basic
+obstacle stop. The lower portion is excluded to reduce ground/grass interference
+with the camera mounted about 20 cm above the ground. This is a region heuristic,
+not calibrated ground-plane removal; low obstacles can fall below this region.
+`app.clearance` logs the distance in meters of the twentieth nearest positive
+finite pixel, the valid fraction and the blocked state. The pixel count is
+configurable through `obstacle_min_pixels`.
 
 - Stop forward commands at 0.7 m (`obstacle_stop_dist`).
 - Once blocked, require at least 1.0 m (`obstacle_resume_dist`) before resuming.
-- Missing initial depth or fewer than 20% valid samples (`depth_min_valid`) also
-  inhibit forward motion. Invalid depth is not free space.
+- Wait for the first depth frame before driving. Once frames arrive, zero depth
+  does not itself inhibit motion: open space may have no measurable surface.
+- At least 20 measured close pixels are needed to stop, so a sparse close patch
+  still blocks but a few speckles do not. There is no valid-percentage requirement.
 - A newly blocked depth frame stops current forward motion immediately. Cone
   detections cannot override it. Zero-speed articulation remains available;
   obstacle stops do not require restarting if clearance returns.
@@ -141,10 +147,26 @@ stationary scans and STOP handling. Synthetic tests check obstacle interruption,
 invalid/sparse depth, hysteresis and release. Camera startup with this depth
 configuration and obstacle behavior need a new robot recording.
 
-Operator note for the next depth review: large free spaces can also return zero
-depth when there is no nearby surface to measure. The current test still inhibits
-forward motion on insufficient valid depth; collect data before revising that
-policy. Zero depth alone should not ultimately be treated as a close obstacle.
+The operator noted that large free spaces can return zero depth. The first
+depth-enabled trial deliberately kept the conservative valid-percentage gate
+while collecting data; the review below replaces that policy.
+
+## Sparse outdoor depth correction (2026-10-30)
+
+Baseline replay matched the new recordings. `150742` is the indoor trial and was
+excluded from outdoor tuning. In `151116`, valid depth in the original region
+never exceeded 3.2%, so the 20% validity requirement blocked all 188 frames.
+In `150950`, measured distances were mostly well above the stop distance, but
+169 of 181 frames were blocked. Sparse/zero outdoor depth, rather than close
+ground returns, was the main cause of the no-motion behavior in these samples.
+
+The validity gate was removed, and the region was raised as described above.
+Normal replay now differs on the clearance output as expected. Forced replay
+with the active config produces forward commands for all three outdoor logs
+(`150950`, `151024`, `151116`) and still ends with zero speed/steering on STOP.
+Depth blocked only 2/181, 2/335 and 0/188 frames respectively. The recordings were
+made along the old, largely stationary trajectory; this verifies decisions on
+those observations, not the new physical trajectory. Test again on the robot.
 
 ## Roaming ver0 backup
 

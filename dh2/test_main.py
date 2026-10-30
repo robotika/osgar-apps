@@ -92,7 +92,7 @@ class ConeExploreTest(unittest.TestCase):
         self.node.on_depth(np.full((400, 640), 1200))
         self.assertGreater(self.tick(1.0, cone)[0], 0)
 
-    def test_missing_and_invalid_depth_inhibit_forward_but_allow_scanning(self):
+    def test_wait_for_initial_depth_then_allow_zero_depth(self):
         self.enable_obstacle_stop()
         self.tick(0)
         self.assertEqual(self.tick(1.5), [0, 3000])
@@ -101,19 +101,43 @@ class ConeExploreTest(unittest.TestCase):
         self.tick(6)
         self.assertEqual(self.tick(6.1)[0], 0)
         self.node.on_depth(np.zeros((400, 640)))
-        self.assertEqual(self.tick(6.2)[0], 0)
+        self.assertGreater(self.tick(6.2)[0], 0)
         self.node.on_depth(np.full((400, 640), 2000))
         self.assertGreater(self.tick(6.3)[0], 0)
         self.node.on_depth(np.zeros((400, 640)))
-        self.assertEqual(self.tick(6.4)[0], 0)
+        self.assertGreater(self.tick(6.4)[0], 0)
 
-    def test_sparse_valid_depth_does_not_release_obstacle_stop(self):
+    def test_sparse_far_depth_does_not_block(self):
         self.enable_obstacle_stop()
         depth = np.zeros((400, 640))
         depth[150:160, 310:320] = 5000
         self.node.on_depth(depth)
+        self.assertFalse(self.node.obstacle_blocked)
+        self.assertEqual(self.node.obstacle_distance, 5.0)
+
+    def test_close_patch_in_otherwise_zero_depth_still_blocks(self):
+        self.enable_obstacle_stop()
+        depth = np.zeros((400, 640))
+        depth[150:155, 310:315] = 500
+        self.node.on_depth(depth)
         self.assertTrue(self.node.obstacle_blocked)
-        self.assertIsNone(self.node.obstacle_distance)
+        self.assertEqual(self.node.obstacle_distance, 0.5)
+        self.node.on_depth(np.zeros((400, 640)))
+        self.assertFalse(self.node.obstacle_blocked)
+
+    def test_single_close_pixel_is_not_enough(self):
+        self.enable_obstacle_stop()
+        depth = np.full((400, 640), 3000)
+        depth[150, 320] = 200
+        self.node.on_depth(depth)
+        self.assertFalse(self.node.obstacle_blocked)
+
+    def test_ground_below_image_center_is_excluded(self):
+        self.enable_obstacle_stop()
+        depth = np.full((400, 640), 3000)
+        depth[200:, :] = 200
+        self.node.on_depth(depth)
+        self.assertFalse(self.node.obstacle_blocked)
 
 
 class ConeApproachTest(unittest.TestCase):
