@@ -149,11 +149,42 @@ class ConeExplore(ConeApproach):
         self.steps = 0
         self.look_angle = 0
         self.last_steered = None
+        self.obstacle_stop_dist = config.get('obstacle_stop_dist', 0.0)
+        self.obstacle_resume_dist = config.get('obstacle_resume_dist', self.obstacle_stop_dist + 0.3)
+        self.depth_min_valid = config.get('depth_min_valid', 0.2)
+        self.obstacle_blocked = True
+        self.obstacle_distance = None
+        bus.register('clearance')
 
     def command(self, speed, angle, reason):
+        if speed > 0 and self.obstacle_stop_dist > 0 and self.obstacle_blocked:
+            speed = 0
+            reason = 'obstacle or unknown depth: forward motion stopped'
         if not self.done and not self.emergency_stop:
             self.look_angle = angle
         super().command(speed, angle, reason)
+
+    def on_depth(self, data):
+        # Left-camera-aligned depth, in mm; independent of the RGB detector crop.
+        depth = np.asarray(data)
+        assert depth.ndim == 2 and min(depth.shape) >= 10, depth.shape
+        h, w = depth.shape
+        roi = depth[int(h * 0.3):int(h * 0.6), int(w * 0.3):int(w * 0.7)]
+        valid = roi[(roi > 0) & np.isfinite(roi)]
+        fraction = valid.size / roi.size
+        if fraction < self.depth_min_valid or valid.size == 0:
+            self.obstacle_distance = None
+            self.obstacle_blocked = True
+        else:
+            self.obstacle_distance = float(np.percentile(valid, 5)) / 1000
+            if self.obstacle_blocked:
+                self.obstacle_blocked = self.obstacle_distance < self.obstacle_resume_dist
+            else:
+                self.obstacle_blocked = self.obstacle_distance <= self.obstacle_stop_dist
+        self.publish('clearance', {'distance': self.obstacle_distance, 'valid_fraction': fraction,
+                                   'blocked': self.obstacle_blocked})
+        if self.obstacle_stop_dist > 0 and self.obstacle_blocked and self.moving:
+            self.command(0, self.look_angle, 'obstacle or unknown depth: forward motion stopped')
 
     def handle_target_loss(self):
         if self.state == 'approach':

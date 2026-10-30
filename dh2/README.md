@@ -1,8 +1,9 @@
 # DH2 scan-and-advance exploration
 
-The active `config/dh2.json` uses `ConeExplore`. Depth, camera IMU, IR illumination and parallel YOLO remain
-disabled. Detections are printed and logged on `app.cones`; no metric range
-estimation or defender counting is performed.
+The active `config/dh2.json` uses `ConeExplore`, recording RGB, cone detections
+and stereo depth. Camera IMU, IR illumination and parallel YOLO remain disabled.
+Detections are printed and logged on `app.cones`; no metric cone range estimation
+or defender counting is performed.
 
 Matty is a four-wheeled articulated terrain platform with a passive middle joint
 and a maximum speed of 0.5 m/s. Zero speed with nonzero steering lets the platform
@@ -26,9 +27,36 @@ The search ignores left/right robot assignments for now:
 The robot stops and waits for restart when the cone reaches 65% of detector image
 height (`stop_height`), it travels 10 m in total (`max_travel`), or either bumper
 is pressed. These are trial limits, not a calibrated 1 m stopping distance.
-There is no obstacle avoidance with depth disabled, no reversing and no coverage
+The depth gate described below can stop earlier. There is no reversing or coverage
 guarantee. It stops at the first near cone rather than continuing to four defenders.
-Use a clear test area for scan-and-advance trials.
+
+## Depth recording and obstacle stop
+
+`oak.depth` is enabled at 640x400, aligned to the left stereo camera, with
+`color_depth_alignment: false`. RGB alignment previously attempted a 2024-pixel
+depth width and failed at camera startup. This configuration avoids that path
+without modifying OSGAR core. Depth is recorded even when forward motion is
+inhibited. It is not mapped into cone detection boxes.
+
+The central depth region (30–70% of width, 30–60% of height) is used for a basic
+obstacle stop. Its fifth percentile of positive finite depths is logged in meters
+on `app.clearance`, along with the valid fraction and blocked state.
+
+- Stop forward commands at 0.7 m (`obstacle_stop_dist`).
+- Once blocked, require at least 1.0 m (`obstacle_resume_dist`) before resuming.
+- Missing initial depth or fewer than 20% valid samples (`depth_min_valid`) also
+  inhibit forward motion. Invalid depth is not free space.
+- A newly blocked depth frame stops current forward motion immediately. Cone
+  detections cannot override it. Zero-speed articulation remains available;
+  obstacle stops do not require restarting if clearance returns.
+
+Speeds, scan angles and the image-size stop are unchanged. Set
+`app.obstacle_stop_dist=0` to collect depth without using it to inhibit motion.
+This is a central-view obstacle stop, not an avoidance planner, a swept-body
+clearance check or a drop-off detector. The region and thresholds require field
+validation with the actual mounting angle, grass and obstacles. Ground or the
+cone itself can trigger the stop. Do not interpret the depth distance as cone
+range or a calibrated 1 m defender visit.
 
 Set `app.max_speed=0` with OSGAR's `--params` to disable forward travel (scanning
 still articulates the platform), or select
@@ -93,6 +121,30 @@ speed/steering at each recorded STOP. Synthetic tests additionally exercise a
 complete empty scan, the 0.5 m advance, and resuming scanning. Replayed images
 were captured along the original trajectory; the new exploration motion and
 articulation still require a robot trial.
+
+## Outdoor recordings and depth change (2026-10-30)
+
+All seven `m04-dh2-261030_*.log` recordings replayed normally before this change;
+none contains depth frames. Sampled frames show the earlier recordings still
+indoors and the final three outdoors. Outdoor detection-positive message counts:
+
+| Recording suffix | Positive / total | Observation |
+| --- | --- | --- |
+| `121534` | 1 / 591 | Early RGB frames are strongly overexposed; a sampled cone is at the far right edge, outside the central square detector crop. Lighting alone is not established as the sole cause of missed detections. |
+| `121650` | 2 / 623 | Both scores are below the controller's 0.6 acquisition threshold. |
+| `121811` | 352 / 382 | Frequent detections and repeated approach acquisition. |
+
+Normal replay with depth-enabled obstacle stopping differs from the original
+output schema/behavior as expected. Forced replay of `121534` and `121811`
+inhibits all forward commands because those logs have no depth, while retaining
+stationary scans and STOP handling. Synthetic tests check obstacle interruption,
+invalid/sparse depth, hysteresis and release. Camera startup with this depth
+configuration and obstacle behavior need a new robot recording.
+
+Operator note for the next depth review: large free spaces can also return zero
+depth when there is no nearby surface to measure. The current test still inhibits
+forward motion on insufficient valid depth; collect data before revising that
+policy. Zero depth alone should not ultimately be treated as a close obstacle.
 
 ## Roaming ver0 backup
 

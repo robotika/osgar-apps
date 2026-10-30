@@ -67,6 +67,54 @@ class ConeExploreTest(unittest.TestCase):
         node = ConeExplore({'max_speed': 1, 'min_speed': 1, 'explore_speed': 1}, MagicMock())
         self.assertEqual((node.max_speed, node.min_speed, node.explore_speed), (0.5, 0.5, 0.5))
 
+    def enable_obstacle_stop(self):
+        self.node = ConeExplore({'terminate_on_stop': True, 'obstacle_stop_dist': 0.7,
+                                 'obstacle_resume_dist': 1.0}, self.bus)
+        self.node.time = datetime.timedelta(seconds=0)
+        self.node.on_emergency_stop(False)
+        self.node.on_pose2d([0, 0, 0])
+
+    def test_depth_stop_overrides_cone_approach_and_resumes_with_hysteresis(self):
+        self.enable_obstacle_stop()
+        cone = [['cone', 0.9, [0.4, 0.2, 0.6, 0.5]]]
+        self.node.on_depth(np.full((400, 640), 2000))
+        self.tick(0)
+        for t in (0.6, 0.7, 0.8):
+            command = self.tick(t, cone)
+        self.assertGreater(command[0], 0)
+        # A new depth frame stops the moving robot without waiting for a tick.
+        self.node.on_depth(np.full((400, 640), 500))
+        commands = [c.args[1] for c in self.bus.publish.call_args_list if c.args[0] == 'desired_steering']
+        self.assertEqual(commands[-1][0], 0)
+        self.assertFalse(self.node.done)
+        self.node.on_depth(np.full((400, 640), 850))
+        self.assertEqual(self.tick(0.9, cone)[0], 0)
+        self.node.on_depth(np.full((400, 640), 1200))
+        self.assertGreater(self.tick(1.0, cone)[0], 0)
+
+    def test_missing_and_invalid_depth_inhibit_forward_but_allow_scanning(self):
+        self.enable_obstacle_stop()
+        self.tick(0)
+        self.assertEqual(self.tick(1.5), [0, 3000])
+        self.tick(3)
+        self.tick(4.5)
+        self.tick(6)
+        self.assertEqual(self.tick(6.1)[0], 0)
+        self.node.on_depth(np.zeros((400, 640)))
+        self.assertEqual(self.tick(6.2)[0], 0)
+        self.node.on_depth(np.full((400, 640), 2000))
+        self.assertGreater(self.tick(6.3)[0], 0)
+        self.node.on_depth(np.zeros((400, 640)))
+        self.assertEqual(self.tick(6.4)[0], 0)
+
+    def test_sparse_valid_depth_does_not_release_obstacle_stop(self):
+        self.enable_obstacle_stop()
+        depth = np.zeros((400, 640))
+        depth[150:160, 310:320] = 5000
+        self.node.on_depth(depth)
+        self.assertTrue(self.node.obstacle_blocked)
+        self.assertIsNone(self.node.obstacle_distance)
+
 
 class ConeApproachTest(unittest.TestCase):
     def setUp(self):

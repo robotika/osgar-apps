@@ -13,7 +13,10 @@
           "max_travel": 10.0,
           "step_distance": 0.5,
           "scan_dwell": 1.5,
-          "scan_settle": 0.5
+          "scan_settle": 0.5,
+          "obstacle_stop_dist": 0.7,
+          "obstacle_resume_dist": 1.0,
+          "depth_min_valid": 0.2
         }
       },
       "platform": {
@@ -66,14 +69,17 @@
           "is_color": true,
           "video_encoder": "h265",
           "h264_bitrate": 2000,
-          "is_depth": false,
+          "is_depth": true,
           "is_stereo_images": false,
           "laser_projector_current": 0,
           "flood_light_current": 0,
           "is_imu_enabled": false,
           "number_imu_records": 10,
           "disable_magnetometer_fusion": true,
-          "mono_resolution": "THE_400_P",
+          "mono_resolution": [
+            640,
+            400
+          ],
           "color_resolution": "THE_1080_P",
           "color_manual_focus": 130,
           "stereo_median_filter": "KERNEL_3x3",
@@ -147,6 +153,10 @@
       [
         "platform.bumpers_rear",
         "app.bumpers_rear"
+      ],
+      [
+        "oak.depth",
+        "app.depth"
       ]
     ],
     "env": {
