@@ -7,7 +7,65 @@ from unittest.mock import MagicMock
 import numpy as np
 from osgar.exceptions import EmergencyStopException
 
-from dh2.main import Castle, ConeApproach, ConeDetector
+from dh2.main import Castle, ConeApproach, ConeDetector, ConeExplore
+
+
+class ConeExploreTest(unittest.TestCase):
+    def setUp(self):
+        self.bus = MagicMock()
+        self.node = ConeExplore({'terminate_on_stop': True, 'max_travel': 10}, self.bus)
+        self.node.time = datetime.timedelta(seconds=0)
+        self.node.on_emergency_stop(False)
+        self.node.on_pose2d([0, 0, 0])
+
+    def tick(self, seconds, detections=None):
+        self.node.time = datetime.timedelta(seconds=seconds)
+        self.node.on_detections([] if detections is None else detections)
+        self.node.on_tick(None)
+        return [c.args[1] for c in self.bus.publish.call_args_list
+                if c.args[0] == 'desired_steering'][-1]
+
+    def test_scan_then_advance_then_scan(self):
+        self.assertEqual(self.tick(0), [0, 0])
+        self.assertEqual(self.tick(1.5), [0, 3000])
+        self.assertEqual(self.tick(3), [0, -3000])
+        self.assertEqual(self.tick(4.5), [0, 0])
+        self.tick(6)
+        self.assertEqual(self.tick(6.1), [200, 0])
+        self.node.on_pose2d([500, 0, 0])
+        self.assertEqual(self.tick(6.2), [0, 0])
+        self.assertEqual(self.node.state, 'scan')
+
+    def test_side_acquisition_keeps_articulation_and_uses_faster_speed(self):
+        cone = [['cone', 0.9, [0.4, 0.2, 0.6, 0.5]]]
+        self.tick(0)
+        self.tick(1.5)
+        for t in (2.1, 2.2, 2.3):
+            command = self.tick(t, cone)
+        self.assertEqual(command[1], 3000)
+        self.assertGreaterEqual(command[0], 150)
+        self.assertLessEqual(command[0], 300)
+        self.assertEqual(self.node.state, 'approach')
+        self.assertEqual(self.tick(2.4), [0, 0])
+        self.assertEqual(self.node.state, 'scan')
+
+    def test_settling_frames_do_not_start_approach(self):
+        cone = [['cone', 0.9, [0.4, 0.2, 0.6, 0.5]]]
+        self.tick(0)
+        for t in (0.1, 0.2, 0.3):
+            self.assertEqual(self.tick(t, cone)[0], 0)
+
+    def test_stop_cancels_stationary_steering(self):
+        self.tick(0)
+        self.tick(1.5)
+        with self.assertRaises(EmergencyStopException):
+            self.node.on_emergency_stop(True)
+        self.assertEqual(self.bus.publish.call_args_list[-2].args,
+                         ('desired_steering', [0, 0]))
+
+    def test_speed_cannot_exceed_platform_limit(self):
+        node = ConeExplore({'max_speed': 1, 'min_speed': 1, 'explore_speed': 1}, MagicMock())
+        self.assertEqual((node.max_speed, node.min_speed, node.explore_speed), (0.5, 0.5, 0.5))
 
 
 class ConeApproachTest(unittest.TestCase):

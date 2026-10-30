@@ -1,23 +1,37 @@
-# DH2 cone-approach image collection
+# DH2 scan-and-advance exploration
 
-The active `config/dh2.json` uses `ConeApproach` to collect RGB video while slowly
-approaching a cone. Depth, camera IMU, IR illumination and parallel YOLO remain
+The active `config/dh2.json` uses `ConeExplore`. Depth, camera IMU, IR illumination and parallel YOLO remain
 disabled. Detections are printed and logged on `app.cones`; no metric range
 estimation or defender counting is performed.
 
-After three consistent detections with confidence at least 0.6, the robot steers
-toward the largest cone's image center. Speed is at most 0.1 m/s and decreases
-as the cone grows. Empty detections or 0.5 s without a detection stop motion;
-reacquisition requires three detections again. `target_timeout` handles target
-loss, rather than general sensor availability.
+Matty is a four-wheeled articulated terrain platform with a passive middle joint
+and a maximum speed of 0.5 m/s. Zero speed with nonzero steering lets the platform
+look around. This controller uses that capability rather than assuming it can
+rotate in place like a differential-drive robot.
+
+The search ignores left/right robot assignments for now:
+
+1. Stop and look center, left (+30 degrees), right (-30 degrees), then center.
+   Hold each position for 1.5 s; ignore acquisition during the first 0.5 s while
+   articulation settles. Scanning starts after the first camera/pose messages.
+2. If no cone is acquired, advance 0.5 m at 0.2 m/s and scan again. The first step
+   is straight; subsequent steps alternate gentle +20/-20 degree arcs.
+3. After three consistent detections with confidence at least 0.6, approach the
+   largest cone at 0.15–0.30 m/s, slowing as it grows. Preserve the articulation
+   that found it and correct steering incrementally from its image position.
+4. Empty detections or 0.5 s without a target stop the approach and start another
+   scan. Reacquisition again requires three detections. `target_timeout` handles
+   lost targets, not general sensor availability.
 
 The robot stops and waits for restart when the cone reaches 65% of detector image
-height (`stop_height`), it travels 2 m (`max_travel`), or either bumper is pressed.
-These are image-collection limits, not a calibrated 1 m stopping distance. No
-obstacle avoidance is available with depth disabled. It does not search or
-reverse. Use a clear approach path for this controlled collection test.
+height (`stop_height`), it travels 10 m in total (`max_travel`), or either bumper
+is pressed. These are trial limits, not a calibrated 1 m stopping distance.
+There is no obstacle avoidance with depth disabled, no reversing and no coverage
+guarantee. It stops at the first near cone rather than continuing to four defenders.
+Use a clear test area for scan-and-advance trials.
 
-Set `app.max_speed=0` with OSGAR's `--params` for a stationary run, or select
+Set `app.max_speed=0` with OSGAR's `--params` to disable forward travel (scanning
+still articulates the platform), or select
 `dh2.main:ConeDetector` as the application driver for detection-only work.
 
 `terminate_on_stop: true` makes a pressed emergency stop raise
@@ -57,7 +71,7 @@ uv run --locked python -m osgar.replay /data/matty/m04-dh2-261029_185946.log \
 Release STOP before recording; a pressed STOP ends the test. The stationary
 detector was validated with subsequent recordings, including cone detections in
 `m04-dh2-261029_192807.log` and `m04-dh2-261029_192829.log`. The approach controller
-is tested with those inputs offline; its actual motion remains to be validated.
+was tested with those inputs offline before the approach trials below.
 
 Baseline replay matched both detection recordings before the approach change.
 Normal replay with the approach config reports the new motion-output schema;
@@ -65,6 +79,20 @@ forced replay produces forward/left commands after acquisition, at 0.03 m/s for
 these already-large cones, and a zero command at each recorded STOP event
 (11.108635 s and 8.618373 s respectively). Replay uses stationary observations
 and cannot validate how the image-based controller behaves as the robot moves.
+
+## Approach trials and exploration replay (2026-10-30)
+
+Both `m04-dh2-261029_195335.log` and `m04-dh2-261029_195444.log` replayed normally
+before changing the controller. The operator reports a stationary cone in the
+first trial and moving it into view in the second. The original speed taper
+commanded roughly 0.03 m/s near the cone; this motivated the higher speed floor.
+
+Normal replay with `ConeExplore` differs as expected. Forced replay commands
+zero-speed scanning, approach at 0.15–0.168 m/s on these observations, and zero
+speed/steering at each recorded STOP. Synthetic tests additionally exercise a
+complete empty scan, the 0.5 m advance, and resuming scanning. Replayed images
+were captured along the original trajectory; the new exploration motion and
+articulation still require a robot trial.
 
 ## Roaming ver0 backup
 

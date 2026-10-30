@@ -9,6 +9,12 @@ two Matty robots. One robot searches the left part and the other the right part.
 Each has an OAK-D Pro as its primary sensor, low-precision GPS, front and rear
 bumpers, the camera IMU, and an ESP32 IMU in the controller for four servos.
 
+Platform clarification (2026-10-30): Matty is a four-wheeled articulated terrain
+robot with a passive middle joint and maximum speed 0.5 m/s. A zero-speed,
+nonzero-steering command can make it look around. The current trial controller
+uses that for scanning and temporarily ignores the left/right assignment; see
+`dh2/README.md` for the active behavior.
+
 Keep mission behavior, perception adaptations, and robot configurations in
 osgar-apps. Reuse OSGAR interfaces without putting DH2 policy in the shared core.
 

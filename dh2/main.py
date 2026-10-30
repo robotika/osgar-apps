@@ -1,7 +1,4 @@
-"""DH2 ver0: depth-guided roaming with a preferred turn direction.
-
-No reversing, GPS navigation, or guarantee of complete area coverage.
-"""
+"""DH2 cone detection, approach and simple exploration controllers."""
 
 import math
 
@@ -105,7 +102,7 @@ class ConeApproach(ConeDetector):
         self.target_time = self.time
         if self.target is None:
             self.hits = 0
-            self.command(0, 0, 'no cone')
+            self.handle_target_loss()
         else:
             consistent = (previous is not None and elapsed <= self.target_timeout
                           and abs(previous[1] - self.target[1]) < 0.15)
@@ -113,6 +110,9 @@ class ConeApproach(ConeDetector):
             if self.target[0] >= self.stop_height:
                 self.done = True
                 self.command(0, 0, 'cone large enough: restart required')
+
+    def handle_target_loss(self):
+        self.command(0, 0, 'no cone')
 
     def on_tick(self, data):
         if self.done or self.emergency_stop:
@@ -126,6 +126,103 @@ class ConeApproach(ConeDetector):
             # Slow down as the cone grows in the image; steering left is positive.
             speed = self.max_speed * max(0.3, 1 - height / self.stop_height)
             self.command(speed, angle, 'approaching cone')
+
+
+class ConeExplore(ConeApproach):
+    """Scan using zero-speed steering, advance a short step, and scan again."""
+
+    def __init__(self, config, bus):
+        super().__init__(config, bus)
+        self.max_speed = min(config.get('max_speed', 0.3), 0.5)
+        self.min_speed = min(config.get('min_speed', 0.15), self.max_speed)
+        self.explore_speed = min(config.get('explore_speed', 0.2), self.max_speed)
+        self.scan_dwell = config.get('scan_dwell', 1.5)
+        self.scan_settle = config.get('scan_settle', 0.5)
+        if not 0 <= self.scan_settle < self.scan_dwell:
+            raise ValueError('scan_settle must be smaller than scan_dwell')
+        self.step_distance = config.get('step_distance', 0.5)
+        self.scan_angles = [math.radians(a) for a in (0, 30, -30, 0)]
+        self.state = 'scan'
+        self.scan_index = 0
+        self.scan_started = None
+        self.step_started_at = 0
+        self.steps = 0
+        self.look_angle = 0
+        self.last_steered = None
+
+    def command(self, speed, angle, reason):
+        if not self.done and not self.emergency_stop:
+            self.look_angle = angle
+        super().command(speed, angle, reason)
+
+    def handle_target_loss(self):
+        if self.state == 'approach':
+            self.command(0, self.look_angle, 'looking for cone')
+
+    def on_detections(self, data):
+        # Ignore target acquisition while articulation is settling at a scan pose.
+        if (self.state == 'scan' and (self.scan_started is None
+                or (self.time - self.scan_started).total_seconds() < self.scan_settle)):
+            ConeDetector.on_detections(self, data)
+            self.target = None
+            self.hits = 0
+            self.target_time = self.time
+            return
+        super().on_detections(data)
+
+    def start_scan(self):
+        self.state = 'scan'
+        self.scan_index = 0
+        self.scan_started = self.time
+        self.target = None
+        self.hits = 0
+        self.command(0, self.scan_angles[0], 'scanning')
+
+    def on_tick(self, data):
+        if self.done or self.emergency_stop:
+            self.command(0, 0, 'stopped')
+            return
+        if self.pose is None or self.target_time is None:
+            self.command(0, 0, 'waiting for initial observations')
+            return
+        acquired = (self.target is not None and self.hits >= 3
+                    and (self.time - self.target_time).total_seconds() <= self.target_timeout)
+        if acquired:
+            self.state = 'approach'
+            height, center = self.target
+            if self.last_steered != self.target_time:
+                # Keep the articulation that found the cone, then correct incrementally.
+                # Resetting steering to zero here would move a side target out of view.
+                self.look_angle = max(-math.radians(35), min(math.radians(35),
+                                                           self.look_angle + (0.5 - center) * 0.5))
+                self.last_steered = self.target_time
+            speed = max(self.min_speed, self.max_speed * (1 - height / self.stop_height))
+            self.command(speed, self.look_angle, 'approaching cone')
+        elif self.state == 'approach':
+            self.start_scan()
+        elif self.state == 'scan':
+            if self.scan_started is None:
+                self.start_scan()
+            elif (self.time - self.scan_started).total_seconds() >= self.scan_dwell:
+                self.scan_index += 1
+                self.scan_started = self.time
+                self.target = None
+                self.hits = 0
+                if self.scan_index == len(self.scan_angles):
+                    self.state = 'advance'
+                    self.step_started_at = self.travelled
+                    self.steps += 1
+                else:
+                    self.command(0, self.scan_angles[self.scan_index], 'scanning')
+            else:
+                self.command(0, self.scan_angles[self.scan_index], 'scanning')
+        elif self.state == 'advance':
+            if self.travelled - self.step_started_at >= self.step_distance:
+                self.start_scan()
+            else:
+                # First step straight, then alternating arcs; no assigned search side.
+                angle = 0 if self.steps == 1 else math.radians(20 if self.steps % 2 == 0 else -20)
+                self.command(self.explore_speed, angle, 'advancing to next scan')
 
 
 class Castle(Node):

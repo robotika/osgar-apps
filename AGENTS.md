@@ -6,6 +6,8 @@
   is shared by multiple teams and should stay relatively simple and generic.
 - Prefer a small, reviewable MVP. Reuse OSGAR facilities rather than duplicating
   framework responsibilities in application nodes.
+- Reserve `on_something(self, data)` for incoming OSGAR messages on channel
+  `something`. Use other names for internal helpers and hooks.
 - OSGAR controls runtime through `osgar.record --duration`; do not add a second
   application runtime limit for the same purpose.
 - OSGAR prepares configured devices at startup. Do not introduce ROS-style
