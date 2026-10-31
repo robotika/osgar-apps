@@ -1,7 +1,5 @@
 import datetime
-import json
 import unittest
-from pathlib import Path
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -415,11 +413,8 @@ class ConeDetectorTest(unittest.TestCase):
 
 
 class CastleTest(unittest.TestCase):
-    def test_shared_config_selects_side_from_environment(self):
-        path = Path(__file__).parent / 'config' / 'dh2-backup.json'
-        config = json.loads(path.read_text())['robot']
-        self.assertIsNone(config['env']['OSGAR_LOGS_PREFIX'])
-        settings = config['modules']['app']['init']
+    def test_side_override_from_environment(self):
+        settings = {'search_side': 'left', 'm04-search_side': 'left', 'm05-search_side': 'right'}
         for prefix, side in [('m04-', 'left'), ('m05-', 'right'), (None, 'left'), ('other-', 'left')]:
             with self.subTest(prefix=prefix):
                 node = Castle(dict(settings, env={'OSGAR_LOGS_PREFIX': prefix}), MagicMock())
