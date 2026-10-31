@@ -45,6 +45,8 @@
 
 ## Documentation and commits
 
+- Merges must go through pull-request review. Do not merge or push directly to
+  `master`; a request to commit does not authorize a merge.
 - Keep project handoff documents in `doc/`. DH2 context and branch review are in
   `doc/dh2-handoff.md`; current implementation details belong in `dh2/README.md`.
 - When asked to commit, use the established agent identity for author and

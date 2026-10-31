@@ -1,5 +1,8 @@
 # DH2 scan-and-advance exploration
 
+The event recordings and their replay results are summarized in
+[zviretice.md](zviretice.md). The tested runtime code is preserved for replay.
+
 ## Offline local-map preparation
 
 `python -m dh2.mapping` builds an offline surface-map preview from `oak.depth`,
