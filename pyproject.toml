@@ -15,6 +15,7 @@ dependencies = [
     "numpy==1.22.0",
     "opencv-python==4.7.0.72",
     "osgar",
+    "pyserial>=3.5",
     "ruff>=0.15.11",
     "setuptools<70",
     "shapely==2.0.1",
@@ -29,7 +30,7 @@ build-backend = "uv_build"
 package = true
 
 [tool.uv.build-backend]
-module-name = ["bevroad"]
+module-name = ["bevroad", "dh2"]
 module-root = ""
 
 [tool.uv.sources]
