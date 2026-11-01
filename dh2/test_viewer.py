@@ -3,7 +3,8 @@ import tempfile
 import unittest
 from fractions import Fraction
 from pathlib import Path
-from unittest.mock import call, patch
+from types import SimpleNamespace
+from unittest.mock import MagicMock, call, patch
 
 import av
 import numpy as np
@@ -69,6 +70,33 @@ class ViewerTest(unittest.TestCase):
             self.assertEqual(stamp, 1.02)
             self.assertTrue((depth == 1000).all())
             self.assertEqual(recording.latest('missing', 1), (None, None))
+
+    def test_delayed_frames_without_time_base_keep_packet_timestamps(self):
+        with Recording(self.path) as recording:
+            expected = list(recording.frames())
+            decoder = av.CodecContext.create('hevc', 'r')
+            decoder.thread_count = 2
+            flushed = []
+            pending = []
+
+            def decode(packet):
+                pending.extend(decoder.decode(packet))
+                if packet is None:
+                    flushed.extend(pending)
+                    return [SimpleNamespace(pts=f.pts, time_base=None, to_ndarray=f.to_ndarray) for f in pending]
+                frames = pending[:-2]
+                del pending[:-2]
+                return frames
+
+            proxy = MagicMock()
+            proxy.decode.side_effect = decode
+            with patch('dh2.viewer.av.CodecContext') as context:
+                context.create.return_value = proxy
+                actual = list(recording.frames())
+            self.assertTrue(flushed)
+            self.assertEqual([t for t, _ in actual], [t for t, _ in expected])
+            for (_, image), (_, reference) in zip(actual, expected):
+                np.testing.assert_array_equal(image, reference)
 
     def test_zero_and_invalid_depth_are_black(self):
         color = depth_image(np.array([[0, np.nan, -1, 300, 5000, 9000]]), 0.3, 5)

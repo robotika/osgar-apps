@@ -85,16 +85,18 @@ class Recording:
         decoder = av.CodecContext.create('hevc', 'r')
         decoder.thread_count = 2
         decoder.decode(av.Packet(b''.join(self.parameters[k] for k in sorted(self.parameters))))
+        time_base = Fraction(1, 1_000_000)
         for sec, index in self.rows['oak.color'][self.keys[key][1]:]:
             packet = av.Packet(deserialize(self.log[index][2]))
             packet.pts = round(sec * 1_000_000)
-            packet.time_base = Fraction(1, 1_000_000)
+            packet.time_base = time_base
             for frame in decoder.decode(packet):
-                timestamp = float(frame.pts * frame.time_base)
+                timestamp = float(frame.pts * (frame.time_base or time_base))
                 if timestamp >= start:
                     yield timestamp, frame.to_ndarray(format='bgr24')
         for frame in decoder.decode(None):
-            timestamp = float(frame.pts * frame.time_base)
+            # PyAV may omit the time base on delayed frames returned by flushing.
+            timestamp = float(frame.pts * (frame.time_base or time_base))
             if timestamp >= start:
                 yield timestamp, frame.to_ndarray(format='bgr24')
 
