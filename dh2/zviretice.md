@@ -4,6 +4,10 @@ Post-event review of the recordings available in `/data/matty` on 2026-10-31.
 The runtime code and configurations are preserved as tested, for replay. This
 document records observations and follow-up topics, not changes to robot behavior.
 
+The later [four-cone position review](cone-review.md) combines RGB evidence,
+GPS and odometry with the stored OSM map: three reported sites and one clearly
+seen but unreported site near the eastern tower. Locations remain approximate.
+
 ## Scope and replay
 
 - Available: **15 M04 DH2 runs** and **16 M04 wait-for-start logs** from the event
