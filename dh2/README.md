@@ -3,6 +3,48 @@
 The event recordings and their replay results are summarized in
 [zviretice.md](zviretice.md). The tested runtime code is preserved for replay.
 
+## Interactive recording viewer
+
+From the repository root, open one recording or a sequence in command-line order:
+
+```bash
+uv run --locked python -m dh2.viewer /data/matty/m04-dh2-261031_104205.log
+uv run --locked python -m dh2.viewer /data/matty/*dh2-261031_*.log
+```
+
+The layout follows the highlight video: raw color on the left, a separate stereo
+depth panel on the right, and recorded controller status below. The side panel
+also shows commanded speed/steering, bumpers, STOP and the last report time.
+This reads recorded outputs; it does not run or change the controller.
+
+- Space: pause/resume; `.`: advance one decoded color frame and pause.
+- Drag the time slider or use A/D (left/right arrows) to seek back/forward 5 s.
+- `+`/`-`: double/halve playback speed (0.125–16x).
+- N/P: next/previous recording; Q/Escape: quit.
+- End of a recording advances to the next; the last recording remains paused.
+  Camera-free STOP runs are skipped with an explanatory message.
+
+Use `--start 49 --pause` to inspect a particular log offset, or `--speed 2` for
+faster playback. These initial settings apply to each recording. Playback can
+be slower than requested if decoding cannot keep up. HEVC keyframes are indexed
+in memory for seeking; no extracted video or persistent cache is required.
+
+Depth uses a fixed 0.3–5 m display scale (override with `--near`/`--far`), with
+black for zero/invalid measurements. The viewer selects the latest depth sample
+recorded at or before the decoded color frame's packet timestamp and displays
+its age. This is approximate host-log synchronization, not camera exposure-time
+synchronization. Depth is left-camera aligned, **not RGB aligned**; the two views
+must not be compared pixel for pixel. Missing optional telemetry is shown as
+unknown, and color keeps its original aspect ratio.
+
+For a headless snapshot (one input log, no GUI required):
+
+```bash
+uv run --locked python -m dh2.viewer \
+  /data/matty/m04-dh2-261031_104205.log \
+  --start 49 --snapshot /tmp/dh2-viewer.png
+```
+
 ## Offline local-map preparation
 
 `python -m dh2.mapping` builds an offline surface-map preview from `oak.depth`,
