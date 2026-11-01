@@ -1,7 +1,9 @@
 # DH2 scan-and-advance exploration
 
 The event recordings and their replay results are summarized in
-[zviretice.md](zviretice.md). The tested runtime code is preserved for replay.
+[zviretice.md](zviretice.md). `ConeExplore` is the sole controller; the earlier
+`Castle`, `ConeDetector` and `ConeApproach` prototypes have been removed.
+All 15 recordings from 2026-10-31 replay with matching controller outputs.
 
 ## Interactive recording viewer
 
@@ -220,8 +222,7 @@ range or a calibrated 1 m defender visit.
 
 Set `app.max_speed=0` with OSGAR's `--params` to disable forward travel (scanning
 still articulates the platform). For a fully stationary collection run also use
-`app.allow_reverse=False`, or select
-`dh2.main:ConeDetector` as the application driver for detection-only work.
+`app.allow_reverse=False`.
 
 `terminate_on_stop: true` makes a pressed emergency stop raise
 `EmergencyStopException` and end the application, allowing OSGAR to shut down
