@@ -1,0 +1,233 @@
+[
+  {
+    "run": "171019",
+    "neutral_samples": 105,
+    "neutral_gravity_imu": [
+      -0.9995000714007305,
+      0.009042367413908283,
+      0.030295921532223075
+    ],
+    "neutral_tilt_degrees": 0.0,
+    "tilt_10_90": [
+      0.027555619445321224,
+      0.1509253062440368
+    ],
+    "empirical_pitch_median": 0.001931871550373764,
+    "empirical_roll_median": -0.0018990916295578944,
+    "esp_median_degrees": [
+      -0.805,
+      -0.95
+    ],
+    "filename": "m04-dh2-261102_171019.log",
+    "capture": {
+      "logfile": "/data/matty/m04-dh2-261102_171019.log",
+      "start_time": "2026-11-02T17:10:19.081593+00:00",
+      "imu": {
+        "oak.orientation_list": {
+          "samples": 1520,
+          "malformed": 0,
+          "first_device_seconds": 2.624146,
+          "last_device_seconds": 17.800892,
+          "span_seconds": 15.176746000000001,
+          "mean_hz": 100.08733097331931,
+          "median_period_seconds": 0.009983999999999327,
+          "max_gap_seconds": 0.010599000000000025,
+          "nonincreasing_timestamps": 0,
+          "gaps_over_100ms": 0,
+          "receipt_minus_device_span_seconds": 0.07273399999999697,
+          "batches": 304,
+          "max_quaternion_norm_error": 4.47509110335087e-05,
+          "registered": true
+        },
+        "oak.acc_raw_list": {
+          "samples": 0,
+          "malformed": 0,
+          "batches": 0,
+          "registered": false
+        },
+        "oak.gyro_raw_list": {
+          "samples": 0,
+          "malformed": 0,
+          "batches": 0,
+          "registered": false
+        }
+      },
+      "messages": {
+        "oak.depth_seq": 153,
+        "platform.rpy": 226,
+        "platform.joint_angle": 226,
+        "platform.pose2d": 226
+      },
+      "frames": {
+        "oak.color": 153,
+        "oak.depth": 153
+      },
+      "capture_ready": false,
+      "issues": [
+        "oak.acc_raw_list: no samples",
+        "oak.gyro_raw_list: no samples"
+      ],
+      "limitations": [
+        "Checks recorded sensor data, not calibrated pose accuracy or hardware safety",
+        "OAK axes are not transformed into the front-body frame",
+        "Device timestamps and host receipt time have separate clock domains",
+        "Receipt-minus-device variation is not an absolute latency measurement"
+      ]
+    },
+    "interpretation": "Relative gravity-direction diagnostic; empirical axes fitted from flat/uphill cases, not calibrated pose3d"
+  },
+  {
+    "run": "171057",
+    "neutral_samples": 2425,
+    "neutral_gravity_imu": [
+      -0.912700359158721,
+      0.03289671412171231,
+      0.40730315563660424
+    ],
+    "neutral_tilt_degrees": 22.349557828333094,
+    "tilt_10_90": [
+      22.315195920836654,
+      22.35924027400958
+    ],
+    "empirical_pitch_median": 22.349629536922464,
+    "empirical_roll_median": 5.948758064956988e-06,
+    "esp_median_degrees": [
+      -1.01,
+      20.04
+    ],
+    "filename": "m04-dh2-261102_171057.log",
+    "capture": {
+      "logfile": "/data/matty/m04-dh2-261102_171057.log",
+      "start_time": "2026-11-02T17:10:57.936044+00:00",
+      "imu": {
+        "oak.orientation_list": {
+          "samples": 3020,
+          "malformed": 0,
+          "first_device_seconds": 2.635009,
+          "last_device_seconds": 32.801239,
+          "span_seconds": 30.166230000000002,
+          "mean_hz": 100.0787967207039,
+          "median_period_seconds": 0.009986999999998858,
+          "max_gap_seconds": 0.010615999999998849,
+          "nonincreasing_timestamps": 0,
+          "gaps_over_100ms": 0,
+          "receipt_minus_device_span_seconds": 0.07355299999999687,
+          "batches": 604,
+          "max_quaternion_norm_error": 4.1375943360622e-05,
+          "registered": true
+        },
+        "oak.acc_raw_list": {
+          "samples": 0,
+          "malformed": 0,
+          "batches": 0,
+          "registered": false
+        },
+        "oak.gyro_raw_list": {
+          "samples": 0,
+          "malformed": 0,
+          "batches": 0,
+          "registered": false
+        }
+      },
+      "messages": {
+        "oak.depth_seq": 303,
+        "platform.rpy": 376,
+        "platform.joint_angle": 376,
+        "platform.pose2d": 376
+      },
+      "frames": {
+        "oak.color": 303,
+        "oak.depth": 303
+      },
+      "capture_ready": false,
+      "issues": [
+        "oak.acc_raw_list: no samples",
+        "oak.gyro_raw_list: no samples"
+      ],
+      "limitations": [
+        "Checks recorded sensor data, not calibrated pose accuracy or hardware safety",
+        "OAK axes are not transformed into the front-body frame",
+        "Device timestamps and host receipt time have separate clock domains",
+        "Receipt-minus-device variation is not an absolute latency measurement"
+      ]
+    },
+    "interpretation": "Relative gravity-direction diagnostic; empirical axes fitted from flat/uphill cases, not calibrated pose3d"
+  },
+  {
+    "run": "171149",
+    "neutral_samples": 160,
+    "neutral_gravity_imu": [
+      -0.921546138017567,
+      -0.32668517542165293,
+      0.20983210351285927
+    ],
+    "neutral_tilt_degrees": 22.408651833997578,
+    "tilt_10_90": [
+      22.35944285579955,
+      22.491929044311252
+    ],
+    "empirical_pitch_median": 9.806734174895242,
+    "empirical_roll_median": -20.52861379499288,
+    "esp_median_degrees": [
+      -0.09,
+      8.46
+    ],
+    "filename": "m04-dh2-261102_171149.log",
+    "capture": {
+      "logfile": "/data/matty/m04-dh2-261102_171149.log",
+      "start_time": "2026-11-02T17:11:49.664313+00:00",
+      "imu": {
+        "oak.orientation_list": {
+          "samples": 2015,
+          "malformed": 0,
+          "first_device_seconds": 2.630235,
+          "last_device_seconds": 22.755252,
+          "span_seconds": 20.125017,
+          "mean_hz": 100.07444962655187,
+          "median_period_seconds": 0.009989999999998389,
+          "max_gap_seconds": 0.010635999999998091,
+          "nonincreasing_timestamps": 0,
+          "gaps_over_100ms": 0,
+          "receipt_minus_device_span_seconds": 0.0685439999999975,
+          "batches": 403,
+          "max_quaternion_norm_error": 4.616858843808913e-05,
+          "registered": true
+        },
+        "oak.acc_raw_list": {
+          "samples": 0,
+          "malformed": 0,
+          "batches": 0,
+          "registered": false
+        },
+        "oak.gyro_raw_list": {
+          "samples": 0,
+          "malformed": 0,
+          "batches": 0,
+          "registered": false
+        }
+      },
+      "messages": {
+        "oak.depth_seq": 202,
+        "platform.rpy": 274,
+        "platform.joint_angle": 274,
+        "platform.pose2d": 274
+      },
+      "frames": {
+        "oak.color": 202,
+        "oak.depth": 202
+      },
+      "capture_ready": false,
+      "issues": [
+        "oak.acc_raw_list: no samples",
+        "oak.gyro_raw_list: no samples"
+      ],
+      "limitations": [
+        "Checks recorded sensor data, not calibrated pose accuracy or hardware safety",
+        "OAK axes are not transformed into the front-body frame",
+        "Device timestamps and host receipt time have separate clock domains",
+        "Receipt-minus-device variation is not an absolute latency measurement"
+      ]
+    },
+    "interpretation": "Relative gravity-direction diagnostic; empirical axes fitted from flat/uphill cases, not calibrated pose3d"
+  }
+]

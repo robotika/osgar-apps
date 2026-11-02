@@ -5,6 +5,13 @@ pose estimator is enabled yet. The shared `dh2/config/dh2.json` now enables OAK
 integrated orientation and raw accelerometer/gyro, with batches of five samples.
 The existing driving algorithm and emergency-stop default are unchanged.
 
+The [first three indoor recordings](dh2-indoor-261102.md) provide good integrated
+orientation/depth data and useful tilt/articulation checks. Raw IMU streams were
+not registered despite the config flags; verify the interpreter/driver used on
+the robot before relying on raw capture. The operator identified and corrected
+a different OAK branch; the next recording should verify raw output. STOP-held startup is optional when
+physical access requires normal lid closure and zero-speed look-around.
+
 ## Stages
 
 1. **Now:** factory calibration, stationary/scan/short-motion recordings, sensor
