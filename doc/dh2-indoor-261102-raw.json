@@ -1,0 +1,508 @@
+{
+  "interpretation": "Gravity-direction diagnostics; empirical axes fitted from flat/both-front runs; not calibrated pose3d",
+  "basis_rows_forward_left_up": [
+    [
+      0.04199751023477212,
+      0.07248268210334714,
+      0.9964850575543945
+    ],
+    [
+      0.009881247467220515,
+      0.9972861067077853,
+      -0.0729574006946447
+    ],
+    [
+      -0.9990688515225422,
+      0.012910544633458216,
+      0.041167314154505905
+    ]
+  ],
+  "runs": [
+    {
+      "run": "174346",
+      "posture": "Flat",
+      "neutral_samples": 75,
+      "neutral_gravity_imu": [
+        -0.9990688515225422,
+        0.012910544633458216,
+        0.041167314154505905
+      ],
+      "neutral_tilt_degrees": 1.2074182697257333e-06,
+      "tilt_10_90": [
+        0.03295787250500139,
+        0.1662717691770391
+      ],
+      "empirical_pitch_median": -0.002924177937001899,
+      "empirical_roll_median": 0.005714600459965386,
+      "esp_median_degrees": [
+        -1.125,
+        -0.53
+      ],
+      "capture": {
+        "logfile": "/data/matty/m04-dh2-261102_174346.log",
+        "start_time": "2026-11-02T17:43:46.178604+00:00",
+        "imu": {
+          "oak.orientation_list": {
+            "samples": 1655,
+            "malformed": 0,
+            "first_device_seconds": 2.635711,
+            "last_device_seconds": 19.164435,
+            "span_seconds": 16.528724,
+            "mean_hz": 100.06822063215527,
+            "median_period_seconds": 0.009996000000001004,
+            "max_gap_seconds": 0.010578999999999894,
+            "nonincreasing_timestamps": 0,
+            "gaps_over_100ms": 0,
+            "receipt_minus_device_span_seconds": 0.06550099999999759,
+            "batches": 331,
+            "max_quaternion_norm_error": 4.570640477918886e-05,
+            "registered": true
+          },
+          "oak.acc_raw_list": {
+            "samples": 1655,
+            "malformed": 0,
+            "first_device_seconds": 2.639247,
+            "last_device_seconds": 19.165544,
+            "span_seconds": 16.526297,
+            "mean_hz": 100.08291633630934,
+            "median_period_seconds": 0.008223999999999565,
+            "max_gap_seconds": 0.016329999999999956,
+            "nonincreasing_timestamps": 0,
+            "gaps_over_100ms": 0,
+            "receipt_minus_device_span_seconds": 0.07013699999999723,
+            "batches": 331,
+            "registered": true
+          },
+          "oak.gyro_raw_list": {
+            "samples": 1655,
+            "malformed": 0,
+            "first_device_seconds": 2.635819,
+            "last_device_seconds": 19.164651,
+            "span_seconds": 16.528831999999998,
+            "mean_hz": 100.06756678269826,
+            "median_period_seconds": 0.010022500000000711,
+            "max_gap_seconds": 0.010644999999998461,
+            "nonincreasing_timestamps": 0,
+            "gaps_over_100ms": 0,
+            "receipt_minus_device_span_seconds": 0.0657609999999984,
+            "batches": 331,
+            "registered": true
+          }
+        },
+        "messages": {
+          "oak.depth_seq": 166,
+          "platform.rpy": 238,
+          "platform.joint_angle": 238,
+          "platform.pose2d": 238
+        },
+        "frames": {
+          "oak.color": 166,
+          "oak.depth": 166
+        },
+        "capture_ready": true,
+        "issues": [],
+        "limitations": [
+          "Checks recorded sensor data, not calibrated pose accuracy or hardware safety",
+          "OAK axes are not transformed into the front-body frame",
+          "Device timestamps and host receipt time have separate clock domains",
+          "Receipt-minus-device variation is not an absolute latency measurement"
+        ]
+      },
+      "camera_heading_joint_slope": 0.5020890864684366,
+      "camera_heading_fit_rms_deg": 0.4598458329661802,
+      "esp_heading_joint_slope": -0.502871449346453,
+      "propulsion_command_values_mms": [
+        0
+      ],
+      "controller_replay_matches": true
+    },
+    {
+      "run": "174419",
+      "posture": "Front right raised",
+      "neutral_samples": 170,
+      "neutral_gravity_imu": [
+        -0.9218017181706841,
+        -0.3184394951496854,
+        0.22108342386164598
+      ],
+      "neutral_tilt_degrees": 22.190447375268462,
+      "tilt_10_90": [
+        22.123859789378372,
+        22.254968681176816
+      ],
+      "empirical_pitch_median": 9.712531675139507,
+      "empirical_roll_median": -20.321291638888617,
+      "esp_median_degrees": [
+        -1.34,
+        8.845
+      ],
+      "capture": {
+        "logfile": "/data/matty/m04-dh2-261102_174419.log",
+        "start_time": "2026-11-02T17:44:19.198072+00:00",
+        "imu": {
+          "oak.orientation_list": {
+            "samples": 2005,
+            "malformed": 0,
+            "first_device_seconds": 2.663087,
+            "last_device_seconds": 22.690361,
+            "span_seconds": 20.027274,
+            "mean_hz": 100.06354334593915,
+            "median_period_seconds": 0.01000399999999857,
+            "max_gap_seconds": 0.010487000000000357,
+            "nonincreasing_timestamps": 0,
+            "gaps_over_100ms": 0,
+            "receipt_minus_device_span_seconds": 0.06603999999999743,
+            "batches": 401,
+            "max_quaternion_norm_error": 4.422576173723769e-05,
+            "registered": true
+          },
+          "oak.acc_raw_list": {
+            "samples": 2005,
+            "malformed": 0,
+            "first_device_seconds": 2.666313,
+            "last_device_seconds": 22.687067,
+            "span_seconds": 20.020754,
+            "mean_hz": 100.09613024564409,
+            "median_period_seconds": 0.008219999999999672,
+            "max_gap_seconds": 0.01623299999999972,
+            "nonincreasing_timestamps": 0,
+            "gaps_over_100ms": 0,
+            "receipt_minus_device_span_seconds": 0.07254299999999958,
+            "batches": 401,
+            "registered": true
+          },
+          "oak.gyro_raw_list": {
+            "samples": 2005,
+            "malformed": 0,
+            "first_device_seconds": 2.663068,
+            "last_device_seconds": 22.690453,
+            "span_seconds": 20.027385000000002,
+            "mean_hz": 100.06298875265043,
+            "median_period_seconds": 0.010025500000000243,
+            "max_gap_seconds": 0.010657000000001915,
+            "nonincreasing_timestamps": 0,
+            "gaps_over_100ms": 0,
+            "receipt_minus_device_span_seconds": 0.06608599999999853,
+            "batches": 401,
+            "registered": true
+          }
+        },
+        "messages": {
+          "oak.depth_seq": 201,
+          "platform.rpy": 274,
+          "platform.joint_angle": 274,
+          "platform.pose2d": 274
+        },
+        "frames": {
+          "oak.color": 201,
+          "oak.depth": 201
+        },
+        "capture_ready": true,
+        "issues": [],
+        "limitations": [
+          "Checks recorded sensor data, not calibrated pose accuracy or hardware safety",
+          "OAK axes are not transformed into the front-body frame",
+          "Device timestamps and host receipt time have separate clock domains",
+          "Receipt-minus-device variation is not an absolute latency measurement"
+        ]
+      },
+      "camera_heading_joint_slope": 0.4807381733684926,
+      "camera_heading_fit_rms_deg": 0.7957039577737488,
+      "esp_heading_joint_slope": -0.5432571653647341,
+      "propulsion_command_values_mms": [
+        0
+      ],
+      "controller_replay_matches": true
+    },
+    {
+      "run": "174456",
+      "posture": "Both front raised",
+      "neutral_samples": 30,
+      "neutral_gravity_imu": [
+        -0.909446784576368,
+        0.03929452066246298,
+        0.41395952298456995
+      ],
+      "neutral_tilt_degrees": 22.157762682168183,
+      "tilt_10_90": [
+        22.144178751211875,
+        22.175986103811983
+      ],
+      "empirical_pitch_median": 22.15837652037694,
+      "empirical_roll_median": -5.766122826363377e-06,
+      "esp_median_degrees": [
+        -1.09,
+        20.47
+      ],
+      "capture": {
+        "logfile": "/data/matty/m04-dh2-261102_174456.log",
+        "start_time": "2026-11-02T17:44:56.985717+00:00",
+        "imu": {
+          "oak.orientation_list": {
+            "samples": 2125,
+            "malformed": 0,
+            "first_device_seconds": 2.680948,
+            "last_device_seconds": 23.908272,
+            "span_seconds": 21.227324,
+            "mean_hz": 100.05971548745381,
+            "median_period_seconds": 0.010002000000000066,
+            "max_gap_seconds": 0.010616999999999877,
+            "nonincreasing_timestamps": 0,
+            "gaps_over_100ms": 0,
+            "receipt_minus_device_span_seconds": 0.0673910000000042,
+            "batches": 425,
+            "max_quaternion_norm_error": 4.356632102830993e-05,
+            "registered": true
+          },
+          "oak.acc_raw_list": {
+            "samples": 2125,
+            "malformed": 0,
+            "first_device_seconds": 2.684286,
+            "last_device_seconds": 23.904426,
+            "span_seconds": 21.22014,
+            "mean_hz": 100.09359033446528,
+            "median_period_seconds": 0.008203500000000474,
+            "max_gap_seconds": 0.01636899999999919,
+            "nonincreasing_timestamps": 0,
+            "gaps_over_100ms": 0,
+            "receipt_minus_device_span_seconds": 0.07132899999999864,
+            "batches": 425,
+            "registered": true
+          },
+          "oak.gyro_raw_list": {
+            "samples": 2125,
+            "malformed": 0,
+            "first_device_seconds": 2.680935,
+            "last_device_seconds": 23.908253,
+            "span_seconds": 21.227317999999997,
+            "mean_hz": 100.05974376979702,
+            "median_period_seconds": 0.010025000000000173,
+            "max_gap_seconds": 0.010630000000000805,
+            "nonincreasing_timestamps": 0,
+            "gaps_over_100ms": 0,
+            "receipt_minus_device_span_seconds": 0.06731100000000012,
+            "batches": 425,
+            "registered": true
+          }
+        },
+        "messages": {
+          "oak.depth_seq": 213,
+          "platform.rpy": 286,
+          "platform.joint_angle": 286,
+          "platform.pose2d": 286
+        },
+        "frames": {
+          "oak.color": 213,
+          "oak.depth": 213
+        },
+        "capture_ready": true,
+        "issues": [],
+        "limitations": [
+          "Checks recorded sensor data, not calibrated pose accuracy or hardware safety",
+          "OAK axes are not transformed into the front-body frame",
+          "Device timestamps and host receipt time have separate clock domains",
+          "Receipt-minus-device variation is not an absolute latency measurement"
+        ]
+      },
+      "camera_heading_joint_slope": 0.4717565509056353,
+      "camera_heading_fit_rms_deg": 0.7695911890411983,
+      "esp_heading_joint_slope": -0.6167258338111561,
+      "propulsion_command_values_mms": [
+        0
+      ],
+      "controller_replay_matches": true
+    },
+    {
+      "run": "174534",
+      "posture": "Rear right raised",
+      "neutral_samples": 125,
+      "neutral_gravity_imu": [
+        -0.9920399132341814,
+        0.022080302681187516,
+        -0.12397286309440969
+      ],
+      "neutral_tilt_degrees": 9.495828408230672,
+      "tilt_10_90": [
+        9.059573578153014,
+        9.613700400147922
+      ],
+      "empirical_pitch_median": -9.4175511002102,
+      "empirical_roll_median": 1.235832187976642,
+      "esp_median_degrees": [
+        -20.11,
+        -8.605
+      ],
+      "capture": {
+        "logfile": "/data/matty/m04-dh2-261102_174534.log",
+        "start_time": "2026-11-02T17:45:34.356891+00:00",
+        "imu": {
+          "oak.orientation_list": {
+            "samples": 2005,
+            "malformed": 0,
+            "first_device_seconds": 2.641829,
+            "last_device_seconds": 22.669904,
+            "span_seconds": 20.028074999999998,
+            "mean_hz": 100.05954141873346,
+            "median_period_seconds": 0.010005500000000556,
+            "max_gap_seconds": 0.010544000000001219,
+            "nonincreasing_timestamps": 0,
+            "gaps_over_100ms": 0,
+            "receipt_minus_device_span_seconds": 0.06512100000000132,
+            "batches": 401,
+            "max_quaternion_norm_error": 4.4410062166377884e-05,
+            "registered": true
+          },
+          "oak.acc_raw_list": {
+            "samples": 2005,
+            "malformed": 0,
+            "first_device_seconds": 2.645126,
+            "last_device_seconds": 22.66927,
+            "span_seconds": 20.024144,
+            "mean_hz": 100.07918440858197,
+            "median_period_seconds": 0.00820500000000024,
+            "max_gap_seconds": 0.016231000000001217,
+            "nonincreasing_timestamps": 0,
+            "gaps_over_100ms": 0,
+            "receipt_minus_device_span_seconds": 0.07018999999999664,
+            "batches": 401,
+            "registered": true
+          },
+          "oak.gyro_raw_list": {
+            "samples": 2005,
+            "malformed": 0,
+            "first_device_seconds": 2.641815,
+            "last_device_seconds": 22.669916,
+            "span_seconds": 20.028101,
+            "mean_hz": 100.05941152383843,
+            "median_period_seconds": 0.010019999999999474,
+            "max_gap_seconds": 0.010668000000000788,
+            "nonincreasing_timestamps": 0,
+            "gaps_over_100ms": 0,
+            "receipt_minus_device_span_seconds": 0.0648939999999989,
+            "batches": 401,
+            "registered": true
+          }
+        },
+        "messages": {
+          "oak.depth_seq": 201,
+          "platform.rpy": 274,
+          "platform.joint_angle": 274,
+          "platform.pose2d": 274
+        },
+        "frames": {
+          "oak.color": 201,
+          "oak.depth": 201
+        },
+        "capture_ready": true,
+        "issues": [],
+        "limitations": [
+          "Checks recorded sensor data, not calibrated pose accuracy or hardware safety",
+          "OAK axes are not transformed into the front-body frame",
+          "Device timestamps and host receipt time have separate clock domains",
+          "Receipt-minus-device variation is not an absolute latency measurement"
+        ]
+      },
+      "camera_heading_joint_slope": 0.5158435433905225,
+      "camera_heading_fit_rms_deg": 0.5443318565559953,
+      "esp_heading_joint_slope": -0.4364002180745224,
+      "propulsion_command_values_mms": [
+        0
+      ],
+      "controller_replay_matches": true
+    }
+  ],
+  "raw_fused_alignment": {
+    "raw_to_fused_rotation": [
+      [
+        -0.0,
+        -1.0,
+        -0.0
+      ],
+      [
+        -1.0,
+        -0.0,
+        -0.0
+      ],
+      [
+        -0.0,
+        -0.0,
+        -1.0
+      ]
+    ],
+    "method": "Choose proper signed permutation on flat and both-front settled gravity; validate single-wheel runs and independent gyro derivatives",
+    "training_median_error_deg": 1.229583695992261,
+    "runner_up_median_error_deg": 4.336946509187058,
+    "runs": [
+      {
+        "run": "174346",
+        "acc_norm_median": 9.165839341982801,
+        "acc_norm_10_90": [
+          8.94909487728812,
+          9.437304148514015
+        ],
+        "gravity_alignment_median_deg": 1.5112359944941551,
+        "gravity_alignment_p90_deg": 5.18951748743189,
+        "gyro_quaternion_rms_rad_s": 0.00592927476815197,
+        "gyro_quaternion_gain": 0.9992712182429009,
+        "gyro_steady_median_raw_rad_s": [
+          -0.001065264455974102,
+          0.001065264455974102,
+          0.0
+        ]
+      },
+      {
+        "run": "174419",
+        "acc_norm_median": 9.274110394599536,
+        "acc_norm_10_90": [
+          9.169138475741505,
+          9.417829987617981
+        ],
+        "gravity_alignment_median_deg": 0.8323176194028716,
+        "gravity_alignment_p90_deg": 4.563525439491085,
+        "gyro_quaternion_rms_rad_s": 0.005830554619041987,
+        "gyro_quaternion_gain": 0.9991537275310841,
+        "gyro_steady_median_raw_rad_s": [
+          -0.001065264455974102,
+          0.002130528911948204,
+          -0.001065264455974102
+        ]
+      },
+      {
+        "run": "174456",
+        "acc_norm_median": 9.236887989840906,
+        "acc_norm_10_90": [
+          9.162258017808794,
+          9.31172251511442
+        ],
+        "gravity_alignment_median_deg": 0.6189895236023604,
+        "gravity_alignment_p90_deg": 2.4702251720692696,
+        "gyro_quaternion_rms_rad_s": 0.006962088982415013,
+        "gyro_quaternion_gain": 0.9992101106624259,
+        "gyro_steady_median_raw_rad_s": [
+          -0.001065264455974102,
+          0.001065264455974102,
+          0.0
+        ]
+      },
+      {
+        "run": "174534",
+        "acc_norm_median": 9.107059677232408,
+        "acc_norm_10_90": [
+          8.732287032515764,
+          9.457402586349712
+        ],
+        "gravity_alignment_median_deg": 0.8176573086397791,
+        "gravity_alignment_p90_deg": 6.296489929533715,
+        "gyro_quaternion_rms_rad_s": 0.010120451842735459,
+        "gyro_quaternion_gain": 0.9931013296170362,
+        "gyro_steady_median_raw_rad_s": [
+          -0.002130528911948204,
+          0.002130528911948204,
+          0.0
+        ]
+      }
+    ]
+  },
+  "calibration_file": "/data/matty/m04-dh2-oak-calibration.json",
+  "calibration_device_id": "14442C10116FDAD600"
+}

@@ -12,6 +12,11 @@ the robot before relying on raw capture. The operator identified and corrected
 a different OAK branch; the next recording should verify raw output. STOP-held startup is optional when
 physical access requires normal lid closure and zero-speed look-around.
 
+The [later raw-enabled set](dh2-indoor-261102-raw.md) now verifies all three IMU
+streams and supplies a tested raw/fused axis mapping for the next pose-provider
+stage. Acceleration scale and the mechanical camera-to-chassis transform still
+need validation.
+
 ## Stages
 
 1. **Now:** factory calibration, stationary/scan/short-motion recordings, sensor

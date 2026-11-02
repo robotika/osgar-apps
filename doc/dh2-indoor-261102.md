@@ -6,6 +6,10 @@ wheel raised with the left on the floor. The operator confirmed the camera lid
 was in its normal closed position once STOP was released. Ethernet was used to
 start the runs; a STOP-held stationary baseline was not possible with this setup.
 
+The [second four-run set](dh2-indoor-261102-second.md) adds the rear-right-wheel
+case and repeats the front-section tilt results. Raw IMU channels are still absent
+in that set, so the driver/launch-environment correction needs verification.
+
 **These recordings are useful; they do not need repeating just to hold STOP.**
 All three `app` modules replay normally with their embedded configurations.
 Every recorded desired propulsion speed is zero, and each run ends with STOP.
