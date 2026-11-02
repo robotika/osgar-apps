@@ -1,0 +1,562 @@
+[
+  {
+    "recording": "m04-dh2-261102_175816.log",
+    "application_end_seconds": 59.675857,
+    "controller_replay_matches": true,
+    "capture": {
+      "logfile": "/data/matty/m04-dh2-261102_175816.log",
+      "start_time": "2026-11-02T17:58:16.569811+00:00",
+      "imu": {
+        "oak.orientation_list": {
+          "samples": 5240,
+          "malformed": 0,
+          "first_device_seconds": 2.609057,
+          "last_device_seconds": 54.967028,
+          "span_seconds": 52.357971,
+          "mean_hz": 100.06117311154017,
+          "median_period_seconds": 0.010004999999999598,
+          "max_gap_seconds": 0.011073000000001443,
+          "nonincreasing_timestamps": 0,
+          "gaps_over_100ms": 0,
+          "receipt_minus_device_span_seconds": 0.07370600000000849,
+          "batches": 1048,
+          "max_quaternion_norm_error": 4.899381780831824e-05
+        },
+        "oak.acc_raw_list": {
+          "samples": 5240,
+          "malformed": 0,
+          "first_device_seconds": 2.61157,
+          "last_device_seconds": 54.965919,
+          "span_seconds": 52.354349,
+          "mean_hz": 100.06809558457121,
+          "median_period_seconds": 0.008215999999997337,
+          "max_gap_seconds": 0.016237999999997754,
+          "nonincreasing_timestamps": 0,
+          "gaps_over_100ms": 0,
+          "receipt_minus_device_span_seconds": 0.07947699999999713,
+          "batches": 1048
+        },
+        "oak.gyro_raw_list": {
+          "samples": 5240,
+          "malformed": 0,
+          "first_device_seconds": 2.608731,
+          "last_device_seconds": 54.967159,
+          "span_seconds": 52.358428,
+          "mean_hz": 100.06029974773115,
+          "median_period_seconds": 0.010023999999999589,
+          "max_gap_seconds": 0.01069000000000031,
+          "nonincreasing_timestamps": 0,
+          "gaps_over_100ms": 0,
+          "receipt_minus_device_span_seconds": 0.07382299999999731,
+          "batches": 1048
+        }
+      },
+      "messages": {
+        "oak.depth_seq": 524,
+        "platform.rpy": 596,
+        "platform.joint_angle": 596,
+        "platform.pose2d": 596
+      },
+      "frames": {
+        "oak.color": 524,
+        "oak.depth": 524
+      },
+      "capture_ready": true,
+      "issues": [],
+      "limitations": [
+        "Checks recorded sensor data, not calibrated pose accuracy or hardware safety",
+        "OAK axes are not transformed into the front-body frame",
+        "Device timestamps and host receipt time have separate clock domains",
+        "Receipt-minus-device variation is not an absolute latency measurement"
+      ]
+    },
+    "app_config": {
+      "terminate_on_stop": true,
+      "max_speed": 0.3,
+      "min_speed": 0.15,
+      "explore_speed": 0.2,
+      "stop_height": 0.65,
+      "step_distance": 0.5,
+      "scan_dwell": 1.5,
+      "scan_settle": 0.5,
+      "obstacle_stop_dist": 0.7,
+      "obstacle_resume_dist": 1.0,
+      "obstacle_min_pixels": 20,
+      "required_cones": 4,
+      "visit_wait": 3.0,
+      "repeat_radius": 1.0,
+      "allow_reverse": true,
+      "reverse_distance": 0.3,
+      "reverse_speed": 0.1
+    },
+    "front_contacts": [
+      {
+        "time": 50.431167,
+        "preceding_command": [
+          50.4197,
+          [
+            200,
+            -3000
+          ]
+        ],
+        "preceding_clearance": [
+          50.401668,
+          {
+            "distance": 1.367,
+            "valid_fraction": 0.985009765625,
+            "blocked": false
+          }
+        ],
+        "preceding_pose2d": [
+          50.328551,
+          [
+            888,
+            -28,
+            -1993
+          ]
+        ],
+        "preceding_joint": [
+          50.328499,
+          [
+            -2971
+          ]
+        ]
+      },
+      {
+        "time": 53.348101,
+        "preceding_command": [
+          53.332725,
+          [
+            0,
+            -3000
+          ]
+        ],
+        "preceding_clearance": [
+          53.305539,
+          {
+            "distance": 1.253,
+            "valid_fraction": 0.93818359375,
+            "blocked": false
+          }
+        ],
+        "preceding_pose2d": [
+          53.234477,
+          [
+            929,
+            -44,
+            -2430
+          ]
+        ],
+        "preceding_joint": [
+          53.234419,
+          [
+            -2426
+          ]
+        ]
+      },
+      {
+        "time": 56.458002,
+        "preceding_command": [
+          56.448056,
+          [
+            0,
+            0
+          ]
+        ],
+        "preceding_clearance": [
+          56.406965,
+          {
+            "distance": 1.308,
+            "valid_fraction": 0.98017578125,
+            "blocked": false
+          }
+        ],
+        "preceding_pose2d": [
+          56.355308,
+          [
+            927,
+            -44,
+            -2451
+          ]
+        ],
+        "preceding_joint": [
+          56.355253,
+          [
+            -3120
+          ]
+        ]
+      }
+    ],
+    "rear_activations": [],
+    "first_command_after_contact": [
+      50.431652,
+      [
+        0,
+        3000
+      ]
+    ],
+    "positive_commands_after_first_contact": 0,
+    "status_transitions": [
+      [
+        0.085707,
+        "stopped"
+      ],
+      [
+        0.286033,
+        "waiting for initial observations"
+      ],
+      [
+        7.473102,
+        "scanning"
+      ],
+      [
+        13.597409,
+        "advancing to next scan"
+      ],
+      [
+        16.603231,
+        "scanning"
+      ],
+      [
+        22.718286,
+        "advancing to next scan"
+      ],
+      [
+        23.108334,
+        "obstacle: forward motion stopped"
+      ],
+      [
+        23.119217,
+        "recovery scan: obstacle"
+      ],
+      [
+        27.637387,
+        "orienting toward recovery path"
+      ],
+      [
+        28.239732,
+        "recovery scan: obstacle"
+      ],
+      [
+        32.760943,
+        "orienting toward recovery path"
+      ],
+      [
+        33.363942,
+        "recovery scan: obstacle"
+      ],
+      [
+        37.883503,
+        "orienting toward recovery path"
+      ],
+      [
+        38.485215,
+        "recovery scan: obstacle"
+      ],
+      [
+        43.000322,
+        "orienting toward recovery path"
+      ],
+      [
+        43.601434,
+        "recovery scan: obstacle"
+      ],
+      [
+        48.111715,
+        "orienting toward recovery path"
+      ],
+      [
+        48.8142,
+        "departing along recovery path"
+      ],
+      [
+        50.431726,
+        "recovery scan: front bumper"
+      ],
+      [
+        59.675857,
+        "emergency stop"
+      ]
+    ]
+  },
+  {
+    "recording": "m04-dh2-261102_175940.log",
+    "application_end_seconds": 36.974484,
+    "controller_replay_matches": true,
+    "capture": {
+      "logfile": "/data/matty/m04-dh2-261102_175940.log",
+      "start_time": "2026-11-02T17:59:40.518574+00:00",
+      "imu": {
+        "oak.orientation_list": {
+          "samples": 2960,
+          "malformed": 0,
+          "first_device_seconds": 2.674244,
+          "last_device_seconds": 32.247467,
+          "span_seconds": 29.573223,
+          "mean_hz": 100.05673037396026,
+          "median_period_seconds": 0.01000399999999857,
+          "max_gap_seconds": 0.010556999999998595,
+          "nonincreasing_timestamps": 0,
+          "gaps_over_100ms": 0,
+          "receipt_minus_device_span_seconds": 0.072214000000006,
+          "batches": 592,
+          "max_quaternion_norm_error": 4.454044152812919e-05
+        },
+        "oak.acc_raw_list": {
+          "samples": 2960,
+          "malformed": 0,
+          "first_device_seconds": 2.677541,
+          "last_device_seconds": 32.247506,
+          "span_seconds": 29.569965,
+          "mean_hz": 100.06775456108927,
+          "median_period_seconds": 0.008210999999999302,
+          "max_gap_seconds": 0.01618000000000208,
+          "nonincreasing_timestamps": 0,
+          "gaps_over_100ms": 0,
+          "receipt_minus_device_span_seconds": 0.07750399999999757,
+          "batches": 592
+        },
+        "oak.gyro_raw_list": {
+          "samples": 2960,
+          "malformed": 0,
+          "first_device_seconds": 2.674009,
+          "last_device_seconds": 32.247673,
+          "span_seconds": 29.573664,
+          "mean_hz": 100.05523833637929,
+          "median_period_seconds": 0.010032000000000707,
+          "max_gap_seconds": 0.010714000000000112,
+          "nonincreasing_timestamps": 0,
+          "gaps_over_100ms": 0,
+          "receipt_minus_device_span_seconds": 0.07223300000000421,
+          "batches": 592
+        }
+      },
+      "messages": {
+        "oak.depth_seq": 297,
+        "platform.rpy": 370,
+        "platform.joint_angle": 370,
+        "platform.pose2d": 370
+      },
+      "frames": {
+        "oak.color": 297,
+        "oak.depth": 297
+      },
+      "capture_ready": true,
+      "issues": [],
+      "limitations": [
+        "Checks recorded sensor data, not calibrated pose accuracy or hardware safety",
+        "OAK axes are not transformed into the front-body frame",
+        "Device timestamps and host receipt time have separate clock domains",
+        "Receipt-minus-device variation is not an absolute latency measurement"
+      ]
+    },
+    "app_config": {
+      "terminate_on_stop": true,
+      "max_speed": 0.3,
+      "min_speed": 0.15,
+      "explore_speed": 0.2,
+      "stop_height": 0.65,
+      "step_distance": 0.5,
+      "scan_dwell": 1.5,
+      "scan_settle": 0.5,
+      "obstacle_stop_dist": 0.7,
+      "obstacle_resume_dist": 1.0,
+      "obstacle_min_pixels": 20,
+      "required_cones": 4,
+      "visit_wait": 3.0,
+      "repeat_radius": 1.0,
+      "allow_reverse": true,
+      "reverse_distance": 0.3,
+      "reverse_speed": 0.1
+    },
+    "front_contacts": [
+      {
+        "time": 29.940764,
+        "preceding_command": [
+          29.928667,
+          [
+            200,
+            -3000
+          ]
+        ],
+        "preceding_clearance": [
+          29.884657,
+          {
+            "distance": 1.432,
+            "valid_fraction": 0.949609375,
+            "blocked": false
+          }
+        ],
+        "preceding_pose2d": [
+          29.838136,
+          [
+            869,
+            9,
+            -846
+          ]
+        ],
+        "preceding_joint": [
+          29.838077,
+          [
+            -2971
+          ]
+        ]
+      },
+      {
+        "time": 31.272766,
+        "preceding_command": [
+          31.234729,
+          [
+            0,
+            3000
+          ]
+        ],
+        "preceding_clearance": [
+          31.188195,
+          {
+            "distance": 1.308,
+            "valid_fraction": 0.8921875,
+            "blocked": false
+          }
+        ],
+        "preceding_pose2d": [
+          31.23078,
+          [
+            925,
+            -1,
+            -1372
+          ]
+        ],
+        "preceding_joint": [
+          31.230726,
+          [
+            2223
+          ]
+        ]
+      },
+      {
+        "time": 33.964014,
+        "preceding_command": [
+          33.948363,
+          [
+            0,
+            -3000
+          ]
+        ],
+        "preceding_clearance": [
+          33.887865,
+          {
+            "distance": 1.308,
+            "valid_fraction": 0.897119140625,
+            "blocked": false
+          }
+        ],
+        "preceding_pose2d": [
+          33.861181,
+          [
+            923,
+            0,
+            -1382
+          ]
+        ],
+        "preceding_joint": [
+          33.861127,
+          [
+            -2760
+          ]
+        ]
+      },
+      {
+        "time": 35.465074,
+        "preceding_command": [
+          35.454804,
+          [
+            0,
+            3000
+          ]
+        ],
+        "preceding_clearance": [
+          35.379972,
+          {
+            "distance": 1.367,
+            "valid_fraction": 0.803076171875,
+            "blocked": false
+          }
+        ],
+        "preceding_pose2d": [
+          35.37187,
+          [
+            923,
+            -1,
+            -1380
+          ]
+        ],
+        "preceding_joint": [
+          35.371841,
+          [
+            2988
+          ]
+        ]
+      }
+    ],
+    "rear_activations": [],
+    "first_command_after_contact": [
+      29.941227,
+      [
+        0,
+        3000
+      ]
+    ],
+    "positive_commands_after_first_contact": 0,
+    "status_transitions": [
+      [
+        0.085158,
+        "stopped"
+      ],
+      [
+        0.185264,
+        "waiting for initial observations"
+      ],
+      [
+        7.54698,
+        "scanning"
+      ],
+      [
+        13.671654,
+        "advancing to next scan"
+      ],
+      [
+        16.677192,
+        "scanning"
+      ],
+      [
+        22.794916,
+        "advancing to next scan"
+      ],
+      [
+        23.381899,
+        "obstacle: forward motion stopped"
+      ],
+      [
+        23.397746,
+        "recovery scan: obstacle"
+      ],
+      [
+        27.919883,
+        "orienting toward recovery path"
+      ],
+      [
+        28.623056,
+        "departing along recovery path"
+      ],
+      [
+        29.941304,
+        "recovery scan: front bumper"
+      ],
+      [
+        36.974484,
+        "emergency stop"
+      ]
+    ]
+  }
+]

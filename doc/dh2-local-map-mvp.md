@@ -8,6 +8,11 @@ Implementation starts with the [stage 1 indoor procedure](dh2-indoor-stage1.md):
 camera IMU acquisition, factory calibration capture and offline sensor checks.
 The pose provider and obstacle-map veto remain subsequent stages.
 
+The later [indoor box trials](dh2-box-261102.md) provide a simpler regression
+case with complete camera IMU data. They also require checking zero-propulsion
+articulation sweeps: later bumper activations occurred during recovery look-around
+after forward commands had already stopped.
+
 ## What the recording shows
 
 Baseline `app` replay matches, without `-F`. The first front-bumper activation is
@@ -235,8 +240,9 @@ this feature is **not a drop-off detector or proof of safe support ahead**.
 
 ## Motion check and recovery
 
-Check the proposed **next 0.5 m movement**, not just the depth along the current
-camera axis. Sample its path about every 2 cm using Matty's existing constant-
+Check the proposed **next 0.5 m movement and any stationary articulation change**,
+not just the depth along the current camera axis. Sample a translating path about
+every 2 cm using Matty's existing constant-
 articulation kinematics. Cover both articulated sections and bumpers. The simplest
 conservative first implementation uses a measured circumscribed footprint around
 the correct pose reference; a two-section footprint can reduce false blocking
@@ -246,17 +252,28 @@ width/length defaults.
 
 - A confirmed cell intersecting the proposed sweep vetoes forward motion,
   regardless of whether today's central depth ROI is clear.
+- Zero desired propulsion is not an exemption: changing articulation sweeps
+  the front/rear sections and bumpers through space. Check intermediate joint
+  angles from the measured angle to the requested angle, with translation of
+  section reference points. The indoor box recordings show repeated contacts
+  during such recovery scans after positive-speed commands had stopped.
 - Check on every depth/pose update while moving, and immediately before issuing
   a positive-speed command. Retain the existing immediate depth stop, emergency
   stop and directional bumper checks.
 - Reuse recovery's left/center/right candidates. Query their short sweeps against
-  the same map. Look-around at speed zero can gather new observations, but cannot
-  clear remembered cells merely by looking away.
+  the same map. Look-around at speed zero can gather new observations only if
+  its own articulation sweep is acceptable. It cannot clear remembered cells
+  merely by looking away.
 - On front contact, stop immediately and add a short blocked strip along the
   **measured front bumper**, with a few centimeters of outward thickness and the
   localization margin. Press/release transitions do not clear it. This prevents
   recovery from repeatedly selecting the same contact location even if the step
   was never measured by stereo.
+- On an ordinary motion veto, hold the current measured articulation rather
+  than automatically requesting angle zero: recentering is itself a movement.
+  Reject an intersecting recovery scan, including immediately after contact;
+  retain the existing emergency-stop handling and bounded retreat policy.
+  The exact zero-propulsion hold behavior needs hardware verification.
 - If all forward candidates are blocked, use the already-authorized bounded
   reverse (up to 30 cm, rear bumper stops it) and rescan. The map does not establish
   rear clearance. Keep existing reverse limits; do not restart repeated reversing
@@ -368,6 +385,9 @@ or general sensor watchdog is needed.
    repeated forward re-entry into that patch, including the recorded departures
    at +374.261 and +388.323 s where their sweeps intersect it. Validate direction
    changes against actual swept geometry, not just the sign of steering.
+   Also use the indoor `175816` and `175940` trials: verify retention of the box
+   seen before contact and reject intersecting zero-propulsion recovery sweeps.
+   Distinguish new forward attempts from bumper transitions during steering.
 5. **Negative controls:** the traversed bridge/entry in this run and successful
    cone approaches (`104205`, `105430`, `110047`) must not become globally blocked
    by remembered flat/sloped ground. Open-space zero depth still permits movement.

@@ -17,6 +17,10 @@ streams and supplies a tested raw/fused axis mapping for the next pose-provider
 stage. Acceleration scale and the mechanical camera-to-chassis transform still
 need validation.
 
+The subsequent [two low-box approach trials](dh2-box-261102.md) capture the box
+before its near-field disappearance and confirm front contacts in both runs.
+They also require checking stationary articulation sweeps in the map design.
+
 ## Stages
 
 1. **Now:** factory calibration, stationary/scan/short-motion recordings, sensor
