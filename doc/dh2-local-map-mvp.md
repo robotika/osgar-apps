@@ -4,6 +4,10 @@ Design for the low wooden platform/step at the end of
 `/data/matty/m04-dh2-261031_101546.log`. This is a proposed application feature,
 not an enabled controller change or a validated collision-avoidance result.
 
+Implementation starts with the [stage 1 indoor procedure](dh2-indoor-stage1.md):
+camera IMU acquisition, factory calibration capture and offline sensor checks.
+The pose provider and obstacle-map veto remain subsequent stages.
+
 ## What the recording shows
 
 Baseline `app` replay matches, without `-F`. The first front-bumper activation is

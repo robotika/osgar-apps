@@ -5,6 +5,17 @@ The event recordings and their replay results are summarized in
 `Castle`, `ConeDetector` and `ConeApproach` prototypes have been removed.
 All 15 recordings from 2026-10-31 replay with matching controller outputs.
 
+## Indoor development: first step
+
+The shared config now records OAK integrated orientation and raw gyro/accelerometer
+samples. Follow the [stage 1 indoor procedure](../doc/dh2-indoor-stage1.md) for
+factory calibration capture, STOP-held data collection, zero-speed articulation
+and an optional short slow movement. It uses parameter overrides on this config.
+The mission controller is unchanged; local-map protection is not enabled yet.
+
+Check a recording with `python -m dh2.sensor_check LOG --output DIRECTORY
+--require-oak-imu` to save timing/validity statistics and sensor plots.
+
 ## Interactive recording viewer
 
 From the repository root, open one recording or a sequence in command-line order:

@@ -78,8 +78,10 @@
           "is_stereo_images": false,
           "laser_projector_current": 0,
           "flood_light_current": 0,
-          "is_imu_enabled": false,
-          "number_imu_records": 10,
+          "is_imu_enabled": true,
+          "imu_orientation": true,
+          "imu_raw_data": true,
+          "number_imu_records": 5,
           "disable_magnetometer_fusion": true,
           "mono_resolution": [
             640,
