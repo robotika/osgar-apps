@@ -59,31 +59,104 @@ flowchart LR
     Q --> A[Allow motion or use existing recovery]
 ```
 
-## Geometry and synchronization
+## Frames and a reusable Matty pose3d provider
 
-- Use **rectified left-camera depth intrinsics at 640×400**. Read m04's actual
-  calibration with the existing `rerun-route/get_oak_calibration.py` workflow.
-  Neither RGB intrinsics nor another robot's calibration is a substitute.
-- Measure the camera-to-platform transform and the footprint, including bumpers.
-  Odometry pose origin must be identified. Apply camera translation as the front
-  section articulates; yaw rotation alone misses that small translation.
-- Use measured `platform.joint_angle`, not desired steering, including during
-  stationary look-around. The existing `pose_yaw + joint/2` convention is a
-  starting hypothesis requiring a stationary scan against a fixed wall.
-- Use ESP32 roll/pitch to express points relative to gravity. Verify axis signs,
-  mounting bias and whether its IMU frame is on the front or rear section. The
-  core Matty driver itself marks its rotation convention for review. Do not use
-  magnetometer yaw to replace local odometry yaw in this MVP.
-- Buffer depth until the next odometry sample if needed, then interpolate pose,
-  articulation and tilt at its host-log timestamp. Unwrap angles; reject gaps
-  over 0.3 s or extrapolation, as the offline mapper already does. This is bounded
-  processing latency, not support for devices joining late. Measure any constant
-  depth-pipeline delay and include the resulting motion error in the margin.
+Only the camera's transform **within the front section** is rigid. There is no
+single rigid camera-to-whole-robot transform while the platform articulates.
+Define a front-body frame `front` with a measured origin fixed in that section,
+X forward, Y left, Z up. The depth optical frame has its own calibrated fixed
+transform to `front`. Then:
 
-A 2D pose has no reliable elevation. Therefore store **obstacle evidence in XY**,
-not an assumed globally accurate ground height. Ground-relative height is
-estimated afresh for each frame; it is used for classification, not averaged
-across a hillside as though the robot's altitude were constant.
+`T_odom_depth(t) = T_odom_front(t) * T_front_depth`
+
+The uncertain part belongs in a **Matty pose provider**, not inside the depth
+mapper. It must identify what point/heading `platform.pose2d` actually integrates
+and account for front-section translation as well as rotation during articulation.
+A stationary center or zero commanded speed does not imply a stationary camera.
+The existing `pose_yaw + joint/2` is a hypothesis to test, not a frame definition.
+
+Propose a reusable `MattyPose3D` application node, outside the DH2 mission module
+(e.g. a future `matty/pose3d.py` package). Inputs are wheel-derived odometry,
+measured articulation and front-camera IMU; ESP32 attitude can be an explicitly
+configured historical-data source. Publish OSGAR's existing **`pose3d`** format:
+
+```text
+[[x_metres, y_metres, z_metres], [qx, qy, qz, qw]]
+```
+
+The message describes `front` in a run-local `odom` frame; the origin, axis
+conventions and extrinsics are configuration, recorded with the log. Initial
+position can be zero and initial heading arbitrary, while vertical is gravity-
+aligned. The mapper then accepts a conventional pose3d and fixed sensor transform,
+without knowing how Matty's chassis articulates. The footprint query still needs
+both body sections and their measured geometry.
+
+Reuse OSGAR quaternion helpers and the conventions in `osgar.drivers.odoimuloc`.
+That existing node rotates signed odometry increments by an orientation and
+publishes pose3d; it does not establish Matty's front-frame kinematics or lever
+arms, so it is not a drop-in estimator for this platform. Keep the Matty-specific
+provider in osgar-apps initially, reusable by other applications here. Any later
+move of proven generic functionality to OSGAR is separate work.
+
+A quaternion does **not** supply translation or reliable elevation. Wheel travel
+and tilt can provide a dead-reckoned Z estimate once the kinematics are established;
+slip, passive articulation and unmeasured motions remain errors. Do not double-
+integrate raw acceleration to manufacture an accurate Z. Publish a companion
+quality/mode indication (e.g. `planar_esp32` versus `wheel_oak_imu`), distinguishing
+assumed Z from estimated Z. Historical logs cannot acquire the missing camera
+IMU measurements retroactively. Ground-relative obstacle classification remains
+necessary even when a pose3d is available.
+
+## Camera IMU and synchronization
+
+Use **rectified left-camera depth intrinsics at 640×400** and measure camera/IMU
+extrinsics plus both section footprints, including bumpers. Obtain m04 calibration
+with the existing `rerun-route/get_oak_calibration.py` workflow. Neither RGB
+intrinsics nor another robot's calibration is a substitute.
+
+For future recordings, enable the OAK-D Pro IMU's integrated orientation **and**
+raw accelerometer/gyro. The available OSGAR DepthAI v3 driver exposes:
+
+- `oak.orientation_list`: batches of `[device_seconds, accuracy, qx, qy, qz, qw]`;
+- `oak.acc_raw_list`: batches of `[device_seconds, ax, ay, az]`;
+- `oak.gyro_raw_list`: batches of `[device_seconds, gx, gy, gz]`.
+
+Proposed future camera configuration fragment (not enabled in the contest config
+by this design update):
+
+```json
+{
+  "is_imu_enabled": true,
+  "imu_orientation": true,
+  "imu_raw_data": true,
+  "disable_magnetometer_fusion": true,
+  "number_imu_records": 5
+}
+```
+
+Use the integrated orientation first, with verified mounting/axis transforms and
+initial alignment to local odometry. Record raw samples for diagnosis, bias checks
+and later estimator development; do not fuse them a second time as independent
+measurements of the same attitude. Avoid relying on magnetic heading beside the
+castle masonry. Batch size 5 is a starting latency/overhead tradeoff, to measure.
+
+IMU data was disabled during the contest. The `101546` investigation therefore
+uses only recorded ESP32 attitude, with its sign/mounting/frame conventions
+verified separately. The core Matty driver's rotation conversion itself carries
+a review note. This is an explicit dataset mode, not runtime sensor fallback.
+
+Use each IMU sample's acquisition time, not the arrival time of its whole batch.
+Check clock domains: the inspected driver uses `getTimestampDevice()` for IMU
+samples and `getTimestamp()` for depth sequence metadata; do not assume their
+numbers share an epoch. Establish the device/DepthAI/host time mapping and its
+uncertainty before combining `depth_seq` with IMU batches. Old-log analysis can
+retain the documented approximate host-time association.
+
+Buffer depth until bracketing pose/attitude samples arrive when needed. Interpolate
+XYZ and measured joint angles, and interpolate quaternions with shortest-path
+SLERP (including q versus -q equivalence). Reject excessive gaps/extrapolation;
+0.3 s remains the initial maximum gap. Account for processing latency in the
+motion margin. Do not use current attitude for an older captured depth frame.
 
 ## Depth classification
 
@@ -117,9 +190,19 @@ its heights are not sufficient to claim an 8 cm classification result.
 
 ## Map representation and retention
 
-Suggested initial size: **6×6 m**, centered around the robot, **5 cm cells**
-(14,400 cells). Keep coordinates fixed in odometry; move the window as the robot
-moves. Store per cell:
+Suggested initial size: **6×6 m**, **5 cm cells** (120×120 = 14,400 cells).
+The grid is **odometry-aligned, not robot-heading-aligned**. Its axes stay fixed
+for the run. Turning rotates the robot/camera footprint within the map; it does
+not rotate or resample stored cells. A robot-up display may rotate a rendered
+image without changing the stored representation.
+
+As the robot translates, move the window origin by integer cell increments.
+For example, use `floor(front_xy / resolution) - [60, 60]` as its lower-left global
+cell index. Retained cells keep their original odometry coordinates; only cells
+outside the new window are evicted. A fixed frame also avoids interpolation blur
+from repeatedly rotating a small obstacle during stationary look-around.
+
+Store per cell:
 
 - confirmed obstacle flag and evidence source (depth or bumper);
 - distinct-frame support, recent ground-relative height range;
@@ -182,25 +265,84 @@ This is a short-horizon motion veto and candidate selector, not a new full path
 planner. It avoids blindly retrying the remembered step; it does not promise that
 an escape route exists or that Matty can climb this particular platform.
 
-## Application structure
+## Node boundaries and periodic map snapshots
 
-Keep the runtime utility in `dh2/`, separate from OSGAR core. A proposed
-`LocalObstacleMap` can expose `observe_depth(...)`, `mark_front_contact(...)`,
-`advance_pose(...)`, and `check_sweep(...)`. Only incoming OSGAR messages receive
-`on_*` names. Share projection/interpolation helpers with `dh2.mapping` where
-conventions agree; do not silently change the existing preview's geometry.
+Keep a reusable Matty pose provider separate from the obstacle map and DH2 mission:
 
-Initially run it **in shadow mode**: record map obstacles and proposed vetoes,
-with no connection to steering. Suggested debug output includes cell resolution,
-odometry origin, confirmed cells and evidence age, candidate sweeps, and a veto
-reason/nearest blocking cell. Add a bird's-eye panel to the viewer so RGB, depth,
-remembered cells and proposed motion can be inspected at the same log offset.
+```text
+wheel odometry + articulation + camera IMU -> MattyPose3D -> pose3d
+pose3d + depth + bumpers                  -> LocalObstacleMap
+map + candidate body sweeps               -> DH2 motion/recovery decision
+```
 
-A later opt-in controller setting enables its veto. New required runtime links
-are `platform.joint_angle` and verified tilt, in addition to existing pose/depth.
-Use the single shared DH2 config and prefix-specific calibration lookup if robot
-geometry differs. Do not enable metric obstacle classification with guessed
-intrinsics. No additional mission-duration or general sensor watchdog is needed.
+A proposed `LocalObstacleMap` can expose `observe_depth(...)`,
+`mark_front_contact(...)`, `advance_pose(...)`, and `check_sweep(...)`. Only
+incoming OSGAR messages receive `on_*` names. Share projection/interpolation
+helpers with `dh2.mapping` where conventions agree; do not silently change the
+existing preview's geometry. Footprint/contact transforms use the same Matty
+frame conventions as the pose provider.
+
+**Publish complete map snapshots every X seconds**, configurable on the map node:
+
+```json
+{
+  "size_m": 6.0,
+  "resolution": 0.05,
+  "publish_period": 1.0
+}
+```
+
+This cadence is independent of the proposed 5 Hz map-update rate. Keep updating
+and checking motion between publications; the controller must not wait for a
+one-second diagnostic snapshot to stop. If mapping is a separate node, publish
+motion-veto/clearance results on every relevant update rather than consuming only
+the periodic map. Select the interval for review volume and required time detail.
+
+Publish from OSGAR timer/input timestamps, **not wall time, a thread's sleep, or
+CPU load**. Start the cadence from a defined input timestamp; publish on the first
+recorded tick at/after each deadline, without inventing backdated snapshots if
+several deadlines are crossed. Tie-breaking, ground-plane sampling/seed and cell
+ordering must also be deterministic.
+
+Each snapshot must be independently interpretable, rather than just a picture
+or a list of changes. Proposed versioned `local_map` message fields:
+
+| Field | Meaning |
+| --- | --- |
+| `version`, `sequence` | Schema version and monotonically increasing publication ID |
+| `frame_id` | Run-local `odom`; no implicit geographic heading |
+| `data_time_us`, `publish_time_us` | Latest represented input and publication-trigger log times |
+| `resolution`, `shape` | Metres/cell and `[rows_y, columns_x]` |
+| `origin` | Pose3d of the lower-left cell **corner**, odometry axes, identity grid rotation |
+| `front_pose3d`, `joint_angle`, `pose_mode` | Platform state and quality/mode used for interpretation |
+| `cell_state`, `source_bits` | Full row-major byte arrays; row index increases along +odom Y |
+| `last_seen_us` | Full array of observation timestamps; explicit integer encoding and unknown sentinel |
+| `input_sequence`, `geometry_id` | Source depth sequence and calibration/config identifier |
+
+Keep unknown, observed support and confirmed obstacle distinct. Ground-relative
+height summaries, support counts and candidate/veto details can be optional
+versioned layers. The grid origin's Z=0 is a display/reference plane, **not a
+claim that the terrain is level**.
+
+Use OSGAR serialization and optional stream compression (`local_map:gz`). The
+current serializer handles a top-level NumPy array but not arbitrary arrays nested
+inside a dict: encode layers as bytes with declared dtype/shape (e.g. uint8 state,
+little-endian int64 timestamps), or use separate array streams. Do not invent
+an incompatible nested-array payload.
+
+Initially run **in shadow mode**: record pose/map/veto proposals without changing
+steering. Add a bird's-eye viewer panel that can read recorded snapshots directly,
+next to RGB/depth. Independently rerun mapping on the same inputs and compare
+snapshot contents and timing using ordinary OSGAR replay. Same data/config should
+produce the same map payloads; compare decoded payloads rather than file bytes or
+PNG hashes. Record computed poses as well so pose and map reproducibility can be
+checked separately.
+
+A later opt-in controller setting enables the veto. Use the single shared DH2
+config with prefix-specific calibration lookup as needed. New IMU acquisition and
+estimation settings must be explicit and recorded; the contest configuration and
+lockfile are not changed by this proposal update. No additional mission-duration
+or general sensor watchdog is needed.
 
 ## Concrete acceptance checks
 
@@ -208,9 +350,11 @@ intrinsics. No additional mission-duration or general sensor watchdog is needed.
    disappears below the image. Its cell still blocks the same forward sweep.
    Zero/invalid depth, stationary scanning and a pause longer than a proposed TTL
    must not remove it.
-2. **Geometry:** fixed obstacles stay fixed during a stationary ±30-degree scan;
-   translation, angle wrap and downhill/cross-slope scenes do not create a false
-   riser. Test actual body footprint and articulated sweep intersections.
+2. **Geometry:** fixed obstacles stay fixed during a stationary ±30-degree scan,
+   including camera translation as the front articulates. Test q/-q and yaw wrap,
+   tilted/cross-slope scenes, and both articulated footprints. A pure robot rotation
+   must not rotate/re-index the stored grid; a one-cell window translation must
+   retain overlapping cells exactly.
 3. **Recorded case:** plot +300 to +403.8 s, including the observation time/position
    of step evidence, current versus remembered points, proposed sweeps, and all
    bumper transitions. Show whether confirmed depth evidence blocks the
@@ -223,7 +367,12 @@ intrinsics. No additional mission-duration or general sensor watchdog is needed.
 5. **Negative controls:** the traversed bridge/entry in this run and successful
    cone approaches (`104205`, `105430`, `110047`) must not become globally blocked
    by remembered flat/sloped ground. Open-space zero depth still permits movement.
-6. **Driving integration:** verify unchanged replay with shadow mode disabled.
+6. **Pose and map replay:** replay the same raw inputs twice and compare published
+   pose3d, snapshot times/origins/cell payloads, and veto outputs. Vary publication
+   period without changing map updates or decisions. Verify that a saved snapshot
+   alone can be displayed at the correct odometry position, including after window
+   shifts; test irregular input ticks and delayed IMU batches.
+7. **Driving integration:** verify unchanged replay with shadow mode disabled.
    With veto enabled, inspect ordinary replay's first output difference, then
    force replay to inspect vetoes on recorded inputs. That does not validate the
    new physical trajectory; repeat the step approach on hardware at low speed.

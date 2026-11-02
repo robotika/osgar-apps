@@ -51,7 +51,8 @@ uv run --locked python -m dh2.viewer \
 
 The [local obstacle-memory MVP design](../doc/dh2-local-map-mvp.md) targets the
 low step and repeated contacts at the end of event run `101546`. It describes a
-rolling obstacle map and motion checks; the runtime controller is not changed.
+rolling obstacle map, reusable Matty pose3d provider, future camera IMU inputs and
+periodic reproducible map snapshots. The runtime controller is not changed.
 
 `python -m dh2.mapping` builds an offline surface-map preview from `oak.depth`,
 `platform.pose2d` and measured `platform.joint_angle`. It does not change robot
