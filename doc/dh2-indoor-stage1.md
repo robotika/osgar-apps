@@ -5,6 +5,11 @@ pose estimator is enabled yet. The shared `dh2/config/dh2.json` now enables OAK
 integrated orientation and raw accelerometer/gyro, with batches of five samples.
 The existing driving algorithm and emergency-stop default are unchanged.
 
+**Status at the end of 2 November: stage 1 complete.** Factory calibration,
+verified raw/fused IMU capture, front/rear posture tests and box-contact regression
+recordings are available. The next work is the [stage 2 plan](dh2-stage2-plan.md),
+starting with a four-encoder audit before choosing the articulated pose model.
+
 The [first three indoor recordings](dh2-indoor-261102.md) provide good integrated
 orientation/depth data and useful tilt/articulation checks. Raw IMU streams were
 not registered despite the config flags; verify the interpreter/driver used on

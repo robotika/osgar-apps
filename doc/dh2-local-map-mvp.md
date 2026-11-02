@@ -8,6 +8,10 @@ Implementation starts with the [stage 1 indoor procedure](dh2-indoor-stage1.md):
 camera IMU acquisition, factory calibration capture and offline sensor checks.
 The pose provider and obstacle-map veto remain subsequent stages.
 
+Stage 1 is now complete; the [stage 2 plan](dh2-stage2-plan.md) incorporates the
+measured camera/joint heights and forward offsets, separate front/rear attitudes,
+and a four-encoder audit before adopting a translation/reference-point model.
+
 The later [indoor box trials](dh2-box-261102.md) provide a simpler regression
 case with complete camera IMU data. They also require checking zero-propulsion
 articulation sweeps: later bumper activations occurred during recovery look-around

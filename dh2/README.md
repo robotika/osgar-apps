@@ -7,6 +7,10 @@ All 15 recordings from 2026-10-31 replay with matching controller outputs.
 
 ## Indoor development: first step
 
+Stage 1 is complete. The [stage 2 handoff and detailed plan](../doc/dh2-stage2-plan.md)
+records measured geometry, the proposed joint-centred front/rear frames, and an
+encoder/odometry audit as the first implementation task.
+
 The shared config now records OAK integrated orientation and raw gyro/accelerometer
 samples. Follow the [stage 1 indoor procedure](../doc/dh2-indoor-stage1.md) for
 factory calibration capture, STOP-held data collection, zero-speed articulation
