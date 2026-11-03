@@ -73,28 +73,35 @@ tests and an independent 370-packet comparison against the new driver output.
 Read-error flags and acquisition/receipt timing need handling before pose
 integration; physical wheel-ID confirmation remains outstanding.
 
-### Encoder output prepared on 3 November
+### Bundled odometry output prepared on 3 November
 
-The OSGAR `feature/matty-encoders` checkout now has a small proposed driver change:
-`platform.encoders` publishes a **list of four integers** on every status packet.
-Values remain unsigned cumulative wheel distances in millimetres, in firmware
-order, with the existing 16-bit wrap representation. No unwrapping, wheel relabeling
-or odometry-model change is performed by the driver. The output is appended to
-the registered outputs so existing registration order is preserved.
+The agreed authoritative pose-provider input on OSGAR's `feature/matty-encoders`
+branch is `platform.odometry`:
 
-Both legacy and attitude-bearing packets are covered, including unsigned boundary
-values and wrap transitions. All 14 Matty driver tests pass. A forced platform
-replay of box run `175940` produces 370 encoder messages; comparing per-stream
-payload sequences shows all ten original platform outputs unchanged. Ordinary
-platform replay against the old file rejects the newly registered output because
-it was not recorded; forced replay is required to extract it. This is distinct
-from the unchanged baseline controller replay.
+```text
+[status_bits, reported_speed_mm_s, joint_angle_cdeg, [enc0, enc1, enc2, enc3]]
+```
 
-This work is committed in the separate OSGAR checkout as **`ce79024b`** on
-`feature/matty-encoders`. The osgar-apps dependency pin is unchanged. Use the intended checkout explicitly
-when testing/deploying; updating a checkout alone does not replace an installed
-driver in another environment. Future runtime consumers can subscribe directly;
-historical recordings still require the packet audit below.
+All fields come from one ESP32 status packet. Speed and angle retain signed wire
+units; the four encoders remain unsigned cumulative millimetres modulo 65536, in
+firmware order. Flagged samples are still published so consumers can reject the
+associated speed and wheel increments together. There is **no standalone encoder
+stream**; consumers extract those four values from the bundle. Its OSGAR timestamp
+is host publication time, not a firmware acquisition clock. No unwrapping, wheel
+relabeling or legacy odometry-model change is performed by the driver.
+
+Both packet formats, error flags, repeated status values and unsigned boundaries
+are tested. All 15 Matty tests pass. Reprocessing `175940` produces 370 bundles
+matching raw packets, including three flagged bundles. The ten original platform
+outputs retain their payloads and replay timestamps. Ordinary platform replay of
+older logs rejects the newly registered stream; use forced replay to extract it.
+This is distinct from unchanged baseline controller replay.
+
+The initial standalone output (commit `ce79024b`) is superseded by this bundled-
+only interface before any consumer used it. The replacement is committed as
+**`db83ac3b`** on `feature/matty-encoders`. The osgar-apps dependency pin is unchanged; use the intended checkout when
+testing/deploying, since a checkout update does not replace another environment's
+installed driver. Historical recordings still require the packet audit below.
 
 ### Source facts to verify against the robot
 

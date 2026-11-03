@@ -118,6 +118,13 @@ small platform-driver change before connecting the pose provider. Keep raw value
 available for diagnosis rather than quietly repairing them. A long-lived mapping
 node should not duplicate the ESP packet parser just to recover status flags.
 
+Subsequent interface decision: publish a bundled `platform.odometry` message
+`[status_bits, speed_mm_s, joint_cdeg, [enc0, enc1, enc2, enc3]]` for each packet,
+with no standalone encoder stream. The bundle associates flags
+with the exact speed/encoder sample and is the intended runtime input. That
+addition is prepared and tested on OSGAR's `feature/matty-encoders` branch; it does
+not change this historical-data audit or the old planar odometry calculation.
+
 ## Wheel ordering and next implementation decision
 
 The source identifies even indices as the left side. Flat-scan data show opposite
@@ -140,7 +147,8 @@ displacement before using new poses to veto motion.
   intervals, reset timing, error recovery and input-stream selection.
 - All **58 DH2 tests** and lint pass.
 - All 370 extracted encoder lists in `175940` match an independent forced replay
-  of the OSGAR `feature/matty-encoders` driver exactly.
+  of the OSGAR driver at `ce79024b` exactly (before the standalone output was
+  replaced by the bundled-only interface).
 - Existing controller replay baselines for these recordings were already verified;
   this offline tool changes no configured node outputs or physical trajectory.
 
