@@ -26,18 +26,20 @@ Operator measurements, with the robot straight and level:
 
 | Quantity | Measurement | Interpretation / remaining check |
 | --- | ---: | --- |
-| Camera height above floor | 0.29 m | Identify whether measured point is lens, housing or another camera reference |
+| Camera housing reference height above floor | 0.29 m | Operator clarified these measurements refer to the housing, not an individual lens |
 | Joint centre height above floor | 0.13 m | Nominal level posture, not a fixed world altitude on uneven terrain |
 | Camera forward of joint | 0.21 m | Rigid front-section lever arm, not a world-X offset while turning |
 | Front axle forward of joint | 0.16 m | Camera is approximately 0.05 m ahead of front axle |
 | Camera above joint | 0.16 m | Derived as 0.29−0.13 m |
-| Camera lateral offset | Not established | Earlier 0 m was an assumption; left lens/IMU need not lie on chassis centreline |
+| Camera housing lateral offset | 0 m | Confirmed centred; internal left/RGB/right lenses and IMU retain separate factory offsets |
 
-The nominal joint-to-camera vector is therefore **`[0.21, y_camera, 0.16] m`**
-in front forward/left/up axes. `[0.21, 0, 0.16]` is only a provisional centred
-camera-reference vector. Match the measured reference to the factory calibration
-frames before using it for the rectified left lens. The stereo baseline/IMU
-translations must not be lost by assigning every camera point that same vector.
+The nominal joint-to-camera-housing reference vector is therefore
+**`[0.21, 0, 0.16] m`** in front forward/left/up axes. The operator confirmed the
+housing is centred on 3 November. It contains three cameras; this vector must not
+be assigned directly to every optical centre. Define the housing reference point
+precisely and relate it to a factory camera reference before composing the
+left/RGB/right and IMU offsets. The stereo baseline/IMU translations remain part
+of the transform chain.
 
 Use a common **central joint position** `p_J`, with separate **front and rear
 orientations** `q_F` and `q_R`. Do not give the whole articulated robot one
@@ -64,6 +66,29 @@ need explicit different metadata; do not mix conventions silently.
 It is a legacy estimate to compare against, not joint-centre ground truth.
 
 ## 2A. Offline encoder and protocol audit — first work item
+
+### Encoder output prepared on 3 November
+
+The OSGAR `feature/matty-encoders` checkout now has a small proposed driver change:
+`platform.encoders` publishes a **list of four integers** on every status packet.
+Values remain unsigned cumulative wheel distances in millimetres, in firmware
+order, with the existing 16-bit wrap representation. No unwrapping, wheel relabeling
+or odometry-model change is performed by the driver. The output is appended to
+the registered outputs so existing registration order is preserved.
+
+Both legacy and attitude-bearing packets are covered, including unsigned boundary
+values and wrap transitions. All 14 Matty driver tests pass. A forced platform
+replay of box run `175940` produces 370 encoder messages; comparing per-stream
+payload sequences shows all ten original platform outputs unchanged. Ordinary
+platform replay against the old file rejects the newly registered output because
+it was not recorded; forced replay is required to extract it. This is distinct
+from the unchanged baseline controller replay.
+
+This work is committed in the separate OSGAR checkout as **`ce79024b`** on
+`feature/matty-encoders`. The osgar-apps dependency pin is unchanged. Use the intended checkout explicitly
+when testing/deploying; updating a checkout alone does not replace an installed
+driver in another environment. Future runtime consumers can subscribe directly;
+historical recordings still require the packet audit below.
 
 ### Source facts to verify against the robot
 
@@ -192,7 +217,7 @@ wheel measurements.
 
 Parameterize wheel/axle spacing, section reference offsets, IMU mounting and
 camera transform. Confirm rear axle position, wheel track/radius, bumper extents
-and camera reference/lateral offset; front axle X alone does not specify these.
+and the housing-reference-to-optics transform; front axle X alone does not specify these.
 
 **Exit:** a small documented model with explicit assumptions, reproducible outputs
 and reference-point tests, not a general-purpose sensor-fusion framework.
