@@ -341,6 +341,10 @@ scene registration and independent displacement validation are the next steps.
 The [first scene consistency diagnostic](dh2-scene-check.md) now compares all six
 logs and timing/optical-offset sensitivity. Persistent static patches and a
 calibrated error budget remain to be verified.
+The [selected static-patch check](dh2-static-patches.md) now isolates floor,
+door and box observations. Near-ground residuals are encouraging, but distant
+quantization, optical projection, clock mapping and independent motion error
+still prevent declaring stage 2 complete.
 
 The original first-session sequence was:
 

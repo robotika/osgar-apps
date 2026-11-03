@@ -53,6 +53,12 @@ reference using fixed-camera, fixed-joint and articulated motion assumptions.
 See [the procedure and recorded results](../doc/dh2-scene-check.md) for provisional
 projection settings, residual plots and timing sensitivity.
 
+`python -m dh2.patch_check --annotations dh2/config/static-patches-261102.json
+--pose-dir DIRECTORY --output DIRECTORY` isolates selected floor, door and box
+patches. It reports local planarity separately from cross-frame alignment and
+saves annotated depth sheets. See [the static-patch findings](../doc/dh2-static-patches.md)
+for near-obstacle results and the coarse distant-depth quantization.
+
 ## Interactive recording viewer
 
 From the repository root, open one recording or a sequence in command-line order:

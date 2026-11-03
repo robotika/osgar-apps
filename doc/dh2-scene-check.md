@@ -109,6 +109,11 @@ measured motion. Set an acceptance budget from those independent uncertainties
 before enabling map decisions. Joint Z remains assumed, not observed. All
 reports have `usable_for_driving=false` and no acceptance threshold.
 
+The [follow-up selected-patch analysis](dh2-static-patches.md) now separates
+planarity from alignment on 25 observations. It finds useful near-ground
+consistency and coarse distant-depth plateaus; calibrated translation accuracy
+and clock mapping remain unverified.
+
 Validation: five synthetic tests cover known translation/rotation against planes,
 incorrect-pose residuals, depth holes/edges, unclipped large residuals, pose timing
 and optical lever arms. These are software checks, separate from the six recorded

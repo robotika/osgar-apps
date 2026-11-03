@@ -1,0 +1,2103 @@
+{
+  "nominal": {
+    "name": "nominal",
+    "definition": {
+      "description": "Manual depth ROIs selected from image content before plane-error calculation. Rectangles are half-open pixel coordinates. Optical geometry remains provisional.",
+      "depth_shape": [
+        400,
+        640
+      ],
+      "intrinsics": [
+        400.13818,
+        400.20917,
+        324.24768,
+        195.83195
+      ],
+      "optical_offset": [
+        0.21,
+        0.0375,
+        0.16
+      ],
+      "baseline_m": 0.075,
+      "runs": [
+        {
+          "logfile": "m04-dh2-261102_174346.log",
+          "patches": [
+            {
+              "name": "floor-during-scan",
+              "kind": "floor",
+              "observations": [
+                {
+                  "time": 14.334,
+                  "roi": [
+                    80,
+                    320,
+                    200,
+                    345
+                  ]
+                },
+                {
+                  "time": 14.434,
+                  "roi": [
+                    80,
+                    320,
+                    200,
+                    345
+                  ]
+                },
+                {
+                  "time": 15.937,
+                  "roi": [
+                    80,
+                    320,
+                    200,
+                    345
+                  ]
+                },
+                {
+                  "time": 17.539,
+                  "roi": [
+                    40,
+                    350,
+                    120,
+                    370
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "logfile": "m04-dh2-261102_175940.log",
+          "patches": [
+            {
+              "name": "floor",
+              "kind": "floor",
+              "observations": [
+                {
+                  "time": 13.48,
+                  "roi": [
+                    170,
+                    340,
+                    240,
+                    365
+                  ]
+                },
+                {
+                  "time": 13.58,
+                  "roi": [
+                    170,
+                    340,
+                    240,
+                    365
+                  ]
+                },
+                {
+                  "time": 13.98,
+                  "roi": [
+                    170,
+                    340,
+                    240,
+                    365
+                  ]
+                },
+                {
+                  "time": 15.98,
+                  "roi": [
+                    205,
+                    305,
+                    245,
+                    330
+                  ]
+                },
+                {
+                  "time": 17.98,
+                  "roi": [
+                    205,
+                    315,
+                    245,
+                    340
+                  ]
+                },
+                {
+                  "time": 22.77,
+                  "roi": [
+                    210,
+                    330,
+                    240,
+                    350
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "closed-door",
+              "kind": "vertical",
+              "observations": [
+                {
+                  "time": 13.48,
+                  "roi": [
+                    450,
+                    90,
+                    500,
+                    200
+                  ]
+                },
+                {
+                  "time": 13.58,
+                  "roi": [
+                    450,
+                    90,
+                    500,
+                    200
+                  ]
+                },
+                {
+                  "time": 13.98,
+                  "roi": [
+                    450,
+                    90,
+                    500,
+                    200
+                  ]
+                },
+                {
+                  "time": 15.98,
+                  "roi": [
+                    490,
+                    90,
+                    550,
+                    200
+                  ]
+                },
+                {
+                  "time": 17.98,
+                  "roi": [
+                    480,
+                    90,
+                    540,
+                    200
+                  ]
+                },
+                {
+                  "time": 22.77,
+                  "roi": [
+                    500,
+                    90,
+                    560,
+                    200
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "box-front",
+              "kind": "vertical",
+              "selection_note": "Use the front face below the top/front edge. Later it leaves the image; pixels at the former location then show the top, so they are not compared as this plane.",
+              "observations": [
+                {
+                  "time": 13.48,
+                  "roi": [
+                    330,
+                    295,
+                    390,
+                    310
+                  ]
+                },
+                {
+                  "time": 13.58,
+                  "roi": [
+                    330,
+                    295,
+                    390,
+                    310
+                  ]
+                },
+                {
+                  "time": 15.98,
+                  "roi": [
+                    330,
+                    365,
+                    420,
+                    385
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "box-top",
+              "kind": "raised",
+              "observations": [
+                {
+                  "time": 13.48,
+                  "roi": [
+                    320,
+                    270,
+                    390,
+                    288
+                  ]
+                },
+                {
+                  "time": 13.58,
+                  "roi": [
+                    320,
+                    270,
+                    390,
+                    288
+                  ]
+                },
+                {
+                  "time": 13.98,
+                  "roi": [
+                    320,
+                    270,
+                    390,
+                    288
+                  ]
+                },
+                {
+                  "time": 15.98,
+                  "roi": [
+                    330,
+                    295,
+                    430,
+                    315
+                  ]
+                },
+                {
+                  "time": 17.98,
+                  "roi": [
+                    340,
+                    335,
+                    440,
+                    350
+                  ]
+                },
+                {
+                  "time": 22.77,
+                  "roi": [
+                    340,
+                    335,
+                    440,
+                    350
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "depth_time_offset": 0,
+    "pose_settings": {
+      "m04-dh2-261102_174346.log": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      },
+      "m04-dh2-261102_175940.log": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      }
+    },
+    "inputs": {
+      "logs_dir": "/data/matty",
+      "pose_dir": "/tmp/dh2-pose-stage2"
+    },
+    "observations": [
+      {
+        "points": 2924,
+        "local_center_optical": [
+          -0.44021490638165706,
+          0.3242586272843282,
+          0.956015731874191
+        ],
+        "normal_world": [
+          -0.019327086920758556,
+          0.007814447767700497,
+          -0.9997826754436404
+        ],
+        "centroid_world": [
+          1.158767250403062,
+          0.5024915687604299,
+          -0.12462912875412716
+        ],
+        "normal_change_deg": 0.0,
+        "median_world_z_m": -0.12451813661326949,
+        "normal_angle_from_vertical_deg": 1.194537798703236,
+        "median_optical_z_m": 0.97,
+        "distinct_depth_values": 7,
+        "dominant_depth_m": 0.911,
+        "dominant_depth_fraction": 0.27359781121751026,
+        "logfile": "m04-dh2-261102_174346.log",
+        "patch": "floor-during-scan",
+        "kind": "floor",
+        "requested_time": 14.334,
+        "actual_time": 14.333538,
+        "roi": [
+          80,
+          320,
+          200,
+          345
+        ],
+        "valid_fraction": 0.9746666666666667,
+        "approximate_one_pixel_disparity_step_z_m": 0.03135250261130626
+      },
+      {
+        "points": 2901,
+        "local_center_optical": [
+          -0.43887835656472807,
+          0.3235623947982609,
+          0.9528796966563752
+        ],
+        "normal_world": [
+          0.010055872736165011,
+          0.008746931231553767,
+          -0.9999111813643974
+        ],
+        "centroid_world": [
+          1.1558075777324466,
+          0.5011117300908169,
+          -0.1239559940634542
+        ],
+        "normal_change_deg": 1.6844438905082766,
+        "median_world_z_m": -0.12334638749517207,
+        "normal_angle_from_vertical_deg": 0.7636474281555984,
+        "median_optical_z_m": 0.94,
+        "distinct_depth_values": 10,
+        "dominant_depth_m": 0.94,
+        "dominant_depth_fraction": 0.2933471216821786,
+        "logfile": "m04-dh2-261102_174346.log",
+        "patch": "floor-during-scan",
+        "kind": "floor",
+        "requested_time": 14.434,
+        "actual_time": 14.429878,
+        "roi": [
+          80,
+          320,
+          200,
+          345
+        ],
+        "valid_fraction": 0.967,
+        "approximate_one_pixel_disparity_step_z_m": 0.02944316219295378
+      },
+      {
+        "points": 2966,
+        "local_center_optical": [
+          -0.4260978691052782,
+          0.3140317132682657,
+          0.9259163857046572
+        ],
+        "normal_world": [
+          -0.014395874905018875,
+          0.000492740156587082,
+          -0.9998962526146683
+        ],
+        "centroid_world": [
+          0.9595831071197044,
+          0.7270719785860761,
+          -0.11495113680033164
+        ],
+        "normal_change_deg": 0.5058203692728988,
+        "median_world_z_m": -0.11482528033707018,
+        "normal_angle_from_vertical_deg": 0.8253344347825247,
+        "median_optical_z_m": 0.911,
+        "distinct_depth_values": 9,
+        "dominant_depth_m": 0.859,
+        "dominant_depth_fraction": 0.26163182737693863,
+        "logfile": "m04-dh2-261102_174346.log",
+        "patch": "floor-during-scan",
+        "kind": "floor",
+        "requested_time": 15.937,
+        "actual_time": 15.93661,
+        "roi": [
+          80,
+          320,
+          200,
+          345
+        ],
+        "valid_fraction": 0.9886666666666667,
+        "approximate_one_pixel_disparity_step_z_m": 0.027654480093185146
+      },
+      {
+        "points": 497,
+        "local_center_optical": [
+          -0.48721798615231776,
+          0.3277063648848055,
+          0.8140945674044243
+        ],
+        "normal_world": [
+          -0.03369980824958228,
+          0.03589466572853357,
+          -0.9987872125213548
+        ],
+        "centroid_world": [
+          1.132052135281112,
+          0.27111722737379595,
+          -0.1323364230274082
+        ],
+        "normal_change_deg": 1.8083580936205945,
+        "median_world_z_m": -0.13212382304738948,
+        "normal_angle_from_vertical_deg": 2.8221096544946307,
+        "median_optical_z_m": 0.813,
+        "distinct_depth_values": 4,
+        "dominant_depth_m": 0.835,
+        "dominant_depth_fraction": 0.47484909456740443,
+        "logfile": "m04-dh2-261102_174346.log",
+        "patch": "floor-during-scan",
+        "kind": "floor",
+        "requested_time": 17.539,
+        "actual_time": 17.539422,
+        "roi": [
+          40,
+          350,
+          120,
+          370
+        ],
+        "valid_fraction": 0.310625,
+        "approximate_one_pixel_disparity_step_z_m": 0.02202469157029704
+      },
+      {
+        "points": 1750,
+        "local_center_optical": [
+          -0.24191613020264963,
+          0.3147178350601022,
+          0.8083519999999914
+        ],
+        "normal_world": [
+          -0.003517114145616753,
+          0.024404131857636718,
+          -0.9996959879165073
+        ],
+        "centroid_world": [
+          1.0152918121225216,
+          0.30165681791288873,
+          -0.11799765352091793
+        ],
+        "normal_change_deg": 1.478779333471098e-06,
+        "median_world_z_m": -0.11809311407460119,
+        "normal_angle_from_vertical_deg": 1.412843494702703,
+        "median_optical_z_m": 0.813,
+        "distinct_depth_values": 7,
+        "dominant_depth_m": 0.859,
+        "dominant_depth_fraction": 0.184,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "requested_time": 13.48,
+        "actual_time": 13.479501,
+        "roi": [
+          170,
+          340,
+          240,
+          365
+        ],
+        "valid_fraction": 1.0,
+        "approximate_one_pixel_disparity_step_z_m": 0.02202469157029704
+      },
+      {
+        "points": 1750,
+        "local_center_optical": [
+          -0.2421439411775769,
+          0.3150458848369568,
+          0.8091474285714194
+        ],
+        "normal_world": [
+          0.004554361649876562,
+          0.02633424898904864,
+          -0.9996428187708573
+        ],
+        "centroid_world": [
+          1.0161213593797807,
+          0.30189337582177006,
+          -0.11815678922814418
+        ],
+        "normal_change_deg": 0.4755111192551084,
+        "median_world_z_m": -0.11826152999916453,
+        "normal_angle_from_vertical_deg": 1.5314219642744296,
+        "median_optical_z_m": 0.813,
+        "distinct_depth_values": 8,
+        "dominant_depth_m": 0.835,
+        "dominant_depth_fraction": 0.18571428571428572,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "requested_time": 13.58,
+        "actual_time": 13.580784,
+        "roi": [
+          170,
+          340,
+          240,
+          365
+        ],
+        "valid_fraction": 1.0,
+        "approximate_one_pixel_disparity_step_z_m": 0.02202469157029704
+      },
+      {
+        "points": 1749,
+        "local_center_optical": [
+          -0.24295101384156498,
+          0.3160009804338744,
+          0.8116923956546507
+        ],
+        "normal_world": [
+          -0.0022952906569903495,
+          0.0249590916339019,
+          -0.9996858383440321
+        ],
+        "centroid_world": [
+          1.0438525953196383,
+          0.30055510142438185,
+          -0.11649367639567676
+        ],
+        "normal_change_deg": 0.07689034426007238,
+        "median_world_z_m": -0.11657946190886909,
+        "normal_angle_from_vertical_deg": 1.4362352763303219,
+        "median_optical_z_m": 0.813,
+        "distinct_depth_values": 8,
+        "dominant_depth_m": 0.813,
+        "dominant_depth_fraction": 0.18296169239565466,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "requested_time": 13.98,
+        "actual_time": 13.98099,
+        "roi": [
+          170,
+          340,
+          240,
+          365
+        ],
+        "valid_fraction": 0.9994285714285714,
+        "approximate_one_pixel_disparity_step_z_m": 0.02202469157029704
+      },
+      {
+        "points": 736,
+        "local_center_optical": [
+          -0.2799156351547056,
+          0.3211063820102345,
+          1.0736073369565295
+        ],
+        "normal_world": [
+          -0.017807560089280902,
+          0.030650033240738464,
+          -0.9993715356492844
+        ],
+        "centroid_world": [
+          1.678305003321816,
+          0.3242431175756907,
+          -0.10582220235999568
+        ],
+        "normal_change_deg": 0.8937743702652416,
+        "median_world_z_m": -0.10573238431721294,
+        "normal_angle_from_vertical_deg": 2.031424572943326,
+        "median_optical_z_m": 1.074,
+        "distinct_depth_values": 8,
+        "dominant_depth_m": 1.157,
+        "dominant_depth_fraction": 0.23233695652173914,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "requested_time": 15.98,
+        "actual_time": 15.976519,
+        "roi": [
+          205,
+          305,
+          245,
+          330
+        ],
+        "valid_fraction": 0.736,
+        "approximate_one_pixel_disparity_step_z_m": 0.0384359223106378
+      },
+      {
+        "points": 626,
+        "local_center_optical": [
+          -0.2694443911060189,
+          0.3317254950952383,
+          1.0430511182108597
+        ],
+        "normal_world": [
+          -0.0008306543002037856,
+          0.032073902225690204,
+          -0.9994851548719723
+        ],
+        "centroid_world": [
+          1.8369281908677673,
+          0.31944903971285615,
+          -0.12043978866358529
+        ],
+        "normal_change_deg": 0.46578071231476986,
+        "median_world_z_m": -0.12019905398380587,
+        "normal_angle_from_vertical_deg": 1.8386309591271794,
+        "median_optical_z_m": 1.037,
+        "distinct_depth_values": 7,
+        "dominant_depth_m": 1.074,
+        "dominant_depth_fraction": 0.2523961661341853,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "requested_time": 17.98,
+        "actual_time": 17.975325,
+        "roi": [
+          205,
+          315,
+          245,
+          340
+        ],
+        "valid_fraction": 0.626,
+        "approximate_one_pixel_disparity_step_z_m": 0.03583325473548496
+      },
+      {
+        "points": 359,
+        "local_center_optical": [
+          -0.2424002809109814,
+          0.3292827095476755,
+          0.9278077994428915
+        ],
+        "normal_world": [
+          -0.025143368127827387,
+          0.007103374670930078,
+          -0.9996586182829981
+        ],
+        "centroid_world": [
+          1.7277212066540226,
+          0.32051306090438153,
+          -0.11931209133003837
+        ],
+        "normal_change_deg": 1.5868567429751363,
+        "median_world_z_m": -0.11921397558934013,
+        "normal_angle_from_vertical_deg": 1.4971665491903037,
+        "median_optical_z_m": 0.94,
+        "distinct_depth_values": 7,
+        "dominant_depth_m": 0.97,
+        "dominant_depth_fraction": 0.298050139275766,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "requested_time": 22.77,
+        "actual_time": 22.767416,
+        "roi": [
+          210,
+          330,
+          240,
+          350
+        ],
+        "valid_fraction": 0.5983333333333334,
+        "approximate_one_pixel_disparity_step_z_m": 0.02944316219295378
+      },
+      {
+        "points": 5267,
+        "local_center_optical": [
+          0.9423457916072904,
+          -0.31816664249068016,
+          2.5058167837477177
+        ],
+        "normal_world": [
+          -0.9992680196747267,
+          -0.024957055870028957,
+          -0.028992589012547375
+        ],
+        "centroid_world": [
+          2.7194952426543573,
+          -0.8624069807260241,
+          0.5339623862815857
+        ],
+        "normal_change_deg": 0.0,
+        "median_world_z_m": 0.5329497035970198,
+        "normal_angle_from_vertical_deg": 88.33861420506393,
+        "median_optical_z_m": 2.506,
+        "distinct_depth_values": 2,
+        "dominant_depth_m": 2.506,
+        "dominant_depth_fraction": 0.9990506929941143,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "requested_time": 13.48,
+        "actual_time": 13.479501,
+        "roi": [
+          450,
+          90,
+          500,
+          200
+        ],
+        "valid_fraction": 0.9576363636363636,
+        "approximate_one_pixel_disparity_step_z_m": 0.20926224369125018
+      },
+      {
+        "points": 5289,
+        "local_center_optical": [
+          0.9412240296787021,
+          -0.32027671965430893,
+          2.5058905275097785
+        ],
+        "normal_world": [
+          -0.9992952934135094,
+          -0.02397445180713767,
+          -0.028881520426661162
+        ],
+        "centroid_world": [
+          2.7193695954399715,
+          -0.8614074623899264,
+          0.5365250542613726
+        ],
+        "normal_change_deg": 0.05667913600569942,
+        "median_world_z_m": 0.5382172001078696,
+        "normal_angle_from_vertical_deg": 88.34498063230711,
+        "median_optical_z_m": 2.506,
+        "distinct_depth_values": 2,
+        "dominant_depth_m": 2.506,
+        "dominant_depth_fraction": 0.9994327850255247,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "requested_time": 13.58,
+        "actual_time": 13.580784,
+        "roi": [
+          450,
+          90,
+          500,
+          200
+        ],
+        "valid_fraction": 0.9616363636363636,
+        "approximate_one_pixel_disparity_step_z_m": 0.20926224369125018
+      },
+      {
+        "points": 4717,
+        "local_center_optical": [
+          0.9388366082408093,
+          -0.32650656990687504,
+          2.499944456222098
+        ],
+        "normal_world": [
+          -0.9936423318597325,
+          -0.11243353849835122,
+          -0.005797909717518347
+        ],
+        "centroid_world": [
+          2.7328849451124793,
+          -0.8679382684054092,
+          0.5479052414084592
+        ],
+        "normal_change_deg": 5.197019623667331,
+        "median_world_z_m": 0.5474716396886362,
+        "normal_angle_from_vertical_deg": 89.6678023819915,
+        "median_optical_z_m": 2.506,
+        "distinct_depth_values": 2,
+        "dominant_depth_m": 2.506,
+        "dominant_depth_fraction": 0.968624125503498,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "requested_time": 13.98,
+        "actual_time": 13.98099,
+        "roi": [
+          450,
+          90,
+          500,
+          200
+        ],
+        "valid_fraction": 0.8576363636363636,
+        "approximate_one_pixel_disparity_step_z_m": 0.20926224369125018
+      },
+      {
+        "points": 6325,
+        "local_center_optical": [
+          0.9772031032433208,
+          -0.2503034693542358,
+          2.0046837944661813
+        ],
+        "normal_world": [
+          -0.999457238593876,
+          0.0012315449302871088,
+          -0.03291977398750842
+        ],
+        "centroid_world": [
+          2.591660882683994,
+          -0.9583941065585203,
+          0.43674843755370474
+        ],
+        "normal_change_deg": 1.5173566622257473,
+        "median_world_z_m": 0.4323394024732077,
+        "normal_angle_from_vertical_deg": 88.11349504545035,
+        "median_optical_z_m": 2.005,
+        "distinct_depth_values": 2,
+        "dominant_depth_m": 2.005,
+        "dominant_depth_fraction": 0.9974703557312253,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "requested_time": 15.98,
+        "actual_time": 15.976519,
+        "roi": [
+          490,
+          90,
+          550,
+          200
+        ],
+        "valid_fraction": 0.9583333333333334,
+        "approximate_one_pixel_disparity_step_z_m": 0.1339545587310197
+      },
+      {
+        "points": 4177,
+        "local_center_optical": [
+          0.7956988933112941,
+          -0.21832215987559825,
+          1.7104627723246966
+        ],
+        "normal_world": [
+          -0.9865950022666556,
+          0.15747973789878414,
+          0.04278356756732534
+        ],
+        "centroid_world": [
+          2.4910594958086967,
+          -0.7636581533781754,
+          0.41013725503122866
+        ],
+        "normal_change_deg": 11.27437453628789,
+        "median_world_z_m": 0.40815066211038986,
+        "normal_angle_from_vertical_deg": 87.54793370010822,
+        "median_optical_z_m": 1.671,
+        "distinct_depth_values": 2,
+        "dominant_depth_m": 1.671,
+        "dominant_depth_fraction": 0.5973186497486234,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "requested_time": 17.98,
+        "actual_time": 17.975325,
+        "roi": [
+          480,
+          90,
+          540,
+          200
+        ],
+        "valid_fraction": 0.6328787878787879,
+        "approximate_one_pixel_disparity_step_z_m": 0.09304255844818408
+      },
+      {
+        "points": 6589,
+        "local_center_optical": [
+          0.857274442629265,
+          -0.21421910168639277,
+          1.671000000000147
+        ],
+        "normal_world": [
+          -0.998910274835557,
+          -0.030939537477315777,
+          -0.034942922726092784
+        ],
+        "centroid_world": [
+          2.487130361246286,
+          -0.7749046144594308,
+          0.41018882066083995
+        ],
+        "normal_change_deg": 0.4838863924126785,
+        "median_world_z_m": 0.4099244326225808,
+        "normal_angle_from_vertical_deg": 87.99751035361332,
+        "median_optical_z_m": 1.671,
+        "distinct_depth_values": 1,
+        "dominant_depth_m": 1.671,
+        "dominant_depth_fraction": 1.0,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "requested_time": 22.77,
+        "actual_time": 22.767416,
+        "roi": [
+          500,
+          90,
+          560,
+          200
+        ],
+        "valid_fraction": 0.9983333333333333,
+        "approximate_one_pixel_disparity_step_z_m": 0.09304255844818408
+      },
+      {
+        "points": 900,
+        "local_center_optical": [
+          0.0882765664601164,
+          0.2658119655279262,
+          1.0019999999999833
+        ],
+        "normal_world": [
+          -0.9993549495266182,
+          -0.021114327551706735,
+          -0.029049441108042858
+        ],
+        "centroid_world": [
+          1.2146346408441224,
+          -0.025523517072297906,
+          -0.07180226474264129
+        ],
+        "normal_change_deg": 0.0,
+        "median_world_z_m": -0.0718022647426409,
+        "normal_angle_from_vertical_deg": 88.33535544735173,
+        "median_optical_z_m": 1.002,
+        "distinct_depth_values": 1,
+        "dominant_depth_m": 1.002,
+        "dominant_depth_fraction": 1.0,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-front",
+        "kind": "vertical",
+        "requested_time": 13.48,
+        "actual_time": 13.479501,
+        "roi": [
+          330,
+          295,
+          390,
+          310
+        ],
+        "valid_fraction": 1.0,
+        "approximate_one_pixel_disparity_step_z_m": 0.03345524288634491
+      },
+      {
+        "points": 900,
+        "local_center_optical": [
+          0.0882765664601164,
+          0.2658119655279262,
+          1.0019999999999833
+        ],
+        "normal_world": [
+          -0.999351575467133,
+          -0.02107300662186116,
+          -0.029195153763493555
+        ],
+        "centroid_world": [
+          1.2146442660063745,
+          -0.025546886811017626,
+          -0.07162362969445171
+        ],
+        "normal_change_deg": 0.008680070745520943,
+        "median_world_z_m": -0.07162362969445135,
+        "normal_angle_from_vertical_deg": 88.32700318460277,
+        "median_optical_z_m": 1.002,
+        "distinct_depth_values": 1,
+        "dominant_depth_m": 1.002,
+        "dominant_depth_fraction": 1.0,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-front",
+        "kind": "vertical",
+        "requested_time": 13.58,
+        "actual_time": 13.580784,
+        "roi": [
+          330,
+          295,
+          390,
+          310
+        ],
+        "valid_fraction": 1.0,
+        "approximate_one_pixel_disparity_step_z_m": 0.03345524288634491
+      },
+      {
+        "points": 1800,
+        "local_center_optical": [
+          0.0742233179410394,
+          0.2645564930846728,
+          0.5926216666666718
+        ],
+        "normal_world": [
+          -0.9966241920166873,
+          0.08205291343041926,
+          -0.002745775785771277
+        ],
+        "centroid_world": [
+          1.1959976422893077,
+          -0.031718667966340965,
+          -0.08071603202253808
+        ],
+        "normal_change_deg": 6.10504136798222,
+        "median_world_z_m": -0.08060326540028234,
+        "normal_angle_from_vertical_deg": 89.84267843830365,
+        "median_optical_z_m": 0.59,
+        "distinct_depth_values": 2,
+        "dominant_depth_m": 0.59,
+        "dominant_depth_fraction": 0.7616666666666667,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-front",
+        "kind": "vertical",
+        "requested_time": 15.98,
+        "actual_time": 15.976519,
+        "roi": [
+          330,
+          365,
+          420,
+          385
+        ],
+        "valid_fraction": 1.0,
+        "approximate_one_pixel_disparity_step_z_m": 0.011599326346047092
+      },
+      {
+        "points": 1248,
+        "local_center_optical": [
+          0.07831465537217355,
+          0.21238360595499906,
+          1.0312940705127933
+        ],
+        "normal_world": [
+          -0.0789094046719076,
+          -0.03780569833949829,
+          0.9961646626072357
+        ],
+        "centroid_world": [
+          1.242169331424491,
+          -0.016324628119206354,
+          -0.017311961907553186
+        ],
+        "normal_change_deg": 1.478779333471098e-06,
+        "median_world_z_m": -0.015454244173467135,
+        "normal_angle_from_vertical_deg": 5.019706452274408,
+        "median_optical_z_m": 1.002,
+        "distinct_depth_values": 5,
+        "dominant_depth_m": 1.002,
+        "dominant_depth_fraction": 0.6674679487179487,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "requested_time": 13.48,
+        "actual_time": 13.479501,
+        "roi": [
+          320,
+          270,
+          390,
+          288
+        ],
+        "valid_fraction": 0.9904761904761905,
+        "approximate_one_pixel_disparity_step_z_m": 0.03345524288634491
+      },
+      {
+        "points": 1260,
+        "local_center_optical": [
+          0.07792954093595676,
+          0.21231117523236193,
+          1.0300166666666395
+        ],
+        "normal_world": [
+          -0.09386160394970294,
+          -0.03288490157100852,
+          0.9950420003962923
+        ],
+        "centroid_world": [
+          1.2408843160020055,
+          -0.015991422188652828,
+          -0.017084817985398154
+        ],
+        "normal_change_deg": 0.9041993683594148,
+        "median_world_z_m": -0.014792695539189299,
+        "normal_angle_from_vertical_deg": 5.707822688066533,
+        "median_optical_z_m": 1.002,
+        "distinct_depth_values": 5,
+        "dominant_depth_m": 1.002,
+        "dominant_depth_fraction": 0.6666666666666666,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "requested_time": 13.58,
+        "actual_time": 13.580784,
+        "roi": [
+          320,
+          270,
+          390,
+          288
+        ],
+        "valid_fraction": 1.0,
+        "approximate_one_pixel_disparity_step_z_m": 0.03345524288634491
+      },
+      {
+        "points": 1258,
+        "local_center_optical": [
+          0.07734168208889529,
+          0.2100702956840908,
+          1.0205429252782365
+        ],
+        "normal_world": [
+          -0.03162899424848402,
+          -0.032804702229483174,
+          0.9989611895536604
+        ],
+        "centroid_world": [
+          1.2551872336786984,
+          -0.018705329615305535,
+          -0.012389341404232562
+        ],
+        "normal_change_deg": 2.7290459254343173,
+        "median_world_z_m": -0.011529704941278487,
+        "normal_angle_from_vertical_deg": 2.6118208670917067,
+        "median_optical_z_m": 0.97,
+        "distinct_depth_values": 6,
+        "dominant_depth_m": 0.97,
+        "dominant_depth_fraction": 0.5381558028616852,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "requested_time": 13.98,
+        "actual_time": 13.98099,
+        "roi": [
+          320,
+          270,
+          390,
+          288
+        ],
+        "valid_fraction": 0.9984126984126984,
+        "approximate_one_pixel_disparity_step_z_m": 0.03135250261130626
+      },
+      {
+        "points": 1992,
+        "local_center_optical": [
+          0.0982944563475249,
+          0.19283299339597268,
+          0.712021586345359
+        ],
+        "normal_world": [
+          -0.03170863044999583,
+          -0.02344629660195592,
+          0.9992221144123256
+        ],
+        "centroid_world": [
+          1.3130871396507169,
+          -0.05913429440838589,
+          -0.006429734729572728
+        ],
+        "normal_change_deg": 2.8324933498820943,
+        "median_world_z_m": -0.0065207077223386894,
+        "normal_angle_from_vertical_deg": 2.260079153388485,
+        "median_optical_z_m": 0.716,
+        "distinct_depth_values": 9,
+        "dominant_depth_m": 0.752,
+        "dominant_depth_fraction": 0.17419678714859438,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "requested_time": 15.98,
+        "actual_time": 15.976519,
+        "roi": [
+          330,
+          295,
+          430,
+          315
+        ],
+        "valid_fraction": 0.996,
+        "approximate_one_pixel_disparity_step_z_m": 0.017082632138061243
+      },
+      {
+        "points": 1332,
+        "local_center_optical": [
+          0.09138411491425974,
+          0.19682865710355696,
+          0.5392620120120146
+        ],
+        "normal_world": [
+          -0.0898523332159874,
+          -0.040430940678366487,
+          0.9951341101839015
+        ],
+        "centroid_world": [
+          1.330625715976535,
+          -0.04765620804988548,
+          -0.015133700683447104
+        ],
+        "normal_change_deg": 0.6474752140851471,
+        "median_world_z_m": -0.015093540613186823,
+        "normal_angle_from_vertical_deg": 5.654510634836562,
+        "median_optical_z_m": 0.537,
+        "distinct_depth_values": 6,
+        "dominant_depth_m": 0.547,
+        "dominant_depth_fraction": 0.22522522522522523,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "requested_time": 17.98,
+        "actual_time": 17.975325,
+        "roi": [
+          340,
+          335,
+          440,
+          350
+        ],
+        "valid_fraction": 0.888,
+        "approximate_one_pixel_disparity_step_z_m": 0.00960898057765945
+      },
+      {
+        "points": 1128,
+        "local_center_optical": [
+          0.07808204828124399,
+          0.19631952898885027,
+          0.5367304964539015
+        ],
+        "normal_world": [
+          -0.11865966275799306,
+          -0.04136780195474804,
+          0.9920728750427521
+        ],
+        "centroid_world": [
+          1.3428917754928054,
+          -0.01659332958818252,
+          -0.01163118297974633
+        ],
+        "normal_change_deg": 2.298789395799915,
+        "median_world_z_m": -0.01185617636171088,
+        "normal_angle_from_vertical_deg": 7.219095588721813,
+        "median_optical_z_m": 0.537,
+        "distinct_depth_values": 6,
+        "dominant_depth_m": 0.547,
+        "dominant_depth_fraction": 0.2872340425531915,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "requested_time": 22.77,
+        "actual_time": 22.767416,
+        "roi": [
+          340,
+          335,
+          440,
+          350
+        ],
+        "valid_fraction": 0.752,
+        "approximate_one_pixel_disparity_step_z_m": 0.00960898057765945
+      }
+    ],
+    "comparisons": [
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.003299700368355585,
+        "local_p90_abs_m": 0.006893280165148823,
+        "reference_median_abs_m": 0.0032997003683555935,
+        "reference_p90_abs_m": 0.006893280165148857,
+        "reference_signed_median_m": 0.0002101898145975402,
+        "logfile": "m04-dh2-261102_174346.log",
+        "patch": "floor-during-scan",
+        "kind": "floor",
+        "time": 14.333538,
+        "points": 2924,
+        "normal_change_deg": 0.0
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.003299700368355585,
+        "local_p90_abs_m": 0.006893280165148823,
+        "reference_median_abs_m": 0.0032997003683555935,
+        "reference_p90_abs_m": 0.006893280165148857,
+        "reference_signed_median_m": 0.0002101898145975402,
+        "logfile": "m04-dh2-261102_174346.log",
+        "patch": "floor-during-scan",
+        "kind": "floor",
+        "time": 14.333538,
+        "points": 2924,
+        "normal_change_deg": 0.0
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.003511467753889382,
+        "local_p90_abs_m": 0.008588516828694402,
+        "reference_median_abs_m": 0.003751913578221211,
+        "reference_p90_abs_m": 0.00925881336430478,
+        "reference_signed_median_m": -0.001327019383665483,
+        "logfile": "m04-dh2-261102_174346.log",
+        "patch": "floor-during-scan",
+        "kind": "floor",
+        "time": 14.429878,
+        "points": 2901,
+        "normal_change_deg": 1.6844438905082766
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.003511467753889382,
+        "local_p90_abs_m": 0.008588516828694402,
+        "reference_median_abs_m": 0.003751041046571526,
+        "reference_p90_abs_m": 0.009258149580673463,
+        "reference_signed_median_m": -0.0013303040026243617,
+        "logfile": "m04-dh2-261102_174346.log",
+        "patch": "floor-during-scan",
+        "kind": "floor",
+        "time": 14.429878,
+        "points": 2901,
+        "normal_change_deg": 1.6844438905082766
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.002785056526433638,
+        "local_p90_abs_m": 0.005735689708891571,
+        "reference_median_abs_m": 0.003909078300667435,
+        "reference_p90_abs_m": 0.008325857322193717,
+        "reference_signed_median_m": -0.0038049740633163812,
+        "logfile": "m04-dh2-261102_174346.log",
+        "patch": "floor-during-scan",
+        "kind": "floor",
+        "time": 15.93661,
+        "points": 2966,
+        "normal_change_deg": 0.5058203692728988
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.002785056526433638,
+        "local_p90_abs_m": 0.005735689708891571,
+        "reference_median_abs_m": 0.004268302390890157,
+        "reference_p90_abs_m": 0.00871486605631699,
+        "reference_signed_median_m": -0.004193982797439653,
+        "logfile": "m04-dh2-261102_174346.log",
+        "patch": "floor-during-scan",
+        "kind": "floor",
+        "time": 15.93661,
+        "points": 2966,
+        "normal_change_deg": 0.5058203692728988
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.0043725881485029245,
+        "local_p90_abs_m": 0.008372784253193911,
+        "reference_median_abs_m": 0.006183889980213483,
+        "reference_p90_abs_m": 0.013710196136065346,
+        "reference_signed_median_m": 0.0056524122245746825,
+        "logfile": "m04-dh2-261102_174346.log",
+        "patch": "floor-during-scan",
+        "kind": "floor",
+        "time": 17.539422,
+        "points": 497,
+        "normal_change_deg": 1.8083580936205945
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.0043725881485029245,
+        "local_p90_abs_m": 0.008372784253193911,
+        "reference_median_abs_m": 0.006588190010261313,
+        "reference_p90_abs_m": 0.014114496166113174,
+        "reference_signed_median_m": 0.006056712254622508,
+        "logfile": "m04-dh2-261102_174346.log",
+        "patch": "floor-during-scan",
+        "kind": "floor",
+        "time": 17.539422,
+        "points": 497,
+        "normal_change_deg": 1.8083580936205945
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.0019064519781231617,
+        "local_p90_abs_m": 0.003963650268578089,
+        "reference_median_abs_m": 0.0019064519781231653,
+        "reference_p90_abs_m": 0.003963650268578104,
+        "reference_signed_median_m": 0.0003221242745569876,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "time": 13.479501,
+        "points": 1750,
+        "normal_change_deg": 1.478779333471098e-06
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.0019064519781231617,
+        "local_p90_abs_m": 0.003963650268578089,
+        "reference_median_abs_m": 0.0019064519781231653,
+        "reference_p90_abs_m": 0.003963650268578104,
+        "reference_signed_median_m": 0.0003221242745569876,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "time": 13.479501,
+        "points": 1750,
+        "normal_change_deg": 1.478779333471098e-06
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.0019883285271380833,
+        "local_p90_abs_m": 0.004135327801118447,
+        "reference_median_abs_m": 0.0018307554127562574,
+        "reference_p90_abs_m": 0.004275164154779625,
+        "reference_signed_median_m": 0.0002722765228237665,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "time": 13.580784,
+        "points": 1750,
+        "normal_change_deg": 0.4755111192551084
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.0019883285271380833,
+        "local_p90_abs_m": 0.004135327801118447,
+        "reference_median_abs_m": 0.0018300219901099092,
+        "reference_p90_abs_m": 0.004275897577425973,
+        "reference_signed_median_m": 0.000273009945470115,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "time": 13.580784,
+        "points": 1750,
+        "normal_change_deg": 0.4755111192551084
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.0017701624857471118,
+        "local_p90_abs_m": 0.003537906183906834,
+        "reference_median_abs_m": 0.0017660754184462683,
+        "reference_p90_abs_m": 0.004992532622886882,
+        "reference_signed_median_m": -0.0013615992988861673,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "time": 13.98099,
+        "points": 1749,
+        "normal_change_deg": 0.07689034426007238
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.0017701624857471118,
+        "local_p90_abs_m": 0.003537906183906834,
+        "reference_median_abs_m": 0.0017983295405362163,
+        "reference_p90_abs_m": 0.0050465881483518025,
+        "reference_signed_median_m": -0.0014156548243510888,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "time": 13.98099,
+        "points": 1749,
+        "normal_change_deg": 0.07689034426007238
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.0025055727704779386,
+        "local_p90_abs_m": 0.005406664976067999,
+        "reference_median_abs_m": 0.012691495385871481,
+        "reference_p90_abs_m": 0.017485446481785814,
+        "reference_signed_median_m": -0.012691495385871481,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "time": 15.976519,
+        "points": 736,
+        "normal_change_deg": 0.8937743702652416
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.0025055727704779386,
+        "local_p90_abs_m": 0.005406664976067999,
+        "reference_median_abs_m": 0.01397122793980898,
+        "reference_p90_abs_m": 0.018765179035723313,
+        "reference_signed_median_m": -0.01397122793980898,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "time": 15.976519,
+        "points": 736,
+        "normal_change_deg": 0.8937743702652416
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.0024644197647683778,
+        "local_p90_abs_m": 0.005251486264149384,
+        "reference_median_abs_m": 0.0025885257496184653,
+        "reference_p90_abs_m": 0.0055296799547545124,
+        "reference_signed_median_m": 0.0020862371724347088,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "time": 17.975325,
+        "points": 626,
+        "normal_change_deg": 0.46578071231476986
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.0024644197647683778,
+        "local_p90_abs_m": 0.005251486264149384,
+        "reference_median_abs_m": 0.0026278435365216226,
+        "reference_p90_abs_m": 0.0053898650746349855,
+        "reference_signed_median_m": 0.0001820687926822096,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "time": 17.975325,
+        "points": 626,
+        "normal_change_deg": 0.46578071231476986
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.0023255141450402366,
+        "local_p90_abs_m": 0.004824395721913224,
+        "reference_median_abs_m": 0.002820359044554591,
+        "reference_p90_abs_m": 0.005319400428412601,
+        "reference_signed_median_m": 0.0011891860257463418,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "time": 22.767416,
+        "points": 359,
+        "normal_change_deg": 1.5868567429751363
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.0023255141450402366,
+        "local_p90_abs_m": 0.004824395721913224,
+        "reference_median_abs_m": 0.002825774521852364,
+        "reference_p90_abs_m": 0.0053183344336379295,
+        "reference_signed_median_m": -0.0008407700716982978,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "floor",
+        "kind": "floor",
+        "time": 22.767416,
+        "points": 359,
+        "normal_change_deg": 1.5868567429751363
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.000292754628882278,
+        "local_p90_abs_m": 0.0006747356892162853,
+        "reference_median_abs_m": 0.00029275462888212346,
+        "reference_p90_abs_m": 0.0006747356892159697,
+        "reference_signed_median_m": -0.00017355051677310179,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "time": 13.479501,
+        "points": 5267,
+        "normal_change_deg": 0.0
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.000292754628882278,
+        "local_p90_abs_m": 0.0006747356892162853,
+        "reference_median_abs_m": 0.00029275462888212346,
+        "reference_p90_abs_m": 0.0006747356892159697,
+        "reference_signed_median_m": -0.00017355051677310179,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "time": 13.479501,
+        "points": 5267,
+        "normal_change_deg": 0.0
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.00022875859560538052,
+        "local_p90_abs_m": 0.0004690520346553356,
+        "reference_median_abs_m": 0.0003066613731366333,
+        "reference_p90_abs_m": 0.0005665017993599377,
+        "reference_signed_median_m": -7.926916887046392e-05,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "time": 13.580784,
+        "points": 5289,
+        "normal_change_deg": 0.05667913600569942
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.00022875859560538052,
+        "local_p90_abs_m": 0.0004690520346553356,
+        "reference_median_abs_m": 0.000306473252159609,
+        "reference_p90_abs_m": 0.0005670369491098749,
+        "reference_signed_median_m": -8.009145983557849e-05,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "time": 13.580784,
+        "points": 5289,
+        "normal_change_deg": 0.05667913600569942
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.008531890367195837,
+        "local_p90_abs_m": 0.019449086711994266,
+        "reference_median_abs_m": 0.004249598543090708,
+        "reference_p90_abs_m": 0.005434043660684285,
+        "reference_signed_median_m": 0.004249598543090708,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "time": 13.98099,
+        "points": 4717,
+        "normal_change_deg": 5.197019623667331
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.008531890367195837,
+        "local_p90_abs_m": 0.019449086711994266,
+        "reference_median_abs_m": 0.019699078624598798,
+        "reference_p90_abs_m": 0.02082124493722665,
+        "reference_signed_median_m": -0.01963142155868685,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "time": 13.98099,
+        "points": 4717,
+        "normal_change_deg": 5.197019623667331
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.0003109984931151787,
+        "local_p90_abs_m": 0.000617963493003258,
+        "reference_median_abs_m": 0.5235644637351047,
+        "reference_p90_abs_m": 0.5268216453672444,
+        "reference_signed_median_m": 0.5235644637351047,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "time": 15.976519,
+        "points": 6325,
+        "normal_change_deg": 1.5173566622257473
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.0003109984931151787,
+        "local_p90_abs_m": 0.000617963493003258,
+        "reference_median_abs_m": 0.13259369133042517,
+        "reference_p90_abs_m": 0.13585087296256457,
+        "reference_signed_median_m": 0.13259369133042517,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "time": 15.976519,
+        "points": 6325,
+        "normal_change_deg": 1.5173566622257473
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.043372038520764315,
+        "local_p90_abs_m": 0.06578155909668099,
+        "reference_median_abs_m": 0.8478808292867511,
+        "reference_p90_abs_m": 0.8515115406998242,
+        "reference_signed_median_m": 0.8478808292867511,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "time": 17.975325,
+        "points": 4177,
+        "normal_change_deg": 11.27437453628789
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.043372038520764315,
+        "local_p90_abs_m": 0.06578155909668099,
+        "reference_median_abs_m": 0.26709296015992656,
+        "reference_p90_abs_m": 0.2707236715729995,
+        "reference_signed_median_m": 0.26709296015992656,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "time": 17.975325,
+        "points": 4177,
+        "normal_change_deg": 11.27437453628789
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 1.4699352846052976e-13,
+        "local_p90_abs_m": 1.469935284752879e-13,
+        "reference_median_abs_m": 0.8283778918150709,
+        "reference_p90_abs_m": 0.8295699851573842,
+        "reference_signed_median_m": 0.8283778918150709,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "time": 22.767416,
+        "points": 6589,
+        "normal_change_deg": 0.4838863924126785
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 1.4699352846052976e-13,
+        "local_p90_abs_m": 1.469935284752879e-13,
+        "reference_median_abs_m": 0.23359876761444717,
+        "reference_p90_abs_m": 0.2347908609567605,
+        "reference_signed_median_m": 0.23359876761444717,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "closed-door",
+        "kind": "vertical",
+        "time": 22.767416,
+        "points": 6589,
+        "normal_change_deg": 0.4838863924126785
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 1.6653345369377348e-14,
+        "local_p90_abs_m": 1.6653345369377348e-14,
+        "reference_median_abs_m": 1.6625264533109974e-14,
+        "reference_p90_abs_m": 1.6714095927607143e-14,
+        "reference_signed_median_m": -1.6625264533109974e-14,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-front",
+        "kind": "vertical",
+        "time": 13.479501,
+        "points": 900,
+        "normal_change_deg": 0.0
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 1.6653345369377348e-14,
+        "local_p90_abs_m": 1.6653345369377348e-14,
+        "reference_median_abs_m": 1.6625264533109974e-14,
+        "reference_p90_abs_m": 1.6714095927607143e-14,
+        "reference_signed_median_m": -1.6625264533109974e-14,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-front",
+        "kind": "vertical",
+        "time": 13.479501,
+        "points": 900,
+        "normal_change_deg": 0.0
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 1.6653345369377348e-14,
+        "local_p90_abs_m": 1.6653345369377348e-14,
+        "reference_median_abs_m": 1.3607994563195696e-05,
+        "reference_p90_abs_m": 1.6698438891380407e-05,
+        "reference_signed_median_m": -1.3607994563195696e-05,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-front",
+        "kind": "vertical",
+        "time": 13.580784,
+        "points": 900,
+        "normal_change_deg": 0.008680070745520943
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 1.6653345369377348e-14,
+        "local_p90_abs_m": 1.6653345369377348e-14,
+        "reference_median_abs_m": 1.4314765547396172e-05,
+        "reference_p90_abs_m": 1.7405209875580724e-05,
+        "reference_signed_median_m": -1.4314765547396172e-05,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-front",
+        "kind": "vertical",
+        "time": 13.580784,
+        "points": 900,
+        "normal_change_deg": 0.008680070745520943
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.002793348372043244,
+        "local_p90_abs_m": 0.005634643496191383,
+        "reference_median_abs_m": 0.41261068120318073,
+        "reference_p90_abs_m": 0.4137820226884277,
+        "reference_signed_median_m": 0.41261068120318073,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-front",
+        "kind": "vertical",
+        "time": 15.976519,
+        "points": 1800,
+        "normal_change_deg": 6.10504136798222
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.002793348372043244,
+        "local_p90_abs_m": 0.005634643496191383,
+        "reference_median_abs_m": 0.02162102461026313,
+        "reference_p90_abs_m": 0.022792366095510004,
+        "reference_signed_median_m": 0.02162102461026313,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-front",
+        "kind": "vertical",
+        "time": 15.976519,
+        "points": 1800,
+        "normal_change_deg": 6.10504136798222
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.0052904155901953,
+        "local_p90_abs_m": 0.01274472114050091,
+        "reference_median_abs_m": 0.005290415590195293,
+        "reference_p90_abs_m": 0.012744721140500903,
+        "reference_signed_median_m": 0.00037204896541417627,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "time": 13.479501,
+        "points": 1248,
+        "normal_change_deg": 1.478779333471098e-06
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.0052904155901953,
+        "local_p90_abs_m": 0.01274472114050091,
+        "reference_median_abs_m": 0.005290415590195293,
+        "reference_p90_abs_m": 0.012744721140500903,
+        "reference_signed_median_m": 0.00037204896541417627,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "time": 13.479501,
+        "points": 1248,
+        "normal_change_deg": 1.478779333471098e-06
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.0052008562567484986,
+        "local_p90_abs_m": 0.013077911069173725,
+        "reference_median_abs_m": 0.005486099601098389,
+        "reference_p90_abs_m": 0.012696130979694284,
+        "reference_signed_median_m": 0.0009534496681966137,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "time": 13.580784,
+        "points": 1260,
+        "normal_change_deg": 0.9041993683594148
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.0052008562567484986,
+        "local_p90_abs_m": 0.013077911069173725,
+        "reference_median_abs_m": 0.005484957340730009,
+        "reference_p90_abs_m": 0.012694988719325905,
+        "reference_signed_median_m": 0.0009523074078282341,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "time": 13.580784,
+        "points": 1260,
+        "normal_change_deg": 0.9041993683594148
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.0033281063177148353,
+        "local_p90_abs_m": 0.008962634542188999,
+        "reference_median_abs_m": 0.004936542671845078,
+        "reference_p90_abs_m": 0.015061693029501918,
+        "reference_signed_median_m": 0.0048975168830040945,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "time": 13.98099,
+        "points": 1258,
+        "normal_change_deg": 2.7290459254343173
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.0033281063177148353,
+        "local_p90_abs_m": 0.008962634542188999,
+        "reference_median_abs_m": 0.003959712183952342,
+        "reference_p90_abs_m": 0.013131984232638384,
+        "reference_signed_median_m": 0.0029678080861405684,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "time": 13.98099,
+        "points": 1258,
+        "normal_change_deg": 2.7290459254343173
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.001427389146647421,
+        "local_p90_abs_m": 0.003339602247554897,
+        "reference_median_abs_m": 0.03747181228471632,
+        "reference_p90_abs_m": 0.04177994531527799,
+        "reference_signed_median_m": 0.03747181228471632,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "time": 15.976519,
+        "points": 1992,
+        "normal_change_deg": 2.8324933498820943
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.001427389146647421,
+        "local_p90_abs_m": 0.003339602247554897,
+        "reference_median_abs_m": 0.006456950038082487,
+        "reference_p90_abs_m": 0.010765083068644151,
+        "reference_signed_median_m": 0.006456950038082487,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "time": 15.976519,
+        "points": 1992,
+        "normal_change_deg": 2.8324933498820943
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.0007818016035639502,
+        "local_p90_abs_m": 0.002183646085960217,
+        "reference_median_abs_m": 0.04196224157811372,
+        "reference_p90_abs_m": 0.04458958580199584,
+        "reference_signed_median_m": 0.04196224157811372,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "time": 17.975325,
+        "points": 1332,
+        "normal_change_deg": 0.6474752140851471
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.0007818016035639502,
+        "local_p90_abs_m": 0.002183646085960217,
+        "reference_median_abs_m": 0.004105829206867093,
+        "reference_p90_abs_m": 0.005573370941409894,
+        "reference_signed_median_m": -0.004105829206867093,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "time": 17.975325,
+        "points": 1332,
+        "normal_change_deg": 0.6474752140851471
+      },
+      {
+        "mode": "fixed_joint",
+        "local_median_abs_m": 0.001042004632383701,
+        "local_p90_abs_m": 0.002430290299615625,
+        "reference_median_abs_m": 0.04493920534825933,
+        "reference_p90_abs_m": 0.04649837766957291,
+        "reference_signed_median_m": 0.04493920534825933,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "time": 22.767416,
+        "points": 1128,
+        "normal_change_deg": 2.298789395799915
+      },
+      {
+        "mode": "articulated",
+        "local_median_abs_m": 0.001042004632383701,
+        "local_p90_abs_m": 0.002430290299615625,
+        "reference_median_abs_m": 0.0021217237597722363,
+        "reference_p90_abs_m": 0.003800352405271282,
+        "reference_signed_median_m": -0.0021217237597722363,
+        "logfile": "m04-dh2-261102_175940.log",
+        "patch": "box-top",
+        "kind": "raised",
+        "time": 22.767416,
+        "points": 1128,
+        "normal_change_deg": 2.298789395799915
+      }
+    ],
+    "usable_for_driving": false,
+    "local_floor_heights": [
+      {
+        "logfile": "m04-dh2-261102_175940.log",
+        "time": 13.479501,
+        "raised_patch": "box-top",
+        "floor_patch": "floor",
+        "centroid_height_above_local_floor_m": 0.10921309721618809
+      },
+      {
+        "logfile": "m04-dh2-261102_175940.log",
+        "time": 13.580784,
+        "raised_patch": "box-top",
+        "floor_patch": "floor",
+        "centroid_height_above_local_floor_m": 0.10838347586251244
+      },
+      {
+        "logfile": "m04-dh2-261102_175940.log",
+        "time": 13.98099,
+        "raised_patch": "box-top",
+        "floor_patch": "floor",
+        "centroid_height_above_local_floor_m": 0.11252515417549241
+      },
+      {
+        "logfile": "m04-dh2-261102_175940.log",
+        "time": 15.976519,
+        "raised_patch": "box-top",
+        "floor_patch": "floor",
+        "centroid_height_above_local_floor_m": 0.10457689437584591
+      },
+      {
+        "logfile": "m04-dh2-261102_175940.log",
+        "time": 17.975325,
+        "raised_patch": "box-top",
+        "floor_patch": "floor",
+        "centroid_height_above_local_floor_m": 0.1166058071490977
+      },
+      {
+        "logfile": "m04-dh2-261102_175940.log",
+        "time": 22.767416,
+        "raised_patch": "box-top",
+        "floor_patch": "floor",
+        "centroid_height_above_local_floor_m": 0.10036283299843574
+      }
+    ],
+    "limitations": [
+      "Manual semantic patch labels; RGB and depth are not pixel-aligned",
+      "Provisional intrinsics, optical offset and host-time alignment",
+      "Local plane fitting is diagnostic, never applied as a pose correction",
+      "Reference plane contains depth noise; local planarity is not depth accuracy",
+      "Quantized constant-depth plateaus can have zero plane-fit residual",
+      "Different ROIs sample the same assumed surface, not tracked identical points",
+      "One-pixel disparity estimate is a scale illustration, not an error bound",
+      "Planes do not constrain translation parallel to their surface"
+    ]
+  },
+  "timing_sensitivity": [
+    {
+      "offset_s": 0,
+      "observations": 25,
+      "max_reference_plane_p90_m": {
+        "floor-during-scan": 0.014114496166113174,
+        "floor": 0.018765179035723313,
+        "closed-door": 0.2707236715729995,
+        "box-front": 0.022792366095510004,
+        "box-top": 0.013131984232638384
+      }
+    },
+    {
+      "offset_s": -0.1,
+      "observations": 25,
+      "max_reference_plane_p90_m": {
+        "floor-during-scan": 0.013489829430838124,
+        "floor": 0.019226407317592807,
+        "closed-door": 0.2710646512919028,
+        "box-front": 0.04164250277696619,
+        "box-top": 0.012894792412373806
+      }
+    },
+    {
+      "offset_s": 0.1,
+      "observations": 25,
+      "max_reference_plane_p90_m": {
+        "floor-during-scan": 0.014420631264548687,
+        "floor": 0.018222266319789744,
+        "closed-door": 0.26994019900955774,
+        "box-front": 0.009875948300592621,
+        "box-top": 0.013415770787140192
+      }
+    }
+  ]
+}

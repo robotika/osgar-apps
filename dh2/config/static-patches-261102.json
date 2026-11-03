@@ -1,0 +1,75 @@
+{
+  "description": "Manual depth ROIs selected from image content before plane-error calculation. Rectangles are half-open pixel coordinates. Optical geometry remains provisional.",
+  "depth_shape": [400, 640],
+  "intrinsics": [400.13818, 400.20917, 324.24768, 195.83195],
+  "optical_offset": [0.21, 0.0375, 0.16],
+  "baseline_m": 0.075,
+  "runs": [
+    {
+      "logfile": "m04-dh2-261102_174346.log",
+      "patches": [
+        {
+          "name": "floor-during-scan",
+          "kind": "floor",
+          "observations": [
+            {"time": 14.334, "roi": [80, 320, 200, 345]},
+            {"time": 14.434, "roi": [80, 320, 200, 345]},
+            {"time": 15.937, "roi": [80, 320, 200, 345]},
+            {"time": 17.539, "roi": [40, 350, 120, 370]}
+          ]
+        }
+      ]
+    },
+    {
+      "logfile": "m04-dh2-261102_175940.log",
+      "patches": [
+        {
+          "name": "floor",
+          "kind": "floor",
+          "observations": [
+            {"time": 13.48, "roi": [170, 340, 240, 365]},
+            {"time": 13.58, "roi": [170, 340, 240, 365]},
+            {"time": 13.98, "roi": [170, 340, 240, 365]},
+            {"time": 15.98, "roi": [205, 305, 245, 330]},
+            {"time": 17.98, "roi": [205, 315, 245, 340]},
+            {"time": 22.77, "roi": [210, 330, 240, 350]}
+          ]
+        },
+        {
+          "name": "closed-door",
+          "kind": "vertical",
+          "observations": [
+            {"time": 13.48, "roi": [450, 90, 500, 200]},
+            {"time": 13.58, "roi": [450, 90, 500, 200]},
+            {"time": 13.98, "roi": [450, 90, 500, 200]},
+            {"time": 15.98, "roi": [490, 90, 550, 200]},
+            {"time": 17.98, "roi": [480, 90, 540, 200]},
+            {"time": 22.77, "roi": [500, 90, 560, 200]}
+          ]
+        },
+        {
+          "name": "box-front",
+          "kind": "vertical",
+          "selection_note": "Use the front face below the top/front edge. Later it leaves the image; pixels at the former location then show the top, so they are not compared as this plane.",
+          "observations": [
+            {"time": 13.48, "roi": [330, 295, 390, 310]},
+            {"time": 13.58, "roi": [330, 295, 390, 310]},
+            {"time": 15.98, "roi": [330, 365, 420, 385]}
+          ]
+        },
+        {
+          "name": "box-top",
+          "kind": "raised",
+          "observations": [
+            {"time": 13.48, "roi": [320, 270, 390, 288]},
+            {"time": 13.58, "roi": [320, 270, 390, 288]},
+            {"time": 13.98, "roi": [320, 270, 390, 288]},
+            {"time": 15.98, "roi": [330, 295, 430, 315]},
+            {"time": 17.98, "roi": [340, 335, 440, 350]},
+            {"time": 22.77, "roi": [340, 335, 440, 350]}
+          ]
+        }
+      ]
+    }
+  ]
+}
