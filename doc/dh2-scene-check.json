@@ -1,0 +1,1072 @@
+{
+  "metric": "Symmetric projective optical-Z residuals, no fitted registration",
+  "runs": [
+    {
+      "name": "174346",
+      "group": "settled",
+      "settings": {
+        "logfile": "/data/matty/m04-dh2-261102_174346.log",
+        "pose_log": "/tmp/dh2-pose-stage2/m04-dh2-261102_174346/pose.log",
+        "output": "/tmp/dh2-scene-check/settled/174346",
+        "intrinsics": [
+          400.13818,
+          400.20917,
+          324.24768,
+          195.83195
+        ],
+        "optical_offset": [
+          0.21,
+          0.0375,
+          0.16
+        ],
+        "depth_time_offset": 0,
+        "frame_step": 0.5,
+        "pixel_stride": 4,
+        "start": 12.0,
+        "end": null
+      },
+      "pose_settings": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      },
+      "usable_for_driving": false,
+      "acceptance_threshold_m": null,
+      "projection": {
+        "min_range_m": 0.3,
+        "max_range_m": 3,
+        "neighbour_edge_limit_m": 0.08,
+        "depth_units": "millimetres",
+        "target_sampling": "nearest_pixel",
+        "depth_frame": "nominal_rectified_left"
+      },
+      "summaries": {
+        "fixed_camera": {
+          "matches": 175558,
+          "median_abs_m": 0.062000000000000055,
+          "p90_abs_m": 0.508,
+          "signed_median_m": -5.551115123125783e-17
+        },
+        "fixed_joint": {
+          "matches": 160256,
+          "median_abs_m": 0.019783450891727228,
+          "p90_abs_m": 0.08136296953360633,
+          "signed_median_m": 5.379365242838552e-05
+        },
+        "articulated": {
+          "matches": 169358,
+          "median_abs_m": 0.02028076652441918,
+          "p90_abs_m": 0.07855537710533807,
+          "signed_median_m": 0.000340964352207318
+        }
+      },
+      "reference_time": 12.035137,
+      "pairs": 20,
+      "limitations": [
+        "Diagnostic only; no acceptance threshold or motion protection",
+        "Explicit supplied intrinsics and optical centre offset are assumptions",
+        "Nominal rectified-left optical rotation relative to front body",
+        "Depth host receipt time plus offset; exact acquisition alignment unverified",
+        "Joint Z assumed; unknown-translation intervals excluded",
+        "Occlusions, moving objects, depth noise and nearest-pixel errors included",
+        "Planar surfaces alone cannot constrain all translation components",
+        "Pooled pixel statistics are correlated, not independent accuracy samples"
+      ]
+    },
+    {
+      "name": "174419",
+      "group": "settled",
+      "settings": {
+        "logfile": "/data/matty/m04-dh2-261102_174419.log",
+        "pose_log": "/tmp/dh2-pose-stage2/m04-dh2-261102_174419/pose.log",
+        "output": "/tmp/dh2-scene-check/settled/174419",
+        "intrinsics": [
+          400.13818,
+          400.20917,
+          324.24768,
+          195.83195
+        ],
+        "optical_offset": [
+          0.21,
+          0.0375,
+          0.16
+        ],
+        "depth_time_offset": 0,
+        "frame_step": 0.5,
+        "pixel_stride": 4,
+        "start": 12.0,
+        "end": null
+      },
+      "pose_settings": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      },
+      "usable_for_driving": false,
+      "acceptance_threshold_m": null,
+      "projection": {
+        "min_range_m": 0.3,
+        "max_range_m": 3,
+        "neighbour_edge_limit_m": 0.08,
+        "depth_units": "millimetres",
+        "target_sampling": "nearest_pixel",
+        "depth_frame": "nominal_rectified_left"
+      },
+      "summaries": {
+        "fixed_camera": {
+          "matches": 158692,
+          "median_abs_m": 0.08299999999999996,
+          "p90_abs_m": 0.7490000000000003,
+          "signed_median_m": 1.1102230246251565e-16
+        },
+        "fixed_joint": {
+          "matches": 134930,
+          "median_abs_m": 0.022510038330781246,
+          "p90_abs_m": 0.13242823661256353,
+          "signed_median_m": -0.00038486759153077976
+        },
+        "articulated": {
+          "matches": 149267,
+          "median_abs_m": 0.014157052705953022,
+          "p90_abs_m": 0.0796251207541465,
+          "signed_median_m": 0.0003221961066202095
+        }
+      },
+      "reference_time": 12.068658,
+      "pairs": 26,
+      "limitations": [
+        "Diagnostic only; no acceptance threshold or motion protection",
+        "Explicit supplied intrinsics and optical centre offset are assumptions",
+        "Nominal rectified-left optical rotation relative to front body",
+        "Depth host receipt time plus offset; exact acquisition alignment unverified",
+        "Joint Z assumed; unknown-translation intervals excluded",
+        "Occlusions, moving objects, depth noise and nearest-pixel errors included",
+        "Planar surfaces alone cannot constrain all translation components",
+        "Pooled pixel statistics are correlated, not independent accuracy samples"
+      ]
+    },
+    {
+      "name": "174456",
+      "group": "settled",
+      "settings": {
+        "logfile": "/data/matty/m04-dh2-261102_174456.log",
+        "pose_log": "/tmp/dh2-pose-stage2/m04-dh2-261102_174456/pose.log",
+        "output": "/tmp/dh2-scene-check/settled/174456",
+        "intrinsics": [
+          400.13818,
+          400.20917,
+          324.24768,
+          195.83195
+        ],
+        "optical_offset": [
+          0.21,
+          0.0375,
+          0.16
+        ],
+        "depth_time_offset": 0,
+        "frame_step": 0.5,
+        "pixel_stride": 4,
+        "start": 12.0,
+        "end": null
+      },
+      "pose_settings": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      },
+      "usable_for_driving": false,
+      "acceptance_threshold_m": null,
+      "projection": {
+        "min_range_m": 0.3,
+        "max_range_m": 3,
+        "neighbour_edge_limit_m": 0.08,
+        "depth_units": "millimetres",
+        "target_sampling": "nearest_pixel",
+        "depth_frame": "nominal_rectified_left"
+      },
+      "summaries": {
+        "fixed_camera": {
+          "matches": 105522,
+          "median_abs_m": 0.06600000000000006,
+          "p90_abs_m": 0.7890000000000003,
+          "signed_median_m": 1.1102230246251565e-16
+        },
+        "fixed_joint": {
+          "matches": 83339,
+          "median_abs_m": 0.015533231473215503,
+          "p90_abs_m": 0.08648688128090071,
+          "signed_median_m": 0.00011808492756937294
+        },
+        "articulated": {
+          "matches": 98586,
+          "median_abs_m": 0.013176208418669566,
+          "p90_abs_m": 0.06857827642576686,
+          "signed_median_m": 0.0007506320607699735
+        }
+      },
+      "reference_time": 12.082821,
+      "pairs": 29,
+      "limitations": [
+        "Diagnostic only; no acceptance threshold or motion protection",
+        "Explicit supplied intrinsics and optical centre offset are assumptions",
+        "Nominal rectified-left optical rotation relative to front body",
+        "Depth host receipt time plus offset; exact acquisition alignment unverified",
+        "Joint Z assumed; unknown-translation intervals excluded",
+        "Occlusions, moving objects, depth noise and nearest-pixel errors included",
+        "Planar surfaces alone cannot constrain all translation components",
+        "Pooled pixel statistics are correlated, not independent accuracy samples"
+      ]
+    },
+    {
+      "name": "174534",
+      "group": "settled",
+      "settings": {
+        "logfile": "/data/matty/m04-dh2-261102_174534.log",
+        "pose_log": "/tmp/dh2-pose-stage2/m04-dh2-261102_174534/pose.log",
+        "output": "/tmp/dh2-scene-check/settled/174534",
+        "intrinsics": [
+          400.13818,
+          400.20917,
+          324.24768,
+          195.83195
+        ],
+        "optical_offset": [
+          0.21,
+          0.0375,
+          0.16
+        ],
+        "depth_time_offset": 0,
+        "frame_step": 0.5,
+        "pixel_stride": 4,
+        "start": 12.0,
+        "end": null
+      },
+      "pose_settings": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      },
+      "usable_for_driving": false,
+      "acceptance_threshold_m": null,
+      "projection": {
+        "min_range_m": 0.3,
+        "max_range_m": 3,
+        "neighbour_edge_limit_m": 0.08,
+        "depth_units": "millimetres",
+        "target_sampling": "nearest_pixel",
+        "depth_frame": "nominal_rectified_left"
+      },
+      "summaries": {
+        "fixed_camera": {
+          "matches": 126800,
+          "median_abs_m": 0.16899999999999993,
+          "p90_abs_m": 0.4320000000000003,
+          "signed_median_m": 0.0
+        },
+        "fixed_joint": {
+          "matches": 106704,
+          "median_abs_m": 0.022371589052024687,
+          "p90_abs_m": 0.06264585964795812,
+          "signed_median_m": -2.2723434984328605e-05
+        },
+        "articulated": {
+          "matches": 116442,
+          "median_abs_m": 0.022049854935504265,
+          "p90_abs_m": 0.05822784084773042,
+          "signed_median_m": 0.00012611999747735858
+        }
+      },
+      "reference_time": 12.032521,
+      "pairs": 26,
+      "limitations": [
+        "Diagnostic only; no acceptance threshold or motion protection",
+        "Explicit supplied intrinsics and optical centre offset are assumptions",
+        "Nominal rectified-left optical rotation relative to front body",
+        "Depth host receipt time plus offset; exact acquisition alignment unverified",
+        "Joint Z assumed; unknown-translation intervals excluded",
+        "Occlusions, moving objects, depth noise and nearest-pixel errors included",
+        "Planar surfaces alone cannot constrain all translation components",
+        "Pooled pixel statistics are correlated, not independent accuracy samples"
+      ]
+    },
+    {
+      "name": "175816",
+      "group": "settled",
+      "settings": {
+        "logfile": "/data/matty/m04-dh2-261102_175816.log",
+        "pose_log": "/tmp/dh2-pose-stage2/m04-dh2-261102_175816/pose.log",
+        "output": "/tmp/dh2-scene-check/settled/175816",
+        "intrinsics": [
+          400.13818,
+          400.20917,
+          324.24768,
+          195.83195
+        ],
+        "optical_offset": [
+          0.21,
+          0.0375,
+          0.16
+        ],
+        "depth_time_offset": 0,
+        "frame_step": 0.5,
+        "pixel_stride": 4,
+        "start": 12.0,
+        "end": null
+      },
+      "pose_settings": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      },
+      "usable_for_driving": false,
+      "acceptance_threshold_m": null,
+      "projection": {
+        "min_range_m": 0.3,
+        "max_range_m": 3,
+        "neighbour_edge_limit_m": 0.08,
+        "depth_units": "millimetres",
+        "target_sampling": "nearest_pixel",
+        "depth_frame": "nominal_rectified_left"
+      },
+      "summaries": {
+        "fixed_camera": {
+          "matches": 415592,
+          "median_abs_m": 0.31200000000000006,
+          "p90_abs_m": 1.5359999999999998,
+          "signed_median_m": 1.1102230246251565e-16
+        },
+        "fixed_joint": {
+          "matches": 354344,
+          "median_abs_m": 0.32592378992391824,
+          "p90_abs_m": 0.8795347870821683,
+          "signed_median_m": -0.005900485574282188
+        },
+        "articulated": {
+          "matches": 326294,
+          "median_abs_m": 0.05713342845661018,
+          "p90_abs_m": 0.455363434724786,
+          "signed_median_m": -0.012640871149606492
+        }
+      },
+      "reference_time": 12.002045,
+      "pairs": 42,
+      "limitations": [
+        "Diagnostic only; no acceptance threshold or motion protection",
+        "Explicit supplied intrinsics and optical centre offset are assumptions",
+        "Nominal rectified-left optical rotation relative to front body",
+        "Depth host receipt time plus offset; exact acquisition alignment unverified",
+        "Joint Z assumed; unknown-translation intervals excluded",
+        "Occlusions, moving objects, depth noise and nearest-pixel errors included",
+        "Planar surfaces alone cannot constrain all translation components",
+        "Pooled pixel statistics are correlated, not independent accuracy samples"
+      ]
+    },
+    {
+      "name": "175940",
+      "group": "settled",
+      "settings": {
+        "logfile": "/data/matty/m04-dh2-261102_175940.log",
+        "pose_log": "/tmp/dh2-pose-stage2/m04-dh2-261102_175940/pose.log",
+        "output": "/tmp/dh2-scene-check/settled/175940",
+        "intrinsics": [
+          400.13818,
+          400.20917,
+          324.24768,
+          195.83195
+        ],
+        "optical_offset": [
+          0.21,
+          0.0375,
+          0.16
+        ],
+        "depth_time_offset": 0,
+        "frame_step": 0.5,
+        "pixel_stride": 4,
+        "start": 12.0,
+        "end": null
+      },
+      "pose_settings": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      },
+      "usable_for_driving": false,
+      "acceptance_threshold_m": null,
+      "projection": {
+        "min_range_m": 0.3,
+        "max_range_m": 3,
+        "neighbour_edge_limit_m": 0.08,
+        "depth_units": "millimetres",
+        "target_sampling": "nearest_pixel",
+        "depth_frame": "nominal_rectified_left"
+      },
+      "summaries": {
+        "fixed_camera": {
+          "matches": 481532,
+          "median_abs_m": 0.263,
+          "p90_abs_m": 1.192,
+          "signed_median_m": 1.1102230246251565e-16
+        },
+        "fixed_joint": {
+          "matches": 420362,
+          "median_abs_m": 0.3064459271775489,
+          "p90_abs_m": 1.0167635670310933,
+          "signed_median_m": -0.0019227624734552973
+        },
+        "articulated": {
+          "matches": 362659,
+          "median_abs_m": 0.10839459094142789,
+          "p90_abs_m": 0.5787042156683171,
+          "signed_median_m": -0.023515555275444244
+        }
+      },
+      "reference_time": 12.075,
+      "pairs": 44,
+      "limitations": [
+        "Diagnostic only; no acceptance threshold or motion protection",
+        "Explicit supplied intrinsics and optical centre offset are assumptions",
+        "Nominal rectified-left optical rotation relative to front body",
+        "Depth host receipt time plus offset; exact acquisition alignment unverified",
+        "Joint Z assumed; unknown-translation intervals excluded",
+        "Occlusions, moving objects, depth noise and nearest-pixel errors included",
+        "Planar surfaces alone cannot constrain all translation components",
+        "Pooled pixel statistics are correlated, not independent accuracy samples"
+      ]
+    },
+    {
+      "name": "baseline",
+      "group": "settled-sensitivity",
+      "settings": {
+        "logfile": "/data/matty/m04-dh2-261102_174346.log",
+        "pose_log": "/tmp/dh2-pose-stage2/m04-dh2-261102_174346/pose.log",
+        "output": "/tmp/dh2-scene-check/settled-sensitivity/baseline",
+        "intrinsics": [
+          400.13818,
+          400.20917,
+          324.24768,
+          195.83195
+        ],
+        "optical_offset": [
+          0.21,
+          0.0375,
+          0.16
+        ],
+        "depth_time_offset": 0.0,
+        "frame_step": 0.5,
+        "pixel_stride": 4,
+        "start": 12.0,
+        "end": 23.0
+      },
+      "pose_settings": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      },
+      "usable_for_driving": false,
+      "acceptance_threshold_m": null,
+      "projection": {
+        "min_range_m": 0.3,
+        "max_range_m": 3,
+        "neighbour_edge_limit_m": 0.08,
+        "depth_units": "millimetres",
+        "target_sampling": "nearest_pixel",
+        "depth_frame": "nominal_rectified_left"
+      },
+      "summaries": {
+        "fixed_camera": {
+          "matches": 166426,
+          "median_abs_m": 0.062000000000000055,
+          "p90_abs_m": 0.508,
+          "signed_median_m": -5.551115123125783e-17
+        },
+        "fixed_joint": {
+          "matches": 151110,
+          "median_abs_m": 0.01976129114983749,
+          "p90_abs_m": 0.08175526715314543,
+          "signed_median_m": 3.7556091534218794e-05
+        },
+        "articulated": {
+          "matches": 160400,
+          "median_abs_m": 0.020148380806292276,
+          "p90_abs_m": 0.07823951919851316,
+          "signed_median_m": 0.0003523645870365799
+        }
+      },
+      "reference_time": 12.035137,
+      "pairs": 19,
+      "limitations": [
+        "Diagnostic only; no acceptance threshold or motion protection",
+        "Explicit supplied intrinsics and optical centre offset are assumptions",
+        "Nominal rectified-left optical rotation relative to front body",
+        "Depth host receipt time plus offset; exact acquisition alignment unverified",
+        "Joint Z assumed; unknown-translation intervals excluded",
+        "Occlusions, moving objects, depth noise and nearest-pixel errors included",
+        "Planar surfaces alone cannot constrain all translation components",
+        "Pooled pixel statistics are correlated, not independent accuracy samples"
+      ]
+    },
+    {
+      "name": "optical-centerline",
+      "group": "settled-sensitivity",
+      "settings": {
+        "logfile": "/data/matty/m04-dh2-261102_174346.log",
+        "pose_log": "/tmp/dh2-pose-stage2/m04-dh2-261102_174346/pose.log",
+        "output": "/tmp/dh2-scene-check/settled-sensitivity/optical-centerline",
+        "intrinsics": [
+          400.13818,
+          400.20917,
+          324.24768,
+          195.83195
+        ],
+        "optical_offset": [
+          0.21,
+          0.0,
+          0.16
+        ],
+        "depth_time_offset": 0.0,
+        "frame_step": 0.5,
+        "pixel_stride": 4,
+        "start": 12.0,
+        "end": 23.0
+      },
+      "pose_settings": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      },
+      "usable_for_driving": false,
+      "acceptance_threshold_m": null,
+      "projection": {
+        "min_range_m": 0.3,
+        "max_range_m": 3,
+        "neighbour_edge_limit_m": 0.08,
+        "depth_units": "millimetres",
+        "target_sampling": "nearest_pixel",
+        "depth_frame": "nominal_rectified_left"
+      },
+      "summaries": {
+        "fixed_camera": {
+          "matches": 166426,
+          "median_abs_m": 0.062000000000000055,
+          "p90_abs_m": 0.5080000000000001,
+          "signed_median_m": -1.1102230246251565e-16
+        },
+        "fixed_joint": {
+          "matches": 150755,
+          "median_abs_m": 0.020973540654539824,
+          "p90_abs_m": 0.08202375249500227,
+          "signed_median_m": 6.932167290796265e-05
+        },
+        "articulated": {
+          "matches": 159848,
+          "median_abs_m": 0.02244556686876681,
+          "p90_abs_m": 0.08320673870651696,
+          "signed_median_m": 0.00032859209124791455
+        }
+      },
+      "reference_time": 12.035137,
+      "pairs": 19,
+      "limitations": [
+        "Diagnostic only; no acceptance threshold or motion protection",
+        "Explicit supplied intrinsics and optical centre offset are assumptions",
+        "Nominal rectified-left optical rotation relative to front body",
+        "Depth host receipt time plus offset; exact acquisition alignment unverified",
+        "Joint Z assumed; unknown-translation intervals excluded",
+        "Occlusions, moving objects, depth noise and nearest-pixel errors included",
+        "Planar surfaces alone cannot constrain all translation components",
+        "Pooled pixel statistics are correlated, not independent accuracy samples"
+      ]
+    },
+    {
+      "name": "optical-left75mm",
+      "group": "settled-sensitivity",
+      "settings": {
+        "logfile": "/data/matty/m04-dh2-261102_174346.log",
+        "pose_log": "/tmp/dh2-pose-stage2/m04-dh2-261102_174346/pose.log",
+        "output": "/tmp/dh2-scene-check/settled-sensitivity/optical-left75mm",
+        "intrinsics": [
+          400.13818,
+          400.20917,
+          324.24768,
+          195.83195
+        ],
+        "optical_offset": [
+          0.21,
+          0.075,
+          0.16
+        ],
+        "depth_time_offset": 0.0,
+        "frame_step": 0.5,
+        "pixel_stride": 4,
+        "start": 12.0,
+        "end": 23.0
+      },
+      "pose_settings": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      },
+      "usable_for_driving": false,
+      "acceptance_threshold_m": null,
+      "projection": {
+        "min_range_m": 0.3,
+        "max_range_m": 3,
+        "neighbour_edge_limit_m": 0.08,
+        "depth_units": "millimetres",
+        "target_sampling": "nearest_pixel",
+        "depth_frame": "nominal_rectified_left"
+      },
+      "summaries": {
+        "fixed_camera": {
+          "matches": 166426,
+          "median_abs_m": 0.062000000000000055,
+          "p90_abs_m": 0.5080000000000001,
+          "signed_median_m": -5.551115123125783e-17
+        },
+        "fixed_joint": {
+          "matches": 150847,
+          "median_abs_m": 0.020343456573555185,
+          "p90_abs_m": 0.08577348217700641,
+          "signed_median_m": 1.592555220075731e-05
+        },
+        "articulated": {
+          "matches": 160158,
+          "median_abs_m": 0.01926462281908442,
+          "p90_abs_m": 0.07833013319268291,
+          "signed_median_m": 0.00032292197240280096
+        }
+      },
+      "reference_time": 12.035137,
+      "pairs": 19,
+      "limitations": [
+        "Diagnostic only; no acceptance threshold or motion protection",
+        "Explicit supplied intrinsics and optical centre offset are assumptions",
+        "Nominal rectified-left optical rotation relative to front body",
+        "Depth host receipt time plus offset; exact acquisition alignment unverified",
+        "Joint Z assumed; unknown-translation intervals excluded",
+        "Occlusions, moving objects, depth noise and nearest-pixel errors included",
+        "Planar surfaces alone cannot constrain all translation components",
+        "Pooled pixel statistics are correlated, not independent accuracy samples"
+      ]
+    },
+    {
+      "name": "time-minus100ms",
+      "group": "settled-sensitivity",
+      "settings": {
+        "logfile": "/data/matty/m04-dh2-261102_174346.log",
+        "pose_log": "/tmp/dh2-pose-stage2/m04-dh2-261102_174346/pose.log",
+        "output": "/tmp/dh2-scene-check/settled-sensitivity/time-minus100ms",
+        "intrinsics": [
+          400.13818,
+          400.20917,
+          324.24768,
+          195.83195
+        ],
+        "optical_offset": [
+          0.21,
+          0.0375,
+          0.16
+        ],
+        "depth_time_offset": -0.1,
+        "frame_step": 0.5,
+        "pixel_stride": 4,
+        "start": 12.0,
+        "end": 23.0
+      },
+      "pose_settings": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      },
+      "usable_for_driving": false,
+      "acceptance_threshold_m": null,
+      "projection": {
+        "min_range_m": 0.3,
+        "max_range_m": 3,
+        "neighbour_edge_limit_m": 0.08,
+        "depth_units": "millimetres",
+        "target_sampling": "nearest_pixel",
+        "depth_frame": "nominal_rectified_left"
+      },
+      "summaries": {
+        "fixed_camera": {
+          "matches": 166426,
+          "median_abs_m": 0.062000000000000055,
+          "p90_abs_m": 0.508,
+          "signed_median_m": 0.0
+        },
+        "fixed_joint": {
+          "matches": 146699,
+          "median_abs_m": 0.021287040520026945,
+          "p90_abs_m": 0.10346518556047593,
+          "signed_median_m": 6.302779456790475e-05
+        },
+        "articulated": {
+          "matches": 158466,
+          "median_abs_m": 0.018625011531921865,
+          "p90_abs_m": 0.07702997202254064,
+          "signed_median_m": 0.0007145793360287256
+        }
+      },
+      "reference_time": 11.935137000000001,
+      "pairs": 19,
+      "limitations": [
+        "Diagnostic only; no acceptance threshold or motion protection",
+        "Explicit supplied intrinsics and optical centre offset are assumptions",
+        "Nominal rectified-left optical rotation relative to front body",
+        "Depth host receipt time plus offset; exact acquisition alignment unverified",
+        "Joint Z assumed; unknown-translation intervals excluded",
+        "Occlusions, moving objects, depth noise and nearest-pixel errors included",
+        "Planar surfaces alone cannot constrain all translation components",
+        "Pooled pixel statistics are correlated, not independent accuracy samples"
+      ]
+    },
+    {
+      "name": "time-plus100ms",
+      "group": "settled-sensitivity",
+      "settings": {
+        "logfile": "/data/matty/m04-dh2-261102_174346.log",
+        "pose_log": "/tmp/dh2-pose-stage2/m04-dh2-261102_174346/pose.log",
+        "output": "/tmp/dh2-scene-check/settled-sensitivity/time-plus100ms",
+        "intrinsics": [
+          400.13818,
+          400.20917,
+          324.24768,
+          195.83195
+        ],
+        "optical_offset": [
+          0.21,
+          0.0375,
+          0.16
+        ],
+        "depth_time_offset": 0.1,
+        "frame_step": 0.5,
+        "pixel_stride": 4,
+        "start": 12.0,
+        "end": 23.0
+      },
+      "pose_settings": {
+        "front_from_fused": [
+          0.0008260018708156953,
+          0.7034627592472548,
+          0.0021231151397491954,
+          0.7107284688650454
+        ],
+        "rear_from_esp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "wheel_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "front_axle": 0.16,
+        "rear_axle": 0.16,
+        "track": 0.315,
+        "housing_offset": [
+          0.21,
+          0,
+          0.16
+        ],
+        "geometry_verified": false,
+        "geometry_id": "14442C10116FDAD600:factory-f88463746673:nominal-front-mount-firmware-wheel-order-planar-v1"
+      },
+      "usable_for_driving": false,
+      "acceptance_threshold_m": null,
+      "projection": {
+        "min_range_m": 0.3,
+        "max_range_m": 3,
+        "neighbour_edge_limit_m": 0.08,
+        "depth_units": "millimetres",
+        "target_sampling": "nearest_pixel",
+        "depth_frame": "nominal_rectified_left"
+      },
+      "summaries": {
+        "fixed_camera": {
+          "matches": 166426,
+          "median_abs_m": 0.062000000000000055,
+          "p90_abs_m": 0.5080000000000002,
+          "signed_median_m": -1.1102230246251565e-16
+        },
+        "fixed_joint": {
+          "matches": 148187,
+          "median_abs_m": 0.027301804234657223,
+          "p90_abs_m": 0.18970633826911654,
+          "signed_median_m": -0.0002816526482841697
+        },
+        "articulated": {
+          "matches": 153823,
+          "median_abs_m": 0.028218256639640504,
+          "p90_abs_m": 0.18947964274933124,
+          "signed_median_m": -0.00019328155307102302
+        }
+      },
+      "reference_time": 12.135137,
+      "pairs": 19,
+      "limitations": [
+        "Diagnostic only; no acceptance threshold or motion protection",
+        "Explicit supplied intrinsics and optical centre offset are assumptions",
+        "Nominal rectified-left optical rotation relative to front body",
+        "Depth host receipt time plus offset; exact acquisition alignment unverified",
+        "Joint Z assumed; unknown-translation intervals excluded",
+        "Occlusions, moving objects, depth noise and nearest-pixel errors included",
+        "Planar surfaces alone cannot constrain all translation components",
+        "Pooled pixel statistics are correlated, not independent accuracy samples"
+      ]
+    }
+  ]
+}

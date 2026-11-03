@@ -81,7 +81,11 @@ synchronization. No accelerometer double integration is introduced.
 
 ## Next step
 
-Compare static surfaces across depth frames using this pose, explicit rectified
+The [first projective scene check](dh2-scene-check.md) is now implemented and run
+on all six logs. It quantifies residuals and assumption sensitivity; it does not
+yet verify calibrated registration or independent displacement.
+
+Continue comparing static surfaces across depth frames using this pose, explicit rectified
 optical extrinsics and reviewed depth intrinsics/timestamps. Quantify residuals
 during stationary articulation before using translation trials. Confirm wheel
 order and rear mounting physically, then perform measured forward/reverse motion.

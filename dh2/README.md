@@ -47,6 +47,12 @@ See the [results and remaining stage-2 checks](../doc/dh2-pose-stage2.md) and
 [node interface](../matty/README.md). It assumes planar joint translation and
 provisional geometry; the controller does not consume it yet.
 
+`python -m dh2.scene_check LOG --pose-log POSE_LOG --intrinsics FX FY CX CY
+--optical-offset X Y Z --output DIRECTORY` compares depth frames against a fixed
+reference using fixed-camera, fixed-joint and articulated motion assumptions.
+See [the procedure and recorded results](../doc/dh2-scene-check.md) for provisional
+projection settings, residual plots and timing sensitivity.
+
 ## Interactive recording viewer
 
 From the repository root, open one recording or a sequence in command-line order:

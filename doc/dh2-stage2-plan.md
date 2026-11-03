@@ -338,6 +338,9 @@ See [pose replay results](dh2-pose-stage2.md) and the
 [reusable node interface](../matty/README.md). Six derived logs replay exactly.
 Joint Z, wheel geometry and clock alignment remain explicit assumptions; fixed
 scene registration and independent displacement validation are the next steps.
+The [first scene consistency diagnostic](dh2-scene-check.md) now compares all six
+logs and timing/optical-offset sensitivity. Persistent static patches and a
+calibrated error budget remain to be verified.
 
 The original first-session sequence was:
 
