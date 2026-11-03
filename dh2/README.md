@@ -59,6 +59,14 @@ patches. It reports local planarity separately from cross-frame alignment and
 saves annotated depth sheets. See [the static-patch findings](../doc/dh2-static-patches.md)
 for near-obstacle results and the coarse distant-depth quantization.
 
+`python -m dh2.camera_audit LOG [LOG ...] --calibration FILE --output FILE`
+checks recorded clock variation and integer-disparity depth levels. The
+[geometry/timing findings](../doc/dh2-camera-geometry-timing.md) also describe
+`python -m dh2.capture_depth_metadata --output FILE`, a camera-only capture of
+SDK frame intrinsics and paired host/device timestamps for the next robot session.
+The shared config's unused `stereo_mode` key has been removed; the v3 driver
+uses `depth_profile` when explicitly configured.
+
 ## Interactive recording viewer
 
 From the repository root, open one recording or a sequence in command-line order:

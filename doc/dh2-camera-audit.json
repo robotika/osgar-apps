@@ -1,0 +1,1496 @@
+[
+  {
+    "logfile": "/data/matty/m04-dh2-261102_174346.log",
+    "depth_shape": [
+      400,
+      640
+    ],
+    "oak_settings": {
+      "fps": 10,
+      "is_color": true,
+      "video_encoder": "h265",
+      "h264_bitrate": 2000,
+      "is_depth": true,
+      "is_stereo_images": false,
+      "laser_projector_current": 0,
+      "flood_light_current": 0,
+      "is_imu_enabled": true,
+      "imu_orientation": true,
+      "imu_raw_data": true,
+      "number_imu_records": 5,
+      "disable_magnetometer_fusion": true,
+      "mono_resolution": [
+        640,
+        400
+      ],
+      "color_resolution": "THE_1080_P",
+      "color_manual_focus": 130,
+      "stereo_median_filter": "KERNEL_3x3",
+      "stereo_mode": "HIGH_ACCURACY",
+      "stereo_extended_disparity": false,
+      "stereo_subpixel": false,
+      "stereo_left_right_check": true,
+      "sleep_on_start_sec": 3,
+      "models": [
+        {
+          "model": {
+            "blob": "../cones-challenge/coneslayer.rvc2.tar.xz",
+            "num_shaves": 6
+          },
+          "nn_config": {
+            "NN_family": "YOLO",
+            "input_size": "416x416"
+          },
+          "mappings": {
+            "labels": [
+              "cone"
+            ]
+          }
+        }
+      ],
+      "color_depth_alignment": false
+    },
+    "geometry": {
+      "device_id": "14442C10116FDAD600",
+      "calibration_sha256": "f88463746673ce1df1360b8f6d1a62a5ea616c877a7eaeb966cfdbdc4a618967",
+      "depthai_capture_version": "3.6.1",
+      "physical_left_resized_intrinsics": [
+        [
+          400.13818359375,
+          0.0,
+          324.2476806640625
+        ],
+        [
+          0.0,
+          400.20916748046875,
+          195.8319549560547
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "baseline_m": 0.07515722132526535,
+      "focal_baseline_m_pixel": 30.07327402504513,
+      "verified_rectified_projection": false
+    },
+    "clocks": {
+      "oak.depth_seq": {
+        "receipt_minus_acquisition_s": {
+          "samples": 166,
+          "minimum": -2178.21745,
+          "median": -2178.2118655,
+          "p90": -2178.208142,
+          "maximum": -2178.121377
+        },
+        "excess_above_minimum_s": {
+          "samples": 166,
+          "minimum": 0.0,
+          "median": 0.005584500000168191,
+          "p90": 0.009308000000146421,
+          "maximum": 0.09607300000016039
+        },
+        "first_excess_s": 0.09607300000016039,
+        "acquisition_period_s": {
+          "samples": 165,
+          "minimum": 0.09992200000033336,
+          "median": 0.09999999999990905,
+          "p90": 0.10000200000013137,
+          "maximum": 0.10002299999996467
+        },
+        "skipped_sequence_numbers": 0,
+        "sequence_repeats_or_resets": 0
+      },
+      "oak.color_seq": {
+        "receipt_minus_acquisition_s": {
+          "samples": 166,
+          "minimum": -2178.218204,
+          "median": -2178.2171909999997,
+          "p90": -2178.216849,
+          "maximum": -2178.130509
+        },
+        "excess_above_minimum_s": {
+          "samples": 166,
+          "minimum": 0.0,
+          "median": 0.0010129999998298445,
+          "p90": 0.0013549999998758722,
+          "maximum": 0.08769499999971231
+        },
+        "first_excess_s": 0.08769499999971231,
+        "acquisition_period_s": {
+          "samples": 165,
+          "minimum": 0.09990700000025754,
+          "median": 0.09998700000005556,
+          "p90": 0.1000160000003234,
+          "maximum": 0.10019700000020748
+        },
+        "skipped_sequence_numbers": 0,
+        "sequence_repeats_or_resets": 0
+      },
+      "oak.orientation_list": {
+        "receipt_minus_acquisition_s": {
+          "samples": 331,
+          "minimum": 4.701693000000002,
+          "median": 4.712444,
+          "p90": 4.721464000000001,
+          "maximum": 4.727114
+        },
+        "excess_above_minimum_s": {
+          "samples": 331,
+          "minimum": 0.0,
+          "median": 0.01075099999999729,
+          "p90": 0.01977099999999865,
+          "maximum": 0.025420999999997917
+        },
+        "first_excess_s": 0.011574999999997893,
+        "acquisition_period_s": {
+          "samples": 330,
+          "minimum": 0.049391999999999214,
+          "median": 0.04997000000000007,
+          "p90": 0.050247300000002146,
+          "maximum": 0.050543000000001115
+        }
+      }
+    },
+    "sequence_to_payload_log_lag_s": {
+      "samples": 166,
+      "minimum": 0.008663999999999561,
+      "median": 0.019060500000000147,
+      "p90": 0.02054699999999965,
+      "maximum": 0.02161699999999911
+    },
+    "unpaired_depth_messages": 0,
+    "quantization": {
+      "sampled_points": 384631,
+      "fraction_within_1mm_integer_disparity": 1.0,
+      "common_depths": [
+        {
+          "depth_m": 0.835,
+          "count": 18376,
+          "candidate_disparity": 36,
+          "residual_m": 0.00036872291792033884
+        },
+        {
+          "depth_m": 0.859,
+          "count": 17001,
+          "candidate_disparity": 35,
+          "residual_m": 0.00023640071557518016
+        },
+        {
+          "depth_m": 0.885,
+          "count": 15638,
+          "candidate_disparity": 34,
+          "residual_m": 0.0004919404398491256
+        },
+        {
+          "depth_m": 1.002,
+          "count": 15531,
+          "candidate_disparity": 30,
+          "residual_m": 0.000442467501504229
+        },
+        {
+          "depth_m": 0.94,
+          "count": 14042,
+          "candidate_disparity": 32,
+          "residual_m": 0.00021018671733963323
+        },
+        {
+          "depth_m": 0.97,
+          "count": 13964,
+          "candidate_disparity": 31,
+          "residual_m": 0.00010561371113326778
+        },
+        {
+          "depth_m": 0.911,
+          "count": 12926,
+          "candidate_disparity": 33,
+          "residual_m": 0.00031133409227668274
+        },
+        {
+          "depth_m": 0.547,
+          "count": 11313,
+          "candidate_disparity": 55,
+          "residual_m": 0.00021319954463405733
+        },
+        {
+          "depth_m": 1.769,
+          "count": 11200,
+          "candidate_disparity": 17,
+          "residual_m": 1.611912030186069e-05
+        },
+        {
+          "depth_m": 0.813,
+          "count": 11067,
+          "candidate_disparity": 37,
+          "residual_m": 0.0002088101339153825
+        },
+        {
+          "depth_m": 1.037,
+          "count": 10790,
+          "candidate_disparity": 29,
+          "residual_m": 9.449139487305303e-06
+        },
+        {
+          "depth_m": 1.671,
+          "count": 9922,
+          "candidate_disparity": 18,
+          "residual_m": 0.0002625541641594342
+        }
+      ]
+    },
+    "limitations": [
+      "Receipt variation does not identify absolute acquisition latency",
+      "Depth SDK-host and IMU device clock relationship is absent from old logs",
+      "Sequence/payload pairing follows driver order, not a payload sequence identifier",
+      "Integer disparity consistency does not verify principal point or rectified projection",
+      "Current reviewed v3 driver reads depth_profile, not stereo_mode",
+      "Factory capture SDK version does not establish the recording SDK version"
+    ]
+  },
+  {
+    "logfile": "/data/matty/m04-dh2-261102_174419.log",
+    "depth_shape": [
+      400,
+      640
+    ],
+    "oak_settings": {
+      "fps": 10,
+      "is_color": true,
+      "video_encoder": "h265",
+      "h264_bitrate": 2000,
+      "is_depth": true,
+      "is_stereo_images": false,
+      "laser_projector_current": 0,
+      "flood_light_current": 0,
+      "is_imu_enabled": true,
+      "imu_orientation": true,
+      "imu_raw_data": true,
+      "number_imu_records": 5,
+      "disable_magnetometer_fusion": true,
+      "mono_resolution": [
+        640,
+        400
+      ],
+      "color_resolution": "THE_1080_P",
+      "color_manual_focus": 130,
+      "stereo_median_filter": "KERNEL_3x3",
+      "stereo_mode": "HIGH_ACCURACY",
+      "stereo_extended_disparity": false,
+      "stereo_subpixel": false,
+      "stereo_left_right_check": true,
+      "sleep_on_start_sec": 3,
+      "models": [
+        {
+          "model": {
+            "blob": "../cones-challenge/coneslayer.rvc2.tar.xz",
+            "num_shaves": 6
+          },
+          "nn_config": {
+            "NN_family": "YOLO",
+            "input_size": "416x416"
+          },
+          "mappings": {
+            "labels": [
+              "cone"
+            ]
+          }
+        }
+      ],
+      "color_depth_alignment": false
+    },
+    "geometry": {
+      "device_id": "14442C10116FDAD600",
+      "calibration_sha256": "f88463746673ce1df1360b8f6d1a62a5ea616c877a7eaeb966cfdbdc4a618967",
+      "depthai_capture_version": "3.6.1",
+      "physical_left_resized_intrinsics": [
+        [
+          400.13818359375,
+          0.0,
+          324.2476806640625
+        ],
+        [
+          0.0,
+          400.20916748046875,
+          195.8319549560547
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "baseline_m": 0.07515722132526535,
+      "focal_baseline_m_pixel": 30.07327402504513,
+      "verified_rectified_projection": false
+    },
+    "clocks": {
+      "oak.depth_seq": {
+        "receipt_minus_acquisition_s": {
+          "samples": 201,
+          "minimum": -2211.237434,
+          "median": -2211.2312380000003,
+          "p90": -2211.2273069999997,
+          "maximum": -2211.141881
+        },
+        "excess_above_minimum_s": {
+          "samples": 201,
+          "minimum": 0.0,
+          "median": 0.006195999999818014,
+          "p90": 0.010127000000466069,
+          "maximum": 0.09555300000010902
+        },
+        "first_excess_s": 0.09555300000010902,
+        "acquisition_period_s": {
+          "samples": 200,
+          "minimum": 0.09967599999981758,
+          "median": 0.09999999999990905,
+          "p90": 0.10000199999967663,
+          "maximum": 0.10004800000024261
+        },
+        "skipped_sequence_numbers": 0,
+        "sequence_repeats_or_resets": 0
+      },
+      "oak.color_seq": {
+        "receipt_minus_acquisition_s": {
+          "samples": 201,
+          "minimum": -2211.23865,
+          "median": -2211.2366469999997,
+          "p90": -2211.236253,
+          "maximum": -2211.150811
+        },
+        "excess_above_minimum_s": {
+          "samples": 201,
+          "minimum": 0.0,
+          "median": 0.002003000000058819,
+          "p90": 0.0023969999997461855,
+          "maximum": 0.08783899999980349
+        },
+        "first_excess_s": 0.08783899999980349,
+        "acquisition_period_s": {
+          "samples": 200,
+          "minimum": 0.0996860000000197,
+          "median": 0.09998700000005556,
+          "p90": 0.1000160000003234,
+          "maximum": 0.10030200000028344
+        },
+        "skipped_sequence_numbers": 0,
+        "sequence_repeats_or_resets": 0
+      },
+      "oak.orientation_list": {
+        "receipt_minus_acquisition_s": {
+          "samples": 401,
+          "minimum": 4.701256000000001,
+          "median": 4.711987000000001,
+          "p90": 4.720949999999998,
+          "maximum": 4.72719
+        },
+        "excess_above_minimum_s": {
+          "samples": 401,
+          "minimum": 0.0,
+          "median": 0.010730999999999824,
+          "p90": 0.019693999999997658,
+          "maximum": 0.025933999999999457
+        },
+        "first_excess_s": 0.010097000000000023,
+        "acquisition_period_s": {
+          "samples": 400,
+          "minimum": 0.04943000000000097,
+          "median": 0.0499780000000003,
+          "p90": 0.05022340000000138,
+          "maximum": 0.050494999999999735
+        }
+      }
+    },
+    "sequence_to_payload_log_lag_s": {
+      "samples": 201,
+      "minimum": 0.007440999999999143,
+      "median": 0.018429999999998614,
+      "p90": 0.01966600000000085,
+      "maximum": 0.020621000000000222
+    },
+    "unpaired_depth_messages": 0,
+    "quantization": {
+      "sampled_points": 329303,
+      "fraction_within_1mm_integer_disparity": 1.0,
+      "common_depths": [
+        {
+          "depth_m": 2.313,
+          "count": 21774,
+          "candidate_disparity": 13,
+          "residual_m": 0.0003287711573176644
+        },
+        {
+          "depth_m": 0.752,
+          "count": 17191,
+          "candidate_disparity": 40,
+          "residual_m": 0.0001681493738717732
+        },
+        {
+          "depth_m": 0.771,
+          "count": 16856,
+          "candidate_disparity": 39,
+          "residual_m": 0.00010959038577251778
+        },
+        {
+          "depth_m": 0.733,
+          "count": 16266,
+          "candidate_disparity": 41,
+          "residual_m": 0.0004944884157348506
+        },
+        {
+          "depth_m": 0.791,
+          "count": 15492,
+          "candidate_disparity": 38,
+          "residual_m": 0.00040194802750337377
+        },
+        {
+          "depth_m": 2.148,
+          "count": 15393,
+          "candidate_disparity": 14,
+          "residual_m": 9.100178893772792e-05
+        },
+        {
+          "depth_m": 0.716,
+          "count": 12678,
+          "candidate_disparity": 42,
+          "residual_m": 3.033392964602033e-05
+        },
+        {
+          "depth_m": 0.813,
+          "count": 11947,
+          "candidate_disparity": 37,
+          "residual_m": 0.0002088101339153825
+        },
+        {
+          "depth_m": 2.506,
+          "count": 11889,
+          "candidate_disparity": 12,
+          "residual_m": 0.00010616875376090462
+        },
+        {
+          "depth_m": 1.157,
+          "count": 9465,
+          "candidate_disparity": 26,
+          "residual_m": 0.00033561442134111275
+        },
+        {
+          "depth_m": 1.432,
+          "count": 9136,
+          "candidate_disparity": 21,
+          "residual_m": 6.066785929204066e-05
+        },
+        {
+          "depth_m": 0.699,
+          "count": 9011,
+          "candidate_disparity": 43,
+          "residual_m": 0.0003784656987240176
+        }
+      ]
+    },
+    "limitations": [
+      "Receipt variation does not identify absolute acquisition latency",
+      "Depth SDK-host and IMU device clock relationship is absent from old logs",
+      "Sequence/payload pairing follows driver order, not a payload sequence identifier",
+      "Integer disparity consistency does not verify principal point or rectified projection",
+      "Current reviewed v3 driver reads depth_profile, not stereo_mode",
+      "Factory capture SDK version does not establish the recording SDK version"
+    ]
+  },
+  {
+    "logfile": "/data/matty/m04-dh2-261102_174456.log",
+    "depth_shape": [
+      400,
+      640
+    ],
+    "oak_settings": {
+      "fps": 10,
+      "is_color": true,
+      "video_encoder": "h265",
+      "h264_bitrate": 2000,
+      "is_depth": true,
+      "is_stereo_images": false,
+      "laser_projector_current": 0,
+      "flood_light_current": 0,
+      "is_imu_enabled": true,
+      "imu_orientation": true,
+      "imu_raw_data": true,
+      "number_imu_records": 5,
+      "disable_magnetometer_fusion": true,
+      "mono_resolution": [
+        640,
+        400
+      ],
+      "color_resolution": "THE_1080_P",
+      "color_manual_focus": 130,
+      "stereo_median_filter": "KERNEL_3x3",
+      "stereo_mode": "HIGH_ACCURACY",
+      "stereo_extended_disparity": false,
+      "stereo_subpixel": false,
+      "stereo_left_right_check": true,
+      "sleep_on_start_sec": 3,
+      "models": [
+        {
+          "model": {
+            "blob": "../cones-challenge/coneslayer.rvc2.tar.xz",
+            "num_shaves": 6
+          },
+          "nn_config": {
+            "NN_family": "YOLO",
+            "input_size": "416x416"
+          },
+          "mappings": {
+            "labels": [
+              "cone"
+            ]
+          }
+        }
+      ],
+      "color_depth_alignment": false
+    },
+    "geometry": {
+      "device_id": "14442C10116FDAD600",
+      "calibration_sha256": "f88463746673ce1df1360b8f6d1a62a5ea616c877a7eaeb966cfdbdc4a618967",
+      "depthai_capture_version": "3.6.1",
+      "physical_left_resized_intrinsics": [
+        [
+          400.13818359375,
+          0.0,
+          324.2476806640625
+        ],
+        [
+          0.0,
+          400.20916748046875,
+          195.8319549560547
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "baseline_m": 0.07515722132526535,
+      "focal_baseline_m_pixel": 30.07327402504513,
+      "verified_rectified_projection": false
+    },
+    "clocks": {
+      "oak.depth_seq": {
+        "receipt_minus_acquisition_s": {
+          "samples": 213,
+          "minimum": -2249.024785,
+          "median": -2249.018767,
+          "p90": -2249.0151728,
+          "maximum": -2248.938898
+        },
+        "excess_above_minimum_s": {
+          "samples": 213,
+          "minimum": 0.0,
+          "median": 0.006018000000040047,
+          "p90": 0.00961219999990135,
+          "maximum": 0.08588700000018434
+        },
+        "first_excess_s": 0.08588700000018434,
+        "acquisition_period_s": {
+          "samples": 212,
+          "minimum": 0.09974599999986822,
+          "median": 0.09999999999990905,
+          "p90": 0.10000100000024759,
+          "maximum": 0.1000450000001365
+        },
+        "skipped_sequence_numbers": 0,
+        "sequence_repeats_or_resets": 0
+      },
+      "oak.color_seq": {
+        "receipt_minus_acquisition_s": {
+          "samples": 213,
+          "minimum": -2249.0254499999996,
+          "median": -2249.024348,
+          "p90": -2249.0239588,
+          "maximum": -2248.9399609999996
+        },
+        "excess_above_minimum_s": {
+          "samples": 213,
+          "minimum": 0.0,
+          "median": 0.001101999999718828,
+          "p90": 0.0014911999996002124,
+          "maximum": 0.08548900000005233
+        },
+        "first_excess_s": 0.08548900000005233,
+        "acquisition_period_s": {
+          "samples": 212,
+          "minimum": 0.09973199999967619,
+          "median": 0.09999049999987619,
+          "p90": 0.1000160000003234,
+          "maximum": 0.10017299999981333
+        },
+        "skipped_sequence_numbers": 0,
+        "sequence_repeats_or_resets": 0
+      },
+      "oak.orientation_list": {
+        "receipt_minus_acquisition_s": {
+          "samples": 425,
+          "minimum": 4.697727999999998,
+          "median": 4.708586,
+          "p90": 4.717851800000003,
+          "maximum": 4.725094000000002
+        },
+        "excess_above_minimum_s": {
+          "samples": 425,
+          "minimum": 0.0,
+          "median": 0.010858000000002477,
+          "p90": 0.020123800000004625,
+          "maximum": 0.02736600000000422
+        },
+        "first_excess_s": 0.011140000000001926,
+        "acquisition_period_s": {
+          "samples": 424,
+          "minimum": 0.049363000000000046,
+          "median": 0.04998100000000116,
+          "p90": 0.05025709999999961,
+          "maximum": 0.050518999999999536
+        }
+      }
+    },
+    "sequence_to_payload_log_lag_s": {
+      "samples": 213,
+      "minimum": 0.009981999999999935,
+      "median": 0.018463999999999814,
+      "p90": 0.020164599999998957,
+      "maximum": 0.021260999999999086
+    },
+    "unpaired_depth_messages": 0,
+    "quantization": {
+      "sampled_points": 325005,
+      "fraction_within_1mm_integer_disparity": 1.0,
+      "common_depths": [
+        {
+          "depth_m": 2.506,
+          "count": 22481,
+          "candidate_disparity": 12,
+          "residual_m": 0.00010616875376090462
+        },
+        {
+          "depth_m": 2.313,
+          "count": 20021,
+          "candidate_disparity": 13,
+          "residual_m": 0.0003287711573176644
+        },
+        {
+          "depth_m": 1.367,
+          "count": 15998,
+          "candidate_disparity": 22,
+          "residual_m": 3.299886158503185e-05
+        },
+        {
+          "depth_m": 2.734,
+          "count": 12876,
+          "candidate_disparity": 11,
+          "residual_m": 6.59977231700637e-05
+        },
+        {
+          "depth_m": 2.148,
+          "count": 10694,
+          "candidate_disparity": 14,
+          "residual_m": 9.100178893772792e-05
+        },
+        {
+          "depth_m": 1.432,
+          "count": 10567,
+          "candidate_disparity": 21,
+          "residual_m": 6.066785929204066e-05
+        },
+        {
+          "depth_m": 1.308,
+          "count": 9340,
+          "candidate_disparity": 23,
+          "residual_m": 0.00046634673716838826
+        },
+        {
+          "depth_m": 0.683,
+          "count": 8982,
+          "candidate_disparity": 44,
+          "residual_m": 0.000483500569207429
+        },
+        {
+          "depth_m": 0.752,
+          "count": 8741,
+          "candidate_disparity": 40,
+          "residual_m": 0.0001681493738717732
+        },
+        {
+          "depth_m": 0.699,
+          "count": 8013,
+          "candidate_disparity": 43,
+          "residual_m": 0.0003784656987240176
+        },
+        {
+          "depth_m": 0.528,
+          "count": 7211,
+          "candidate_disparity": 57,
+          "residual_m": 0.0003987013149977514
+        },
+        {
+          "depth_m": 0.537,
+          "count": 7070,
+          "candidate_disparity": 56,
+          "residual_m": 2.275044723443198e-05
+        }
+      ]
+    },
+    "limitations": [
+      "Receipt variation does not identify absolute acquisition latency",
+      "Depth SDK-host and IMU device clock relationship is absent from old logs",
+      "Sequence/payload pairing follows driver order, not a payload sequence identifier",
+      "Integer disparity consistency does not verify principal point or rectified projection",
+      "Current reviewed v3 driver reads depth_profile, not stereo_mode",
+      "Factory capture SDK version does not establish the recording SDK version"
+    ]
+  },
+  {
+    "logfile": "/data/matty/m04-dh2-261102_174534.log",
+    "depth_shape": [
+      400,
+      640
+    ],
+    "oak_settings": {
+      "fps": 10,
+      "is_color": true,
+      "video_encoder": "h265",
+      "h264_bitrate": 2000,
+      "is_depth": true,
+      "is_stereo_images": false,
+      "laser_projector_current": 0,
+      "flood_light_current": 0,
+      "is_imu_enabled": true,
+      "imu_orientation": true,
+      "imu_raw_data": true,
+      "number_imu_records": 5,
+      "disable_magnetometer_fusion": true,
+      "mono_resolution": [
+        640,
+        400
+      ],
+      "color_resolution": "THE_1080_P",
+      "color_manual_focus": 130,
+      "stereo_median_filter": "KERNEL_3x3",
+      "stereo_mode": "HIGH_ACCURACY",
+      "stereo_extended_disparity": false,
+      "stereo_subpixel": false,
+      "stereo_left_right_check": true,
+      "sleep_on_start_sec": 3,
+      "models": [
+        {
+          "model": {
+            "blob": "../cones-challenge/coneslayer.rvc2.tar.xz",
+            "num_shaves": 6
+          },
+          "nn_config": {
+            "NN_family": "YOLO",
+            "input_size": "416x416"
+          },
+          "mappings": {
+            "labels": [
+              "cone"
+            ]
+          }
+        }
+      ],
+      "color_depth_alignment": false
+    },
+    "geometry": {
+      "device_id": "14442C10116FDAD600",
+      "calibration_sha256": "f88463746673ce1df1360b8f6d1a62a5ea616c877a7eaeb966cfdbdc4a618967",
+      "depthai_capture_version": "3.6.1",
+      "physical_left_resized_intrinsics": [
+        [
+          400.13818359375,
+          0.0,
+          324.2476806640625
+        ],
+        [
+          0.0,
+          400.20916748046875,
+          195.8319549560547
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "baseline_m": 0.07515722132526535,
+      "focal_baseline_m_pixel": 30.07327402504513,
+      "verified_rectified_projection": false
+    },
+    "clocks": {
+      "oak.depth_seq": {
+        "receipt_minus_acquisition_s": {
+          "samples": 201,
+          "minimum": -2286.395884,
+          "median": -2286.390429,
+          "p90": -2286.386634,
+          "maximum": -2286.309951
+        },
+        "excess_above_minimum_s": {
+          "samples": 201,
+          "minimum": 0.0,
+          "median": 0.005454999999983556,
+          "p90": 0.009250000000065484,
+          "maximum": 0.08593299999984083
+        },
+        "first_excess_s": 0.08593299999984083,
+        "acquisition_period_s": {
+          "samples": 200,
+          "minimum": 0.09974099999999453,
+          "median": 0.09999999999990905,
+          "p90": 0.1000019999997221,
+          "maximum": 0.10008000000016182
+        },
+        "skipped_sequence_numbers": 0,
+        "sequence_repeats_or_resets": 0
+      },
+      "oak.color_seq": {
+        "receipt_minus_acquisition_s": {
+          "samples": 201,
+          "minimum": -2286.396437,
+          "median": -2286.3954759999997,
+          "p90": -2286.395074,
+          "maximum": -2286.308157
+        },
+        "excess_above_minimum_s": {
+          "samples": 201,
+          "minimum": 0.0,
+          "median": 0.0009610000001885055,
+          "p90": 0.001362999999855674,
+          "maximum": 0.08827999999994063
+        },
+        "first_excess_s": 0.08827999999994063,
+        "acquisition_period_s": {
+          "samples": 200,
+          "minimum": 0.09972799999968629,
+          "median": 0.0999944999998661,
+          "p90": 0.1000160000003234,
+          "maximum": 0.10008400000015172
+        },
+        "skipped_sequence_numbers": 0,
+        "sequence_repeats_or_resets": 0
+      },
+      "oak.orientation_list": {
+        "receipt_minus_acquisition_s": {
+          "samples": 401,
+          "minimum": 4.695891,
+          "median": 4.706207999999998,
+          "p90": 4.714763999999999,
+          "maximum": 4.720862
+        },
+        "excess_above_minimum_s": {
+          "samples": 401,
+          "minimum": 0.0,
+          "median": 0.0103169999999988,
+          "p90": 0.01887299999999925,
+          "maximum": 0.024971000000000743
+        },
+        "first_excess_s": 0.011214999999999975,
+        "acquisition_period_s": {
+          "samples": 400,
+          "minimum": 0.04934599999999989,
+          "median": 0.04998549999999824,
+          "p90": 0.05022830000000056,
+          "maximum": 0.05054300000000023
+        }
+      }
+    },
+    "sequence_to_payload_log_lag_s": {
+      "samples": 201,
+      "minimum": 0.009840000000000515,
+      "median": 0.01791399999999932,
+      "p90": 0.019695999999999714,
+      "maximum": 0.020756999999999692
+    },
+    "unpaired_depth_messages": 0,
+    "quantization": {
+      "sampled_points": 336383,
+      "fraction_within_1mm_integer_disparity": 1.0,
+      "common_depths": [
+        {
+          "depth_m": 0.501,
+          "count": 8547,
+          "candidate_disparity": 60,
+          "residual_m": 0.0002212337507521145
+        },
+        {
+          "depth_m": 0.519,
+          "count": 8488,
+          "candidate_disparity": 58,
+          "residual_m": 0.0004952754302564033
+        },
+        {
+          "depth_m": 0.733,
+          "count": 8114,
+          "candidate_disparity": 41,
+          "residual_m": 0.0004944884157348506
+        },
+        {
+          "depth_m": 0.699,
+          "count": 7870,
+          "candidate_disparity": 43,
+          "residual_m": 0.0003784656987240176
+        },
+        {
+          "depth_m": 0.716,
+          "count": 7482,
+          "candidate_disparity": 42,
+          "residual_m": 3.033392964602033e-05
+        },
+        {
+          "depth_m": 0.547,
+          "count": 7363,
+          "candidate_disparity": 55,
+          "residual_m": 0.00021319954463405733
+        },
+        {
+          "depth_m": 0.537,
+          "count": 7362,
+          "candidate_disparity": 56,
+          "residual_m": 2.275044723443198e-05
+        },
+        {
+          "depth_m": 0.51,
+          "count": 7304,
+          "candidate_disparity": 59,
+          "residual_m": 0.00028349110092995566
+        },
+        {
+          "depth_m": 0.752,
+          "count": 7229,
+          "candidate_disparity": 40,
+          "residual_m": 0.0001681493738717732
+        },
+        {
+          "depth_m": 0.791,
+          "count": 7205,
+          "candidate_disparity": 38,
+          "residual_m": 0.00040194802750337377
+        },
+        {
+          "depth_m": 0.683,
+          "count": 7147,
+          "candidate_disparity": 44,
+          "residual_m": 0.000483500569207429
+        },
+        {
+          "depth_m": 0.771,
+          "count": 7139,
+          "candidate_disparity": 39,
+          "residual_m": 0.00010959038577251778
+        }
+      ]
+    },
+    "limitations": [
+      "Receipt variation does not identify absolute acquisition latency",
+      "Depth SDK-host and IMU device clock relationship is absent from old logs",
+      "Sequence/payload pairing follows driver order, not a payload sequence identifier",
+      "Integer disparity consistency does not verify principal point or rectified projection",
+      "Current reviewed v3 driver reads depth_profile, not stereo_mode",
+      "Factory capture SDK version does not establish the recording SDK version"
+    ]
+  },
+  {
+    "logfile": "/data/matty/m04-dh2-261102_175816.log",
+    "depth_shape": [
+      400,
+      640
+    ],
+    "oak_settings": {
+      "fps": 10,
+      "is_color": true,
+      "video_encoder": "h265",
+      "h264_bitrate": 2000,
+      "is_depth": true,
+      "is_stereo_images": false,
+      "laser_projector_current": 0,
+      "flood_light_current": 0,
+      "is_imu_enabled": true,
+      "imu_orientation": true,
+      "imu_raw_data": true,
+      "number_imu_records": 5,
+      "disable_magnetometer_fusion": true,
+      "mono_resolution": [
+        640,
+        400
+      ],
+      "color_resolution": "THE_1080_P",
+      "color_manual_focus": 130,
+      "stereo_median_filter": "KERNEL_3x3",
+      "stereo_mode": "HIGH_ACCURACY",
+      "stereo_extended_disparity": false,
+      "stereo_subpixel": false,
+      "stereo_left_right_check": true,
+      "sleep_on_start_sec": 3,
+      "models": [
+        {
+          "model": {
+            "blob": "../cones-challenge/coneslayer.rvc2.tar.xz",
+            "num_shaves": 6
+          },
+          "nn_config": {
+            "NN_family": "YOLO",
+            "input_size": "416x416"
+          },
+          "mappings": {
+            "labels": [
+              "cone"
+            ]
+          }
+        }
+      ],
+      "color_depth_alignment": false
+    },
+    "geometry": {
+      "device_id": "14442C10116FDAD600",
+      "calibration_sha256": "f88463746673ce1df1360b8f6d1a62a5ea616c877a7eaeb966cfdbdc4a618967",
+      "depthai_capture_version": "3.6.1",
+      "physical_left_resized_intrinsics": [
+        [
+          400.13818359375,
+          0.0,
+          324.2476806640625
+        ],
+        [
+          0.0,
+          400.20916748046875,
+          195.8319549560547
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "baseline_m": 0.07515722132526535,
+      "focal_baseline_m_pixel": 30.07327402504513,
+      "verified_rectified_projection": false
+    },
+    "clocks": {
+      "oak.depth_seq": {
+        "receipt_minus_acquisition_s": {
+          "samples": 524,
+          "minimum": -3048.6089869999996,
+          "median": -3048.603413,
+          "p90": -3048.5993136,
+          "maximum": -3048.522297
+        },
+        "excess_above_minimum_s": {
+          "samples": 524,
+          "minimum": 0.0,
+          "median": 0.005573999999569423,
+          "p90": 0.009673399999337562,
+          "maximum": 0.08668999999963489
+        },
+        "first_excess_s": 0.08668999999963489,
+        "acquisition_period_s": {
+          "samples": 523,
+          "minimum": 0.09972199999992881,
+          "median": 0.09999999999990905,
+          "p90": 0.10000100000024759,
+          "maximum": 0.10006999999995969
+        },
+        "skipped_sequence_numbers": 0,
+        "sequence_repeats_or_resets": 0
+      },
+      "oak.color_seq": {
+        "receipt_minus_acquisition_s": {
+          "samples": 524,
+          "minimum": -3048.609784,
+          "median": -3048.608515,
+          "p90": -3048.6080008999998,
+          "maximum": -3048.520226
+        },
+        "excess_above_minimum_s": {
+          "samples": 524,
+          "minimum": 0.0,
+          "median": 0.001269000000320375,
+          "p90": 0.0017831000003297958,
+          "maximum": 0.0895580000001246
+        },
+        "first_excess_s": 0.0895580000001246,
+        "acquisition_period_s": {
+          "samples": 523,
+          "minimum": 0.09972999999990861,
+          "median": 0.09998700000005556,
+          "p90": 0.1000160000003234,
+          "maximum": 0.10029399999984889
+        },
+        "skipped_sequence_numbers": 0,
+        "sequence_repeats_or_resets": 0
+      },
+      "oak.orientation_list": {
+        "receipt_minus_acquisition_s": {
+          "samples": 1048,
+          "minimum": 4.697413999999995,
+          "median": 4.706739000000001,
+          "p90": 4.721196399999998,
+          "maximum": 4.731216000000003
+        },
+        "excess_above_minimum_s": {
+          "samples": 1048,
+          "minimum": 0.0,
+          "median": 0.009325000000005357,
+          "p90": 0.023782400000003187,
+          "maximum": 0.03380200000000855
+        },
+        "first_excess_s": 0.013008000000004571,
+        "acquisition_period_s": {
+          "samples": 1047,
+          "minimum": 0.0493240000000057,
+          "median": 0.049982999999997446,
+          "p90": 0.0502533999999983,
+          "maximum": 0.05057299999999998
+        }
+      }
+    },
+    "sequence_to_payload_log_lag_s": {
+      "samples": 524,
+      "minimum": 0.010134000000000754,
+      "median": 0.018387999999998073,
+      "p90": 0.01994410000000002,
+      "maximum": 0.022066999999999837
+    },
+    "unpaired_depth_messages": 0,
+    "quantization": {
+      "sampled_points": 1478702,
+      "fraction_within_1mm_integer_disparity": 1.0,
+      "common_depths": [
+        {
+          "depth_m": 1.769,
+          "count": 100420,
+          "candidate_disparity": 17,
+          "residual_m": 1.611912030186069e-05
+        },
+        {
+          "depth_m": 1.671,
+          "count": 98017,
+          "candidate_disparity": 18,
+          "residual_m": 0.0002625541641594342
+        },
+        {
+          "depth_m": 2.313,
+          "count": 90181,
+          "candidate_disparity": 13,
+          "residual_m": 0.0003287711573176644
+        },
+        {
+          "depth_m": 1.88,
+          "count": 89452,
+          "candidate_disparity": 16,
+          "residual_m": 0.00042037343467926647
+        },
+        {
+          "depth_m": 2.148,
+          "count": 85319,
+          "candidate_disparity": 14,
+          "residual_m": 9.100178893772792e-05
+        },
+        {
+          "depth_m": 1.583,
+          "count": 71213,
+          "candidate_disparity": 19,
+          "residual_m": 0.00019610394499314232
+        },
+        {
+          "depth_m": 2.005,
+          "count": 69206,
+          "candidate_disparity": 15,
+          "residual_m": 0.00011506499699143191
+        },
+        {
+          "depth_m": 1.504,
+          "count": 67595,
+          "candidate_disparity": 20,
+          "residual_m": 0.0003362987477435464
+        },
+        {
+          "depth_m": 2.506,
+          "count": 51387,
+          "candidate_disparity": 12,
+          "residual_m": 0.00010616875376090462
+        },
+        {
+          "depth_m": 1.367,
+          "count": 46115,
+          "candidate_disparity": 22,
+          "residual_m": 3.299886158503185e-05
+        },
+        {
+          "depth_m": 1.432,
+          "count": 44379,
+          "candidate_disparity": 21,
+          "residual_m": 6.066785929204066e-05
+        },
+        {
+          "depth_m": 2.734,
+          "count": 24469,
+          "candidate_disparity": 11,
+          "residual_m": 6.59977231700637e-05
+        }
+      ]
+    },
+    "limitations": [
+      "Receipt variation does not identify absolute acquisition latency",
+      "Depth SDK-host and IMU device clock relationship is absent from old logs",
+      "Sequence/payload pairing follows driver order, not a payload sequence identifier",
+      "Integer disparity consistency does not verify principal point or rectified projection",
+      "Current reviewed v3 driver reads depth_profile, not stereo_mode",
+      "Factory capture SDK version does not establish the recording SDK version"
+    ]
+  },
+  {
+    "logfile": "/data/matty/m04-dh2-261102_175940.log",
+    "depth_shape": [
+      400,
+      640
+    ],
+    "oak_settings": {
+      "fps": 10,
+      "is_color": true,
+      "video_encoder": "h265",
+      "h264_bitrate": 2000,
+      "is_depth": true,
+      "is_stereo_images": false,
+      "laser_projector_current": 0,
+      "flood_light_current": 0,
+      "is_imu_enabled": true,
+      "imu_orientation": true,
+      "imu_raw_data": true,
+      "number_imu_records": 5,
+      "disable_magnetometer_fusion": true,
+      "mono_resolution": [
+        640,
+        400
+      ],
+      "color_resolution": "THE_1080_P",
+      "color_manual_focus": 130,
+      "stereo_median_filter": "KERNEL_3x3",
+      "stereo_mode": "HIGH_ACCURACY",
+      "stereo_extended_disparity": false,
+      "stereo_subpixel": false,
+      "stereo_left_right_check": true,
+      "sleep_on_start_sec": 3,
+      "models": [
+        {
+          "model": {
+            "blob": "../cones-challenge/coneslayer.rvc2.tar.xz",
+            "num_shaves": 6
+          },
+          "nn_config": {
+            "NN_family": "YOLO",
+            "input_size": "416x416"
+          },
+          "mappings": {
+            "labels": [
+              "cone"
+            ]
+          }
+        }
+      ],
+      "color_depth_alignment": false
+    },
+    "geometry": {
+      "device_id": "14442C10116FDAD600",
+      "calibration_sha256": "f88463746673ce1df1360b8f6d1a62a5ea616c877a7eaeb966cfdbdc4a618967",
+      "depthai_capture_version": "3.6.1",
+      "physical_left_resized_intrinsics": [
+        [
+          400.13818359375,
+          0.0,
+          324.2476806640625
+        ],
+        [
+          0.0,
+          400.20916748046875,
+          195.8319549560547
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "baseline_m": 0.07515722132526535,
+      "focal_baseline_m_pixel": 30.07327402504513,
+      "verified_rectified_projection": false
+    },
+    "clocks": {
+      "oak.depth_seq": {
+        "receipt_minus_acquisition_s": {
+          "samples": 297,
+          "minimum": -3132.557476,
+          "median": -3132.550971,
+          "p90": -3132.5469236000004,
+          "maximum": -3132.471407
+        },
+        "excess_above_minimum_s": {
+          "samples": 297,
+          "minimum": 0.0,
+          "median": 0.006504999999833672,
+          "p90": 0.010552399999778573,
+          "maximum": 0.08606899999995221
+        },
+        "first_excess_s": 0.08606899999995221,
+        "acquisition_period_s": {
+          "samples": 296,
+          "minimum": 0.09975100000019665,
+          "median": 0.09999999999990905,
+          "p90": 0.1000014999999621,
+          "maximum": 0.1000330000001668
+        },
+        "skipped_sequence_numbers": 0,
+        "sequence_repeats_or_resets": 0
+      },
+      "oak.color_seq": {
+        "receipt_minus_acquisition_s": {
+          "samples": 297,
+          "minimum": -3132.557984,
+          "median": -3132.556303,
+          "p90": -3132.5541656,
+          "maximum": -3132.465252
+        },
+        "excess_above_minimum_s": {
+          "samples": 297,
+          "minimum": 0.0,
+          "median": 0.0016810000001896697,
+          "p90": 0.0038184000000001106,
+          "maximum": 0.09273200000006909
+        },
+        "first_excess_s": 0.09273200000006909,
+        "acquisition_period_s": {
+          "samples": 296,
+          "minimum": 0.09975900000017646,
+          "median": 0.09998700000005556,
+          "p90": 0.1000160000003234,
+          "maximum": 0.1002650000000358
+        },
+        "skipped_sequence_numbers": 0,
+        "sequence_repeats_or_resets": 0
+      },
+      "oak.orientation_list": {
+        "receipt_minus_acquisition_s": {
+          "samples": 592,
+          "minimum": 4.706048999999997,
+          "median": 4.717409,
+          "p90": 4.7292286999999975,
+          "maximum": 4.7381880000000045
+        },
+        "excess_above_minimum_s": {
+          "samples": 592,
+          "minimum": 0.0,
+          "median": 0.011360000000003367,
+          "p90": 0.023179700000000737,
+          "maximum": 0.03213900000000791
+        },
+        "first_excess_s": 0.010957000000002992,
+        "acquisition_period_s": {
+          "samples": 591,
+          "minimum": 0.04945500000000003,
+          "median": 0.0499849999999995,
+          "p90": 0.05023599999999995,
+          "maximum": 0.0505810000000011
+        }
+      }
+    },
+    "sequence_to_payload_log_lag_s": {
+      "samples": 297,
+      "minimum": 0.009838999999999487,
+      "median": 0.018147000000002578,
+      "p90": 0.019707799999999054,
+      "maximum": 0.021853000000000122
+    },
+    "unpaired_depth_messages": 0,
+    "quantization": {
+      "sampled_points": 842109,
+      "fraction_within_1mm_integer_disparity": 1.0,
+      "common_depths": [
+        {
+          "depth_m": 1.769,
+          "count": 50554,
+          "candidate_disparity": 17,
+          "residual_m": 1.611912030186069e-05
+        },
+        {
+          "depth_m": 2.005,
+          "count": 49475,
+          "candidate_disparity": 15,
+          "residual_m": 0.00011506499699143191
+        },
+        {
+          "depth_m": 1.671,
+          "count": 45866,
+          "candidate_disparity": 18,
+          "residual_m": 0.0002625541641594342
+        },
+        {
+          "depth_m": 1.88,
+          "count": 44736,
+          "candidate_disparity": 16,
+          "residual_m": 0.00042037343467926647
+        },
+        {
+          "depth_m": 2.313,
+          "count": 44113,
+          "candidate_disparity": 13,
+          "residual_m": 0.0003287711573176644
+        },
+        {
+          "depth_m": 2.148,
+          "count": 40537,
+          "candidate_disparity": 14,
+          "residual_m": 9.100178893772792e-05
+        },
+        {
+          "depth_m": 2.506,
+          "count": 38352,
+          "candidate_disparity": 12,
+          "residual_m": 0.00010616875376090462
+        },
+        {
+          "depth_m": 1.504,
+          "count": 36369,
+          "candidate_disparity": 20,
+          "residual_m": 0.0003362987477435464
+        },
+        {
+          "depth_m": 1.308,
+          "count": 35941,
+          "candidate_disparity": 23,
+          "residual_m": 0.00046634673716838826
+        },
+        {
+          "depth_m": 1.583,
+          "count": 32129,
+          "candidate_disparity": 19,
+          "residual_m": 0.00019610394499314232
+        },
+        {
+          "depth_m": 1.432,
+          "count": 30583,
+          "candidate_disparity": 21,
+          "residual_m": 6.066785929204066e-05
+        },
+        {
+          "depth_m": 2.734,
+          "count": 23796,
+          "candidate_disparity": 11,
+          "residual_m": 6.59977231700637e-05
+        }
+      ]
+    },
+    "limitations": [
+      "Receipt variation does not identify absolute acquisition latency",
+      "Depth SDK-host and IMU device clock relationship is absent from old logs",
+      "Sequence/payload pairing follows driver order, not a payload sequence identifier",
+      "Integer disparity consistency does not verify principal point or rectified projection",
+      "Current reviewed v3 driver reads depth_profile, not stereo_mode",
+      "Factory capture SDK version does not establish the recording SDK version"
+    ]
+  }
+]

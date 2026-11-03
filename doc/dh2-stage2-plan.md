@@ -345,6 +345,10 @@ The [selected static-patch check](dh2-static-patches.md) now isolates floor,
 door and box observations. Near-ground residuals are encouraging, but distant
 quantization, optical projection, clock mapping and independent motion error
 still prevent declaring stage 2 complete.
+The [camera geometry/clock audit](dh2-camera-geometry-timing.md) confirms the
+integer-disparity conversion scale and quantifies receipt variation. A camera-only
+metadata capture is prepared for M04; exact mission clock mapping and physical
+rectified projection remain unverified.
 
 The original first-session sequence was:
 

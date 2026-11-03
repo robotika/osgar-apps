@@ -131,6 +131,10 @@ trial to check translation. A stationary comparison with subpixel stereo enabled
 would help assess range quantization before changing mapping thresholds; it is
 not enabled by this analysis.
 
+The [follow-up camera audit and capture procedure](dh2-camera-geometry-timing.md)
+now checks the conversion scale and prepares paired-clock/frame-intrinsics
+metadata collection. It does not infer missing historical clock anchors.
+
 Seven synthetic tests cover plane degeneracy/outliers, misleading constant-depth
 precision, known translation, unobservable parallel translation, invalid depth
 and exact annotation/frame selection. All 80 DH2/Matty tests and focused lint pass;
