@@ -67,6 +67,12 @@ It is a legacy estimate to compare against, not joint-centre ground truth.
 
 ## 2A. Offline encoder and protocol audit — first work item
 
+The [first audit implementation and findings](dh2-encoder-audit.md) are available
+as `dh2.encoder_audit`. Seven existing runs were processed, with ten focused
+tests and an independent 370-packet comparison against the new driver output.
+Read-error flags and acquisition/receipt timing need handling before pose
+integration; physical wheel-ID confirmation remains outstanding.
+
 ### Encoder output prepared on 3 November
 
 The OSGAR `feature/matty-encoders` checkout now has a small proposed driver change:
@@ -116,7 +122,9 @@ particularly relevant during look-around and intermittent contact.
 
 ### Implement and inspect
 
-1. Read `platform.esp_data` as a byte stream. Reuse the OSGAR framing/checksum and
+1. Read the incoming wire stream feeding `platform.esp_data` (`serial.raw` in
+   the DH2 config), not the outgoing `platform.esp_data` command stream. Reuse
+   the OSGAR framing/checksum and
    escaping rules; packets can span messages or multiple packets can share one.
    Do not assume one log message is one complete status packet.
 2. Decode valid incoming status packets; distinguish acknowledgements, version,
@@ -261,7 +269,7 @@ A mapper can instead consume canonical `pose3d` plus fixed `T_front_depth`;
 choose one transform boundary and avoid applying extrinsics twice. Record poses
 and acquisition-time metadata sufficient to inspect interpolation at depth time.
 
-Offline audit can recover encoders from `platform.esp_data` now. For runtime,
+Offline audit can recover encoders from incoming `serial.raw` now. For runtime,
 prefer publishing the already-decoded per-wheel data through one narrowly scoped
 Matty platform interface if the audit demonstrates the need. Prepare that as a
 separate reusable driver change for PR review; do not quietly alter legacy

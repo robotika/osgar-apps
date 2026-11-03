@@ -20,6 +20,24 @@ The mission controller is unchanged; local-map protection is not enabled yet.
 Check a recording with `python -m dh2.sensor_check LOG --output DIRECTORY
 --require-oak-imu` to save timing/validity statistics and sensor plots.
 
+## Offline encoder audit
+
+The first stage-2 implementation compares all four cumulative wheel distances
+with reported speed, articulation, IMU motion and legacy pose. It does not change
+robot behavior or estimate a replacement pose:
+
+```bash
+uv run --locked python -m dh2.encoder_audit \
+  /data/matty/m04-dh2-261102_174346.log \
+  /data/matty/m04-dh2-261102_175940.log \
+  --output /tmp/dh2-encoder-audit
+```
+
+Each recording gets `report.json`, `status.jsonl`, `intervals.csv` and `audit.png`
+in its own output subdirectory. Rejected intervals remain visible; accepted
+totals are not ground-truth distance. See the [audit findings](../doc/dh2-encoder-audit.md)
+for real encoder/power errors and the incoming-versus-outgoing stream distinction.
+
 ## Interactive recording viewer
 
 From the repository root, open one recording or a sequence in command-line order:

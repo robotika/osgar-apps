@@ -1,0 +1,481 @@
+[
+  {
+    "logfile": "/data/matty/m04-dh2-261102_174346.log",
+    "incoming_stream": "serial.raw",
+    "status_packets": 238,
+    "encoder_unit": "unsigned cumulative millimetres modulo 65536; firmware index order",
+    "parser": {
+      "valid_packets": 702,
+      "type_I": 238,
+      "type_A": 415,
+      "type_V": 1,
+      "type_P": 48
+    },
+    "incomplete_tail_bytes": 0,
+    "firmware_versions": [
+      {
+        "time": 0.107009,
+        "robot": 4,
+        "version": 8
+      }
+    ],
+    "reset_commands": [],
+    "accepted_intervals": 196,
+    "rejected_reasons": {
+      "first_sample": 1,
+      "time_gap": 1,
+      "nonpositive_interval": 37,
+      "encoder_error": 3,
+      "power_error": 3,
+      "after_encoder_error": 2
+    },
+    "status_counter_extra_steps": 49,
+    "shared_info_counter_missing": 0,
+    "shared_info_counter_repeats_or_restarts": 0,
+    "encoder_error_samples": 3,
+    "power_error_samples": 3,
+    "interval_seconds": {
+      "median": 0.10256099999999968,
+      "maximum": 3.525868
+    },
+    "accepted_wheel_signed_mm": [
+      35.0,
+      41.0,
+      -38.0,
+      -34.0
+    ],
+    "accepted_wheel_mean_mm": 1.0,
+    "accepted_speed_dt_mm": -0.4679129999999887,
+    "accepted_fixed_100ms_mm": -0.39999999999999925,
+    "residual_mm": {
+      "median": 0.0,
+      "abs_p90": 0.25,
+      "abs_max": 0.5
+    },
+    "settings": {
+      "max_gap": 0.5,
+      "max_wheel_speed": 1.5,
+      "quantization_allowance_mm": 2
+    },
+    "limitations": [
+      "Wheel indices are firmware order; physical front/rear mapping needs confirmation",
+      "Only accepted intervals enter cumulative comparisons; rejected travel is unknown",
+      "Wheel mean is not a validated joint-centre or camera displacement",
+      "Counter gaps can cover recoverable cumulative travel; resets can remain ambiguous",
+      "Status counter also advances for GPS/version packets; extra steps are not packet loss",
+      "Host receive batches can contain multiple statuses with no individual capture time",
+      "No slip correction or absolute ground-truth distance is inferred"
+    ]
+  },
+  {
+    "logfile": "/data/matty/m04-dh2-261102_174419.log",
+    "incoming_stream": "serial.raw",
+    "status_packets": 274,
+    "encoder_unit": "unsigned cumulative millimetres modulo 65536; firmware index order",
+    "parser": {
+      "valid_packets": 813,
+      "type_I": 274,
+      "type_A": 484,
+      "type_V": 1,
+      "type_P": 54
+    },
+    "incomplete_tail_bytes": 0,
+    "firmware_versions": [
+      {
+        "time": 0.095493,
+        "robot": 4,
+        "version": 8
+      }
+    ],
+    "reset_commands": [],
+    "accepted_intervals": 233,
+    "rejected_reasons": {
+      "first_sample": 1,
+      "time_gap": 2,
+      "nonpositive_interval": 35,
+      "encoder_error": 3,
+      "power_error": 3,
+      "after_encoder_error": 2
+    },
+    "status_counter_extra_steps": 55,
+    "shared_info_counter_missing": 0,
+    "shared_info_counter_repeats_or_restarts": 0,
+    "encoder_error_samples": 3,
+    "power_error_samples": 3,
+    "interval_seconds": {
+      "median": 0.10265399999999936,
+      "maximum": 2.7984479999999996
+    },
+    "accepted_wheel_signed_mm": [
+      52.0,
+      61.0,
+      -50.0,
+      -47.0
+    ],
+    "accepted_wheel_mean_mm": 4.0,
+    "accepted_speed_dt_mm": 4.329609000000013,
+    "accepted_fixed_100ms_mm": 4.299999999999999,
+    "residual_mm": {
+      "median": 0.0,
+      "abs_p90": 0.36452320000000393,
+      "abs_max": 0.8150699999999986
+    },
+    "settings": {
+      "max_gap": 0.5,
+      "max_wheel_speed": 1.5,
+      "quantization_allowance_mm": 2
+    },
+    "limitations": [
+      "Wheel indices are firmware order; physical front/rear mapping needs confirmation",
+      "Only accepted intervals enter cumulative comparisons; rejected travel is unknown",
+      "Wheel mean is not a validated joint-centre or camera displacement",
+      "Counter gaps can cover recoverable cumulative travel; resets can remain ambiguous",
+      "Status counter also advances for GPS/version packets; extra steps are not packet loss",
+      "Host receive batches can contain multiple statuses with no individual capture time",
+      "No slip correction or absolute ground-truth distance is inferred"
+    ]
+  },
+  {
+    "logfile": "/data/matty/m04-dh2-261102_174456.log",
+    "incoming_stream": "serial.raw",
+    "status_packets": 286,
+    "encoder_unit": "unsigned cumulative millimetres modulo 65536; firmware index order",
+    "parser": {
+      "valid_packets": 848,
+      "type_I": 286,
+      "type_A": 505,
+      "type_V": 1,
+      "type_P": 56
+    },
+    "incomplete_tail_bytes": 0,
+    "firmware_versions": [
+      {
+        "time": 0.096646,
+        "robot": 4,
+        "version": 8
+      }
+    ],
+    "reset_commands": [],
+    "accepted_intervals": 244,
+    "rejected_reasons": {
+      "first_sample": 1,
+      "time_gap": 2,
+      "nonpositive_interval": 36,
+      "encoder_error": 3,
+      "power_error": 3,
+      "after_encoder_error": 2
+    },
+    "status_counter_extra_steps": 57,
+    "shared_info_counter_missing": 0,
+    "shared_info_counter_repeats_or_restarts": 0,
+    "encoder_error_samples": 3,
+    "power_error_samples": 3,
+    "interval_seconds": {
+      "median": 0.10280500000000004,
+      "maximum": 2.819712
+    },
+    "accepted_wheel_signed_mm": [
+      -18.0,
+      91.0,
+      22.0,
+      -88.0
+    ],
+    "accepted_wheel_mean_mm": 1.75,
+    "accepted_speed_dt_mm": 1.165773000000005,
+    "accepted_fixed_100ms_mm": 1.2000000000000002,
+    "residual_mm": {
+      "median": 0.0,
+      "abs_p90": 0.25,
+      "abs_max": 0.6028209999999987
+    },
+    "settings": {
+      "max_gap": 0.5,
+      "max_wheel_speed": 1.5,
+      "quantization_allowance_mm": 2
+    },
+    "limitations": [
+      "Wheel indices are firmware order; physical front/rear mapping needs confirmation",
+      "Only accepted intervals enter cumulative comparisons; rejected travel is unknown",
+      "Wheel mean is not a validated joint-centre or camera displacement",
+      "Counter gaps can cover recoverable cumulative travel; resets can remain ambiguous",
+      "Status counter also advances for GPS/version packets; extra steps are not packet loss",
+      "Host receive batches can contain multiple statuses with no individual capture time",
+      "No slip correction or absolute ground-truth distance is inferred"
+    ]
+  },
+  {
+    "logfile": "/data/matty/m04-dh2-261102_174534.log",
+    "incoming_stream": "serial.raw",
+    "status_packets": 274,
+    "encoder_unit": "unsigned cumulative millimetres modulo 65536; firmware index order",
+    "parser": {
+      "valid_packets": 813,
+      "type_I": 274,
+      "type_A": 484,
+      "type_V": 1,
+      "type_P": 54
+    },
+    "incomplete_tail_bytes": 0,
+    "firmware_versions": [
+      {
+        "time": 0.096346,
+        "robot": 4,
+        "version": 8
+      }
+    ],
+    "reset_commands": [],
+    "accepted_intervals": 231,
+    "rejected_reasons": {
+      "first_sample": 1,
+      "time_gap": 2,
+      "nonpositive_interval": 37,
+      "encoder_error": 3,
+      "power_error": 3,
+      "after_encoder_error": 2
+    },
+    "status_counter_extra_steps": 55,
+    "shared_info_counter_missing": 0,
+    "shared_info_counter_repeats_or_restarts": 0,
+    "encoder_error_samples": 3,
+    "power_error_samples": 3,
+    "interval_seconds": {
+      "median": 0.10266400000000075,
+      "maximum": 2.7419130000000003
+    },
+    "accepted_wheel_signed_mm": [
+      22.0,
+      75.0,
+      -22.0,
+      -82.0
+    ],
+    "accepted_wheel_mean_mm": -1.75,
+    "accepted_speed_dt_mm": -0.2976479999999819,
+    "accepted_fixed_100ms_mm": -0.29999999999999893,
+    "residual_mm": {
+      "median": 0.0,
+      "abs_p90": 0.28569500000000403,
+      "abs_max": 0.6574729999999995
+    },
+    "settings": {
+      "max_gap": 0.5,
+      "max_wheel_speed": 1.5,
+      "quantization_allowance_mm": 2
+    },
+    "limitations": [
+      "Wheel indices are firmware order; physical front/rear mapping needs confirmation",
+      "Only accepted intervals enter cumulative comparisons; rejected travel is unknown",
+      "Wheel mean is not a validated joint-centre or camera displacement",
+      "Counter gaps can cover recoverable cumulative travel; resets can remain ambiguous",
+      "Status counter also advances for GPS/version packets; extra steps are not packet loss",
+      "Host receive batches can contain multiple statuses with no individual capture time",
+      "No slip correction or absolute ground-truth distance is inferred"
+    ]
+  },
+  {
+    "logfile": "/data/matty/m04-dh2-261102_175816.log",
+    "incoming_stream": "serial.raw",
+    "status_packets": 596,
+    "encoder_unit": "unsigned cumulative millimetres modulo 65536; firmware index order",
+    "parser": {
+      "valid_packets": 1869,
+      "type_A": 1152,
+      "type_V": 1,
+      "type_I": 596,
+      "type_P": 120
+    },
+    "incomplete_tail_bytes": 0,
+    "firmware_versions": [
+      {
+        "time": 0.096315,
+        "robot": 4,
+        "version": 8
+      }
+    ],
+    "reset_commands": [],
+    "accepted_intervals": 555,
+    "rejected_reasons": {
+      "first_sample": 1,
+      "time_gap": 1,
+      "nonpositive_interval": 36,
+      "encoder_error": 2,
+      "encoder_jump_or_reset": 3,
+      "after_encoder_error": 1,
+      "power_error": 1
+    },
+    "status_counter_extra_steps": 120,
+    "shared_info_counter_missing": 0,
+    "shared_info_counter_repeats_or_restarts": 0,
+    "encoder_error_samples": 2,
+    "power_error_samples": 1,
+    "interval_seconds": {
+      "median": 0.10276999999999958,
+      "maximum": 3.548043
+    },
+    "accepted_wheel_signed_mm": [
+      1173.0,
+      976.0,
+      830.0,
+      778.0
+    ],
+    "accepted_wheel_mean_mm": 939.25,
+    "accepted_speed_dt_mm": 933.1658619999994,
+    "accepted_fixed_100ms_mm": 933.0999999999999,
+    "residual_mm": {
+      "median": 0.0,
+      "abs_p90": 0.4184959999999734,
+      "abs_max": 1.7051999999999055
+    },
+    "settings": {
+      "max_gap": 0.5,
+      "max_wheel_speed": 1.5,
+      "quantization_allowance_mm": 2
+    },
+    "limitations": [
+      "Wheel indices are firmware order; physical front/rear mapping needs confirmation",
+      "Only accepted intervals enter cumulative comparisons; rejected travel is unknown",
+      "Wheel mean is not a validated joint-centre or camera displacement",
+      "Counter gaps can cover recoverable cumulative travel; resets can remain ambiguous",
+      "Status counter also advances for GPS/version packets; extra steps are not packet loss",
+      "Host receive batches can contain multiple statuses with no individual capture time",
+      "No slip correction or absolute ground-truth distance is inferred"
+    ]
+  },
+  {
+    "logfile": "/data/matty/m04-dh2-261102_175940.log",
+    "incoming_stream": "serial.raw",
+    "status_packets": 370,
+    "encoder_unit": "unsigned cumulative millimetres modulo 65536; firmware index order",
+    "parser": {
+      "valid_packets": 1124,
+      "type_I": 370,
+      "type_A": 679,
+      "type_V": 1,
+      "type_P": 74
+    },
+    "incomplete_tail_bytes": 0,
+    "firmware_versions": [
+      {
+        "time": 0.09574,
+        "robot": 4,
+        "version": 8
+      }
+    ],
+    "reset_commands": [],
+    "accepted_intervals": 328,
+    "rejected_reasons": {
+      "first_sample": 1,
+      "time_gap": 1,
+      "nonpositive_interval": 37,
+      "encoder_error": 3,
+      "power_error": 3,
+      "after_encoder_error": 2
+    },
+    "status_counter_extra_steps": 75,
+    "shared_info_counter_missing": 0,
+    "shared_info_counter_repeats_or_restarts": 0,
+    "encoder_error_samples": 3,
+    "power_error_samples": 3,
+    "interval_seconds": {
+      "median": 0.10272199999999998,
+      "maximum": 3.609963
+    },
+    "accepted_wheel_signed_mm": [
+      965.0,
+      968.0,
+      970.0,
+      816.0
+    ],
+    "accepted_wheel_mean_mm": 929.75,
+    "accepted_speed_dt_mm": 924.8097000000002,
+    "accepted_fixed_100ms_mm": 924.5000000000009,
+    "residual_mm": {
+      "median": 0.0,
+      "abs_p90": 0.4793056000000534,
+      "abs_max": 1.8476559999997875
+    },
+    "settings": {
+      "max_gap": 0.5,
+      "max_wheel_speed": 1.5,
+      "quantization_allowance_mm": 2
+    },
+    "limitations": [
+      "Wheel indices are firmware order; physical front/rear mapping needs confirmation",
+      "Only accepted intervals enter cumulative comparisons; rejected travel is unknown",
+      "Wheel mean is not a validated joint-centre or camera displacement",
+      "Counter gaps can cover recoverable cumulative travel; resets can remain ambiguous",
+      "Status counter also advances for GPS/version packets; extra steps are not packet loss",
+      "Host receive batches can contain multiple statuses with no individual capture time",
+      "No slip correction or absolute ground-truth distance is inferred"
+    ]
+  },
+  {
+    "logfile": "/data/matty/m04-dh2-261031_101546.log",
+    "incoming_stream": "serial.raw",
+    "status_packets": 4038,
+    "encoder_unit": "unsigned cumulative millimetres modulo 65536; firmware index order",
+    "parser": {
+      "bytes_before_sync": 51,
+      "valid_packets": 12859,
+      "type_I": 4038,
+      "type_P": 807,
+      "type_A": 8013,
+      "type_V": 1
+    },
+    "incomplete_tail_bytes": 0,
+    "firmware_versions": [
+      {
+        "time": 0.115049,
+        "robot": 4,
+        "version": 8
+      }
+    ],
+    "reset_commands": [],
+    "accepted_intervals": 3983,
+    "rejected_reasons": {
+      "first_sample": 1,
+      "time_gap": 2,
+      "nonpositive_interval": 37,
+      "encoder_error": 9,
+      "after_encoder_error": 8,
+      "encoder_jump_or_reset": 7,
+      "power_error": 3
+    },
+    "status_counter_extra_steps": 808,
+    "shared_info_counter_missing": 0,
+    "shared_info_counter_repeats_or_restarts": 0,
+    "encoder_error_samples": 9,
+    "power_error_samples": 3,
+    "interval_seconds": {
+      "median": 0.10300000000000864,
+      "maximum": 2.8498390000000002
+    },
+    "accepted_wheel_signed_mm": [
+      21585.0,
+      21507.0,
+      19851.0,
+      19373.0
+    ],
+    "accepted_wheel_mean_mm": 20579.0,
+    "accepted_speed_dt_mm": 20478.698854000057,
+    "accepted_fixed_100ms_mm": 20475.60000000003,
+    "residual_mm": {
+      "median": 0.0,
+      "abs_p90": 0.8353081999992076,
+      "abs_max": 2.046531000002716
+    },
+    "settings": {
+      "max_gap": 0.5,
+      "max_wheel_speed": 1.5,
+      "quantization_allowance_mm": 2
+    },
+    "limitations": [
+      "Wheel indices are firmware order; physical front/rear mapping needs confirmation",
+      "Only accepted intervals enter cumulative comparisons; rejected travel is unknown",
+      "Wheel mean is not a validated joint-centre or camera displacement",
+      "Counter gaps can cover recoverable cumulative travel; resets can remain ambiguous",
+      "Status counter also advances for GPS/version packets; extra steps are not packet loss",
+      "Host receive batches can contain multiple statuses with no individual capture time",
+      "No slip correction or absolute ground-truth distance is inferred"
+    ]
+  }
+]
