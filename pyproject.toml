@@ -30,7 +30,7 @@ build-backend = "uv_build"
 package = true
 
 [tool.uv.build-backend]
-module-name = ["bevroad", "dh2"]
+module-name = ["bevroad", "dh2", "matty"]
 module-root = ""
 
 [tool.uv.sources]

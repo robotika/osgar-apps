@@ -13,6 +13,8 @@ from osgar.lib.serialize import deserialize
 from osgar.logger import LogReader, lookup_config, lookup_stream_names
 from osgar.platforms.matty import ESC, SYNC, Matty, RobotStatus, remove_esc_chars
 
+from matty.odometry import signed_delta, validate_bounds, wheel_interval
+
 
 @dataclass
 class Status:
@@ -100,15 +102,9 @@ class PacketDecoder(Matty):
             self.versions.append(dict(time=self.packet_time, robot=packet[2], version=packet[3]))
 
 
-def signed_delta(current, previous):
-    return [(int(c) - int(p) + 32768) % 65536 - 32768 for c, p in zip(current, previous)]
-
-
 def analyze_intervals(statuses, resets=(), *, max_gap=0.5, max_wheel_speed=1.5):
     """Compare like intervals; rejected intervals never become accepted travel."""
-    if not (0 < max_gap < float('inf') and 0 < max_wheel_speed < float('inf')
-            and max_gap * max_wheel_speed * 1000 + 2 < 32768):
-        raise ValueError('Positive finite bounds must limit wheel travel below half the 16-bit modulus')
+    validate_bounds(max_gap, max_wheel_speed)
     rows = []
     cumulative = np.zeros(4)
     total_speed = total_fixed = 0.0
@@ -125,22 +121,13 @@ def analyze_intervals(statuses, resets=(), *, max_gap=0.5, max_wheel_speed=1.5):
         if previous is None:
             reasons.append('first_sample')
         else:
-            if dt <= 0:
-                reasons.append('nonpositive_interval')
-            elif dt > max_gap:
-                reasons.append('time_gap')
+            delta, reasons = wheel_interval(previous.encoders, sample.encoders, dt,
+                                            previous.flags, sample.flags, max_gap=max_gap,
+                                            max_wheel_speed=max_wheel_speed)
             if step == 0 or step >= 128:
                 reasons.append('counter_repeat_or_restart')
             if reset_between:
                 reasons.append('reset_command')
-            if sample.flags & RobotStatus.ERROR_ENCODER.value:
-                reasons.append('encoder_error')
-            if previous.flags & RobotStatus.ERROR_ENCODER.value:
-                reasons.append('after_encoder_error')
-            if sample.flags & RobotStatus.ERROR_POWER.value or previous.flags & RobotStatus.ERROR_POWER.value:
-                reasons.append('power_error')
-            if dt > 0 and max(abs(x) for x in delta) > max_wheel_speed * 1000 * dt + 2:
-                reasons.append('encoder_jump_or_reset')
         accepted = not reasons
         speed_mm = sample.speed * dt if previous else 0
         fixed_mm = sample.speed * .1 if previous else 0

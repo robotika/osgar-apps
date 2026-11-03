@@ -331,7 +331,15 @@ lever-arm behavior are verified, independent motion checks quantify translation
 error, and any assumed Z/slip limitations remain visible in outputs. Mapping does
 not require pretending unobservable quantities are measured.
 
-## First session next time
+## Implementation progress (2026-11-03)
+
+The encoder audit and first passive articulated pose provider are implemented.
+See [pose replay results](dh2-pose-stage2.md) and the
+[reusable node interface](../matty/README.md). Six derived logs replay exactly.
+Joint Z, wheel geometry and clock alignment remain explicit assumptions; fixed
+scene registration and independent displacement validation are the next steps.
+
+The original first-session sequence was:
 
 1. Implement packet/encoder extraction and diagnostics for `174346` and `175940`.
 2. Confirm wheel order/sign/units and compare transmitted encoder mean increments

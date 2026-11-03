@@ -38,6 +38,15 @@ in its own output subdirectory. Rejected intervals remain visible; accepted
 totals are not ground-truth distance. See the [audit findings](../doc/dh2-encoder-audit.md)
 for real encoder/power errors and the incoming-versus-outgoing stream distinction.
 
+## Offline articulated pose
+
+The passive `matty.pose3d` node now combines wheel increments with separate
+front/rear attitudes. `python -m dh2.pose_replay LOG [LOG ...] --calibration FILE
+--output DIRECTORY` creates a replayable pose log, plot and report for each input.
+See the [results and remaining stage-2 checks](../doc/dh2-pose-stage2.md) and
+[node interface](../matty/README.md). It assumes planar joint translation and
+provisional geometry; the controller does not consume it yet.
+
 ## Interactive recording viewer
 
 From the repository root, open one recording or a sequence in command-line order:

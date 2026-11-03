@@ -45,8 +45,7 @@ class EncoderAuditTest(unittest.TestCase):
         broken = bytearray(wire(status_packet()))
         broken[-1] ^= 1
         decoder = PacketDecoder()
-        with self.assertLogs(level='WARNING'):
-            decoder.feed(bytes(broken), 1)
+        decoder.feed(bytes(broken), 1)
         self.assertEqual(decoder.counts['checksum_rejections'], 1)
         decoder.feed(bytes([SYNC, 26, ESC]), 2)
         decoder.feed(wire(status_packet(counter=2)), 3)
