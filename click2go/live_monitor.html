@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Matty camera monitor</title>
+<style>
+body{background:#161b22;color:#eee;font:16px system-ui;margin:20px;max-width:1100px}h1{font-size:24px}#banner{padding:12px;background:#713e24;font-weight:bold}#frame{position:relative;display:inline-block;max-width:100%;margin-top:20px}img{display:block;max-width:100%;max-height:65vh;min-height:80px}.stale{opacity:.4}#mark{position:absolute;border:2px solid #ffe080;border-radius:50%;width:14px;height:14px;transform:translate(-50%,-50%);pointer-events:none;display:none}pre{white-space:pre-wrap;overflow-wrap:anywhere}small,.muted{color:#aab4c0}#preview{padding:12px;background:#242d39}
+</style>
+<h1>Matty · Read-only camera monitor</h1>
+<p>No robot controls. Full recording remains on the robot.</p>
+<div id="banner">CONNECTING — freshness unknown</div><p id="source"></p>
+<div id="frame"><img id="photo" alt="Waiting for an RGB snapshot"><span id="mark"></span></div>
+<p id="photoAge"></p><small id="photoInfo"></small>
+<p id="preview">Click a snapshot to inspect its source pixel. Ground preview requires camera calibration.</p>
+<h2>Recorded telemetry</h2><pre id="telemetry">Waiting for log data…</pre>
+<p class="muted">SSH/link loss does not stop the robot. Source ages use log receipt time, not camera capture time. Ground preview assumes flat ground and fixed camera mounting; it does not check obstacles or calculate a drivable path.</p>
+<script>
+'use strict';
+let state=null,received=0,lastSuccess=0,photoURL=null,photo=null,lastAttempt=0,loading=false,selection=0;
+const $=id=>document.getElementById(id),fmt=a=>a==null?'unknown':`${a.toFixed(1)} s`;
+function clearPhoto(){
+ selection++;photo=null;$('photo').removeAttribute('src');$('mark').style.display='none';
+ $('preview').textContent='Waiting for this recording’s snapshot.';
+ if(photoURL){URL.revokeObjectURL(photoURL);photoURL=null;}
+}
+function paint(){
+ const now=performance.now(),elapsed=(now-received)/1000,disconnected=!lastSuccess||now-lastSuccess>3000;
+ const logAge=state&&state.log_age_s!=null?state.log_age_s+elapsed:null;
+ const idle=state&&state.log_idle_s!=null?state.log_idle_s+elapsed:null;
+ const fresh=state&&!disconnected&&!state.catching_up&&!state.error&&logAge!==null&&logAge<=2&&idle!==null&&idle<=2;
+ $('banner').textContent=disconnected?'CONNECTION LOST / WAITING — data are not current':state.error?`MONITOR ERROR: ${state.error}`:state.waiting_for_log?'WAITING FOR A RECORDING':state.catching_up?'CATCHING UP — historical data':!fresh?'NO FRESH LOG DATA — historical or stopped recording':'RECEIVING LOG DATA · read-only';
+ $('banner').style.background=fresh?'#25483e':'#713e24';
+ if(!state)return;
+ $('source').textContent=`${state.file||'No recording selected'} · ${state.selection_mode==='directory'?'newest recording in '+state.directory:'fixed file'} · log +${state.log_time_s?.toFixed(1)??'?'} s · age ${fmt(logAge)} · ${(state.bytes_read/1048576).toFixed(1)} / ${(state.file_size/1048576).toFixed(1)} MiB`;
+ $('telemetry').textContent=Object.entries(state.samples).map(([name,s])=>`${name} · age ${fmt(s.age_s+elapsed)}${!fresh||s.age_s+elapsed>.5?' · STALE':''}\n  ${JSON.stringify(s.value)}`).join('\n\n')||'No selected telemetry yet';
+ const imageAge=photo?photo.age+(now-photo.received)/1000:null;
+ $('photoAge').textContent=`Snapshot age: ${fmt(imageAge)}${!fresh||imageAge===null||imageAge>15?' · STALE / unavailable':''}`;
+ $('photo').className=fresh&&imageAge!==null&&imageAge<=15?'':'stale';
+ $('photoInfo').textContent=state.rgb_error?`Decode error: ${state.rgb_error}`:`Independent snapshots, normally at least five seconds apart. ${state.projection_enabled?'Calibrated flat-ground preview available.':'Ground preview disabled: no calibration loaded.'}`;
+}
+async function snapshot(){
+ if(loading||!state||state.catching_up||!state.rgb_seq||(photo&&photo.seq===state.rgb_seq&&photo.session===state.session_id)||performance.now()-lastAttempt<2000)return;
+ loading=true;lastAttempt=performance.now();
+ const seq=state.rgb_seq,session=state.session_id,size=state.rgb_size,stamp=state.rgb_age_s,requested=performance.now();
+ try{
+  const response=await fetch('/rgb',{cache:'no-store',signal:AbortSignal.timeout(3000)});
+  if(!response.ok||response.headers.get('ETag')!==`"${session}:${seq}"`)return;
+  const blob=await response.blob();if(state.session_id!==session)return;
+  const nextURL=URL.createObjectURL(blob),image=new Image();image.src=nextURL;
+  try{await image.decode();}catch(error){URL.revokeObjectURL(nextURL);return;}
+  if(state.session_id!==session){URL.revokeObjectURL(nextURL);return;}
+  if(photoURL)URL.revokeObjectURL(photoURL);photoURL=nextURL;
+  photo={seq,session,size,age:stamp+(performance.now()-requested)/1000,received:performance.now()};
+  selection++;$('mark').style.display='none';$('preview').textContent='Click this snapshot for an offline target preview. No motion will be sent.';
+  $('photo').src=photoURL;
+ }catch(error){/* Retain visibly aged snapshot. */}finally{loading=false;}
+}
+$('photo').addEventListener('click',async event=>{
+ if(!photo||!photo.size)return;
+ const rect=$('photo').getBoundingClientRect(),px=(event.clientX-rect.left)/rect.width,py=(event.clientY-rect.top)/rect.height;
+ const x=Math.min(photo.size[0]-1,Math.max(0,px*photo.size[0])),y=Math.min(photo.size[1]-1,Math.max(0,py*photo.size[1]));
+ const token=++selection,chosen=photo;
+ $('mark').style.cssText=`display:block;left:${px*100}%;top:${py*100}%`;
+ const label=`Source pixel (${x.toFixed(1)}, ${y.toFixed(1)}) in ${photo.size.join(' × ')} · snapshot ${photo.seq}. `;
+ $('preview').textContent=label+(state.projection_enabled?'Calculating offline ground preview…':'Ground preview unavailable without calibration.');
+ if(!state.projection_enabled)return;
+ try{
+  const query=new URLSearchParams({x,y,session:chosen.session,seq:chosen.seq});
+  const response=await fetch('/project?'+query,{signal:AbortSignal.timeout(3000),cache:'no-store'});
+  if(token!==selection)return;
+  if(!response.ok){$('preview').textContent=label+(response.status===409?'Snapshot changed; click the current image.':response.status===400?'No valid ground intersection: check horizon, range and calibration dimensions.':'Preview unavailable.');return;}
+  const result=await response.json();if(token!==selection)return;
+  const [forward,left]=result.target_robot_m;
+  $('preview').textContent=label+`Flat-ground point: ${forward.toFixed(2)} m forward, ${left.toFixed(2)} m left of the robot at this image. Preview only; no motion sent.`;
+ }catch(error){if(token===selection)$('preview').textContent=label+'Preview connection unavailable.';}
+});
+async function poll(){
+ let delay=500;const requested=performance.now();
+ try{
+  const response=await fetch('/state',{cache:'no-store',signal:AbortSignal.timeout(2000)});
+  if(response.status===429){delay=2000;return;}if(!response.ok)throw Error(response.status);
+  const next=await response.json();if(next.protocol!==1)throw Error('Unsupported protocol');
+  const transport=(performance.now()-requested)/1000;
+  for(const key of ['log_age_s','log_idle_s','rgb_age_s'])if(next[key]!=null)next[key]+=transport;
+  for(const sample of Object.values(next.samples))sample.age_s+=transport;
+  if(state&&state.session_id!==next.session_id)clearPhoto();
+  state=next;received=performance.now();lastSuccess=received;snapshot();
+ }catch(error){delay=2000;}finally{paint();setTimeout(poll,delay);}
+}
+setInterval(paint,200);poll();
+</script></html>

@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "robot": {
+    "env": {
+      "OSGAR_LOGS_PREFIX": null
+    },
+    "modules": {
+      "oak": {
+        "driver": "osgar.drivers.oak_camera:OakCamera",
+        "init": {
+          "fps": 10,
+          "is_color": true,
+          "video_encoder": "h265",
+          "h264_bitrate": 4000,
+          "color_resolution": "THE_1080_P",
+          "color_manual_focus": 130,
+          "is_depth": false,
+          "is_imu_enabled": false,
+          "sleep_on_start_sec": 3
+        }
+      }
+    },
+    "links": []
+  }
+}
