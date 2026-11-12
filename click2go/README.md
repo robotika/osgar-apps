@@ -1,5 +1,9 @@
 # Matty camera monitoring and ground preview
 
+The [November 12 corridor analysis](../doc/click2go-corridor-2026-11-12/README.md)
+contains the five-click tile fit and the later 1 m camera-reference marker check,
+including a measured-height, level-camera candidate for read-only preview.
+
 The new monitor reads an OSGAR recording in a separate process. It has no OSGAR
 bus, serial device or command connection. It serves latest recorded Matty
 telemetry and occasional RGB snapshots over loopback HTTP. Browser clicks can

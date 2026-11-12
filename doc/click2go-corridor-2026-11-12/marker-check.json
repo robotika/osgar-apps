@@ -1,0 +1,210 @@
+{
+  "schema": "click2go-marker-model-check-v1",
+  "measurement": {
+    "click_number": 6,
+    "horizontal_camera_distance_m": 1.0,
+    "camera_height_m": 0.29,
+    "camera_ahead_of_axle_m": 0.05,
+    "source": {
+      "file": "m04-camera-monitor-261112_185220.log",
+      "recording_start_utc": 1794509540.8788,
+      "stream": "oak.color",
+      "log_time_s": 12.038244,
+      "packet_end_offset": 2214657
+    }
+  },
+  "assumptions": [
+    "Same stationary camera pose across recordings",
+    "Factory export belongs to this camera and RGB stream is an uncropped resize",
+    "Level camera, aligned forward with tile centreline; zero lateral mounting offset",
+    "Marker clicked on the floor centreline"
+  ],
+  "factory_device_id": "14442C10116FDAD600",
+  "marker_projected_from_axle_m": [
+    1.0564458817440112,
+    -0.01860005169069377,
+    0.0
+  ],
+  "marker_forward_error_m": 0.006445881744011173,
+  "marker_lateral_error_m": -0.01860005169069377,
+  "marker_floor_relative_xy_m": [
+    0.01152743108299044,
+    0.0029360031385883213
+  ],
+  "tile_origin_from_axle_xy_m": [
+    1.0384725689170096,
+    -0.0029360031385883213
+  ],
+  "tile_model_points_from_axle_xy_m": [
+    [
+      1.0498439738006573,
+      -0.020400399248969664
+    ],
+    [
+      1.4195228023881403,
+      -0.02800724218558022
+    ],
+    [
+      1.76077586066545,
+      -0.025108760621529756
+    ],
+    [
+      1.2122134160737295,
+      0.17072546008006245
+    ],
+    [
+      1.2213784463538566,
+      -0.22433978804034832
+    ]
+  ],
+  "tile_anchored_reference_from_axle_xy_m": [
+    [
+      1.0384725689170096,
+      -0.0029360031385883213
+    ],
+    [
+      1.4627366376289381,
+      -0.0029360031385883213
+    ],
+    [
+      1.8870007063408665,
+      -0.0029360031385883213
+    ],
+    [
+      1.2506046032729738,
+      0.2091960312173759
+    ],
+    [
+      1.2506046032729738,
+      -0.21506803749455256
+    ]
+  ],
+  "tile_pair_checks": [
+    {
+      "click_numbers": [
+        1,
+        2
+      ],
+      "expected_m": 0.4242640687119285,
+      "projected_m": 0.36975708291427756,
+      "error_m": -0.05450698579765095
+    },
+    {
+      "click_numbers": [
+        2,
+        3
+      ],
+      "expected_m": 0.4242640687119285,
+      "projected_m": 0.3412653673887728,
+      "error_m": -0.08299870132315573
+    },
+    {
+      "click_numbers": [
+        1,
+        4
+      ],
+      "expected_m": 0.3,
+      "projected_m": 0.25078462849291516,
+      "error_m": -0.049215371507084826
+    },
+    {
+      "click_numbers": [
+        4,
+        2
+      ],
+      "expected_m": 0.3,
+      "projected_m": 0.2871791576766361,
+      "error_m": -0.01282084232336389
+    },
+    {
+      "click_numbers": [
+        2,
+        5
+      ],
+      "expected_m": 0.3,
+      "projected_m": 0.2789402344410996,
+      "error_m": -0.02105976555890038
+    },
+    {
+      "click_numbers": [
+        5,
+        1
+      ],
+      "expected_m": 0.3,
+      "projected_m": 0.2664870532966009,
+      "error_m": -0.033512946703399105
+    }
+  ],
+  "limitations": [
+    "One marker is not general range validation",
+    "Tile comparison still shows substantial discrepancy",
+    "Approximate mounting and candidate factory calibration require verification",
+    "No actuator or motion test performed"
+  ],
+  "preview_candidate_calibration": {
+    "image_size": [
+      1920.0,
+      1080.0
+    ],
+    "camera_matrix": [
+      [
+        1549.0777587890625,
+        0.0,
+        994.2214965820312
+      ],
+      [
+        0.0,
+        1548.2879638671875,
+        612.6268310546875
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "distortion_coefficients": [
+      -2.9274678230285645,
+      -6.534228324890137,
+      0.00021745829144492745,
+      -0.000312398566165939,
+      26.660184860229492,
+      -3.0265767574310303,
+      -5.997669219970703,
+      25.838409423828125,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      -0.0012855804525315762,
+      0.0019356842385604978
+    ],
+    "camera_to_robot_rotation": [
+      [
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        -1.0,
+        0.0
+      ]
+    ],
+    "camera_position_m": [
+      0.05,
+      0.0,
+      0.29
+    ],
+    "max_range_m": 2.5
+  },
+  "annotation_file": "matty-clicks-2026-11-12T18-52-51-690Z.json",
+  "annotation_sha256": "41a94cfa31b10563963f3766462c346f845a145491bfdc2cfabae068cac0a5c2",
+  "factory_calibration_file": "m04-dh2-oak-calibration.json",
+  "factory_calibration_sha256": "f88463746673ce1df1360b8f6d1a62a5ea616c877a7eaeb966cfdbdc4a618967"
+}

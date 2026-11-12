@@ -1,0 +1,218 @@
+{
+  "schema": "click2go-exploratory-tile-fit-v1",
+  "coordinate_frame": "click_1_origin_forward_to_click_2_left_positive",
+  "tile_side_m": 0.3,
+  "source_size": [
+    1920.0,
+    1080.0
+  ],
+  "assumptions": [
+    "Confirmed square tile corner identities",
+    "Stationary camera across the selected snapshots",
+    "Flat floor",
+    "Raw image fit without lens undistortion"
+  ],
+  "limitations": [
+    "No measured robot origin or camera mounting pose",
+    "Fit residuals are not independent validation",
+    "Do not use this file as live_monitor --calibration or for robot control"
+  ],
+  "image_to_floor": [
+    [
+      -9.644176293521122e-07,
+      -0.0008367056257283943,
+      0.8929318811721972
+    ],
+    [
+      -0.00021595647340428236,
+      9.135782245133499e-06,
+      0.2121336061498443
+    ],
+    [
+      2.0829069701429924e-05,
+      0.0006458508898423631,
+      -0.3970778568152932
+    ]
+  ],
+  "floor_to_image": [
+    [
+      778.271539176885,
+      -1352.863761606493,
+      1027.394487400831
+    ],
+    [
+      450.0975360479781,
+      100.80747184689405,
+      1066.0153540138674
+    ],
+    [
+      0.772912820599207,
+      0.09299864289640462,
+      1.0
+    ]
+  ],
+  "fit_rms_m": 0.012610267262882396,
+  "fit_rms_px": 3.423787742004381,
+  "points": [
+    {
+      "click_number": 1,
+      "source": {
+        "file": "m04-camera-monitor-261112_184242.log",
+        "recording_start_utc": 1794508962.906869,
+        "stream": "oak.color",
+        "log_time_s": 12.000577,
+        "packet_end_offset": 2212948
+      },
+      "pixel_xy": [
+        1026.0,
+        1064.750015258789
+      ],
+      "expected_floor_xy_m": [
+        0.0,
+        0.0
+      ],
+      "fitted_floor_xy_m": [
+        0.0033980394346819205,
+        0.0009282805126054621
+      ],
+      "fitted_pixel_xy": [
+        1027.394487400831,
+        1066.0153540138674
+      ],
+      "error_m": 0.0035225525843820254,
+      "error_px": 1.8829968869277107
+    },
+    {
+      "click_number": 2,
+      "source": {
+        "file": "m04-camera-monitor-261112_184242.log",
+        "recording_start_utc": 1794508962.906869,
+        "stream": "oak.color",
+        "log_time_s": 12.000577,
+        "packet_end_offset": 2212948
+      },
+      "pixel_xy": [
+        1026.0,
+        941.7500152587891
+      ],
+      "expected_floor_xy_m": [
+        0.42426406871192845,
+        0.0
+      ],
+      "fitted_floor_xy_m": [
+        0.4471597138567039,
+        -0.0035872280062860876
+      ],
+      "fitted_pixel_xy": [
+        1022.3417211922695,
+        946.5753824757426
+      ],
+      "error_m": 0.02317496000783091,
+      "error_px": 6.055342485238967
+    },
+    {
+      "click_number": 3,
+      "source": {
+        "file": "m04-camera-monitor-261112_184242.log",
+        "recording_start_utc": 1794508962.906869,
+        "stream": "oak.color",
+        "log_time_s": 18.0003,
+        "packet_end_offset": 4341663
+      },
+      "pixel_xy": [
+        1017.0,
+        875.7500152587891
+      ],
+      "expected_floor_xy_m": [
+        0.8485281374238569,
+        0.0
+      ],
+      "fitted_floor_xy_m": [
+        0.8392111487393957,
+        0.0026700552649553903
+      ],
+      "fitted_pixel_xy": [
+        1019.2902358620704,
+        874.4427513695481
+      ],
+      "error_m": 0.009692031431247718,
+      "error_px": 2.637066396590498
+    },
+    {
+      "click_number": 4,
+      "source": {
+        "file": "m04-camera-monitor-261112_184242.log",
+        "recording_start_utc": 1794508962.906869,
+        "stream": "oak.color",
+        "log_time_s": 18.0003,
+        "packet_end_offset": 4341663
+      },
+      "pixel_xy": [
+        765.0,
+        1001.7500152587891
+      ],
+      "expected_floor_xy_m": [
+        0.21213203435596423,
+        0.21213203435596423
+      ],
+      "fitted_floor_xy_m": [
+        0.2032227365505468,
+        0.21095093703860082
+      ],
+      "fitted_pixel_xy": [
+        764.9865561519208,
+        999.3177200850549
+      ],
+      "error_m": 0.008987245309809842,
+      "error_px": 2.432332327051863
+    },
+    {
+      "click_number": 5,
+      "source": {
+        "file": "m04-camera-monitor-261112_184242.log",
+        "recording_start_utc": 1794508962.906869,
+        "stream": "oak.color",
+        "log_time_s": 23.999082,
+        "packet_end_offset": 6473100
+      },
+      "pixel_xy": [
+        1293.0,
+        998.7500152587892
+      ],
+      "expected_floor_xy_m": [
+        0.21213203435596423,
+        -0.21213203435596423
+      ],
+      "fitted_floor_xy_m": [
+        0.2038035580982257,
+        -0.21089208039165275
+      ],
+      "fitted_pixel_xy": [
+        1292.9869993739273,
+        996.3987956016216
+      ],
+      "error_m": 0.00842027330965724,
+      "error_px": 2.3512555991489936
+    }
+  ],
+  "held_out_check": {
+    "fitted_click_numbers": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "excluded_click_number": 3,
+    "expected_floor_xy_m": [
+      0.8485281374238569,
+      0.0
+    ],
+    "predicted_floor_xy_m": [
+      0.6900684130460316,
+      0.008026198281582799
+    ],
+    "error_m": 0.15866286304221175
+  },
+  "annotation_file": "matty-clicks-2026-11-12T18-43-22-684Z.json",
+  "annotation_sha256": "3b94e73496ca58168a30e57842900f81fb9fda2080416c073edc28abcb3ef437"
+}
