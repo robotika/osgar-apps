@@ -19,6 +19,32 @@ Open `http://127.0.0.1:8765`. Historical recordings are correctly labeled stale.
 This is a latest-state monitor, not time-controlled replay. Click a snapshot to
 inspect the original 1920×1080 pixel, even though the transmitted JPEG is smaller.
 
+## Save clicks for tile measurements
+
+Every image click is now retained in the desktop browser's local storage, even
+without camera calibration. Enter an optional tile name/note and measured
+forward/left ground coordinates in metres before clicking. Click **Download
+annotations** to save a portable `matty-clicks-*.json` file on the desktop and
+keep it alongside the original robot log. Existing recordings can be annotated
+now; no new recording is required just to collect pixel correspondences.
+
+The JSON includes each clicked source pixel and browser click time, the source
+log filename/start time, RGB log-receipt timestamp and camera packet end offset,
+monitor session/snapshot identity, original image dimensions, and the exact
+displayed JPEG. JPEGs are stored once per clicked snapshot. Optional calibration,
+projection results (or rejected/disabled/error status), measured coordinates and
+notes are included too. Log receipt time is not sensor capture time. The embedded
+image is the transmitted preview, not the original full-resolution video.
+
+Selections survive page reloads and recording switches in the same browser
+origin (the same hostname and port). Export includes previously retained clicks
+across recordings. Private browsing, clearing browser storage, changing ports or
+using a different browser can lose access to that cache; download the JSON to
+preserve it. If browser storage is unavailable/full, an explicit message says
+that clicks remain only in the current tab and should be downloaded immediately.
+Clicks are not sent to the robot or appended to its OSGAR log. A failed or outdated
+projection request does not discard its recorded pixel selection.
+
 ## Record a new M04 camera sample
 
 The optional `config/camera-monitor.json` records only the camera: no Matty
@@ -27,8 +53,11 @@ a stationary ground-calibration sample. It does not record robot odometry.
 On M04, from the repository root:
 
 ```sh
+# Matty uses the shared matty.git environment and source checkouts.
+export PYTHONPATH=/home/robot/git/osgar:/home/robot/git/osgar-apps
 # Uses the normal OSGAR_LOGS directory; retain M04's existing robot prefix setup.
-.venv/bin/python -m osgar.record click2go/config/camera-monitor.json \
+/home/robot/git/matty/odroid/python/.venv/bin/python \
+  -m osgar.record click2go/config/camera-monitor.json \
   --duration 90 --note 'M04 click2go stationary ground sample'
 ```
 
@@ -40,12 +69,21 @@ recorder and manual driving procedure instead.
 ## Monitor over SSH
 
 Leave the recorder in its usual persistent terminal session. From a second
-desktop terminal (substitute SSH address, checkout path and log directory):
+desktop terminal, using M04's shared Matty environment:
 
 ```sh
-ssh -t -L 8765:127.0.0.1:8765 USER@M04 \
-  'cd /path/to/osgar-apps && exec nice -n 10 .venv/bin/python click2go/live_monitor.py /path/to/logs --pattern "*camera-monitor*.log"'
+ssh -t -L 8765:127.0.0.1:8765 robot@m04-odroid.local \
+  'cd /home/robot/git/osgar-apps && export PYTHONPATH=/home/robot/git/osgar:/home/robot/git/osgar-apps && exec nice -n 10 /home/robot/git/matty/odroid/python/.venv/bin/python click2go/live_monitor.py /home/robot/logs --pattern "*camera-monitor*.log"'
 ```
+
+The desktop shell's exported `PYTHONPATH` is not automatically passed through
+SSH. A remote command also may not load the interactive shell initialization
+that normally sets it. Set it explicitly inside the quoted remote command;
+selecting the shared virtual environment alone does not expose the OSGAR source
+checkout. This robot setup differs from the workstation-local uv environment.
+If Python exits with `ModuleNotFoundError: No module named 'osgar'`, the HTTP
+server never starts, and browser requests through the tunnel produce SSH
+`connect failed: Connection refused` messages. Fix the import environment first.
 
 Open `http://127.0.0.1:8765` on the desktop. When monitoring an existing normal
 recorder, adjust or omit the filename pattern. A directory may be empty when
@@ -144,9 +182,13 @@ The backend and baseline isolation/directory tests were adapted from FGI's
 copy removes FGI lidar/RPM/geometry handling and adds Matty telemetry and optional
 frame-bound projection without changing FGI or OSGAR core.
 
-Workstation checks: 13 tests pass, covering growing logs, immutability, latest
+Workstation checks: 14 tests pass, covering growing logs, immutability, latest
 values, directory selection/cache reset, HTTP read-only behavior, bounded JPEGs,
 frame/session checks and synthetic projection including distortion and tilt.
+Snapshot provenance is also checked across log catch-up. Headless Chromium
+annotation checks passed with and without synthetic calibration: two rapid
+clicks retain separate results, survive page reload, and export the clicked
+JPEG, source reference, optional measurements and projection status as JSON.
 The 125652085-byte February 8 M04 log was read to EOF, with a 1920×1080 source
 decoded to an 8731-byte JPEG; source SHA-256 stayed unchanged. Headless Chromium
 loaded that recording, displayed RGB and marked it stale. The unchanged motion
@@ -154,3 +196,22 @@ controller's baseline replay passed after master integration. A browser click on
 the scaled image mapped to source pixel (960, 1040) and the expected (1.10, 0.00) m
 point with synthetic calibration. Hardware, SSH/load
 and measured M04 ground projection validation remain to be done.
+
+New M04 camera sample `m04-camera-monitor-261112_182025.log` was checked on
+November 12: 25102614 bytes, 708 RGB packets over about 70.65 seconds at 10.01 Hz,
+with 24 independently decodable HEVC pictures roughly three seconds apart.
+Every independent picture decoded successfully at 1920×1080 source resolution.
+The monitor reached EOF without error and produced a 15719-byte final JPEG;
+the source SHA-256 was unchanged. Only `oak.color` and `oak.color_seq` contain
+samples, as expected for the camera-only configuration. The initial picture is
+dark and the final picture clearly shows the indoor scene. This validates the
+new camera encoding against the monitor, but not metric ground projection:
+measured floor points and verified mounting calibration are still needed.
+
+Corridor sample `m04-camera-monitor-261112_183105.log`: 9650636 bytes, 271 RGB
+packets over about 26.96 seconds at 10.01 Hz, ten independent HEVC pictures all
+decoded successfully. Floor tile corners are visible. The operator reports
+**30 × 30 cm tiles**; count offsets in 0.30 m steps from a measured origin, with
+tile orientation related to the chosen robot frame. Tile spacing alone does not
+establish the robot-relative origin or camera mounting pose. The source log was
+not modified during inspection.

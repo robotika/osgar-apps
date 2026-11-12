@@ -90,6 +90,7 @@ class State:
         self.rgb = None
         self.rgb_stamp = None
         self.rgb_size = None
+        self.rgb_offset = None
         self.rgb_seq = 0
         self.rgb_error = None
         self.bytes_read = 0
@@ -125,6 +126,8 @@ class State:
                 file_size=self.file_size,
                 rgb_seq=self.rgb_seq,
                 rgb_size=self.rgb_size,
+                rgb_log_time_s=self.rgb_stamp,
+                rgb_packet_end_offset=self.rgb_offset,
                 rgb_age_s=None if self.rgb_stamp is None else max(0, reference - self.rgb_stamp),
                 rgb_error=self.rgb_error,
                 samples={
@@ -329,7 +332,7 @@ def follow(state, stop, rgb_interval=5.0):
                     state.log_time, state.last_read = t, time.monotonic()
                     state.bytes_read, state.file_size, state.catching_up = offset, size, catching_up
                 if not catching_up and pending_rgb is not None:
-                    rgb_time, rgb_data = pending_rgb
+                    rgb_time, rgb_data, rgb_offset = pending_rgb
                     pending_rgb = None
                     try:
                         image = images.image(rgb_data)
@@ -337,6 +340,7 @@ def follow(state, stop, rgb_interval=5.0):
                             with state.lock:
                                 state.rgb, state.rgb_stamp = image, rgb_time
                                 state.rgb_size = images.source_size
+                                state.rgb_offset = rgb_offset
                                 state.rgb_seq += 1
                                 state.rgb_error = None
                     except Exception as error:
@@ -358,12 +362,12 @@ def follow(state, stop, rgb_interval=5.0):
                     # Cache parameter sets while catching up; avoid decoding historical frames.
                     if catching_up:
                         if data.startswith(b'\xff\xd8'):
-                            pending_rgb = (t, data)
+                            pending_rgb = (t, data, offset)
                         for match in START_CODE.finditer(data):
                             index = match.end()
                             kind = data[index] >> 1 & 63 if index < len(data) else -1
                             if 16 <= kind <= 21:
-                                pending_rgb = (t, data)
+                                pending_rgb = (t, data, offset)
                             if kind in (32, 33, 34):
                                 end = START_CODE.search(data, index)
                                 images.parameters[kind] = data[match.start() : end.start() if end else len(data)]
@@ -378,6 +382,7 @@ def follow(state, stop, rgb_interval=5.0):
                         with state.lock:
                             state.rgb, state.rgb_stamp = image, t
                             state.rgb_size = images.source_size
+                            state.rgb_offset = offset
                             state.rgb_seq += 1
                             state.rgb_error = None
     except Exception as error:
@@ -423,6 +428,7 @@ def handler(state, budget, projection=None):
             elif path == '/state':
                 snapshot = state.snapshot()
                 snapshot['projection_enabled'] = projection is not None
+                snapshot['projection_calibration'] = None if projection is None else projection.calibration
                 body = json.dumps(snapshot, separators=(',', ':'), allow_nan=False).encode()
                 content_type = 'application/json'
             elif path == '/rgb':

@@ -47,6 +47,14 @@ class GroundProjection:
             raise ValueError('Camera position must be finite and above ground (z > 0)')
         if not math.isfinite(self.max_range) or self.max_range <= 0:
             raise ValueError('max_range_m must be finite and positive')
+        self.calibration = dict(
+            image_size=self.size.tolist(),
+            camera_matrix=self.matrix.tolist(),
+            distortion_coefficients=self.distortion.tolist(),
+            camera_to_robot_rotation=self.rotation.tolist(),
+            camera_position_m=self.origin.tolist(),
+            max_range_m=self.max_range,
+        )
 
     def project(self, x, y, source_size):
         if source_size is None or not np.array_equal(source_size, self.size):

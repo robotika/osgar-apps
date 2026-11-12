@@ -18,7 +18,7 @@ import numpy as np
 from ground_projection import GroundProjection
 from live_monitor import ByteBudget, DirectorySource, LogDirectory, Snapshots, State, follow, follow_directory, handler
 from osgar.lib.serialize import serialize
-from osgar.logger import LogWriter, format_header, format_packet
+from osgar.logger import LogReader, LogWriter, format_header, format_packet
 from test_ground_projection import synthetic_calibration
 
 
@@ -107,6 +107,35 @@ class MonitorTest(unittest.TestCase):
         self.assertEqual(snapshots.source_size, [1920, 1080])
         self.assertIsNone(snapshots.image(jpeg.tobytes()))
 
+    def test_snapshot_provenance_points_to_camera_packet_during_catchup(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'camera.log'
+            ok, jpeg = cv2.imencode('.jpg', np.zeros((1080, 1920, 3), np.uint8))
+            self.assertTrue(ok)
+            with LogWriter(filename=str(path)) as log:
+                camera = log.register('oak.color', dt=timedelta())
+                other = log.register('unused.data', dt=timedelta())
+                log.write(camera, serialize(jpeg.tobytes()), dt=timedelta(seconds=1))
+                log.write(other, b'x' * 100000, dt=timedelta(seconds=2))
+            content = path.read_bytes()
+            with LogReader(str(path)) as reader:
+                for _, channel, _ in reader:
+                    if channel == camera:
+                        expected_offset = reader.f.tell()
+            state, stop = State(path), threading.Event()
+            thread = threading.Thread(target=follow, args=(state, stop, 5.0), daemon=True)
+            thread.start()
+            try:
+                wait_for(lambda: state.snapshot()['bytes_read'] == len(content) and state.rgb is not None)
+                snapshot = state.snapshot()
+                self.assertEqual(snapshot['rgb_log_time_s'], 1.0)
+                self.assertEqual(snapshot['rgb_packet_end_offset'], expected_offset)
+                self.assertEqual(snapshot['rgb_size'], [1920, 1080])
+            finally:
+                stop.set()
+                thread.join(2.0)
+            self.assertEqual(path.read_bytes(), content)
+
     def test_projection_is_read_only_and_bound_to_displayed_frame(self):
         state = State('example.log')
         state.rgb_seq, state.rgb_size, state.rgb_stamp = 3, [1920, 1080], 12.0
@@ -122,7 +151,9 @@ class MonitorTest(unittest.TestCase):
                     self.assertEqual(result['target_robot_m'], [1.1, 0.0, 0.0])
                     self.assertEqual(result['log_time_s'], 12.0)
                 with urlopen(url + '/state', timeout=2.0) as response:
-                    self.assertTrue(json.load(response)['projection_enabled'])
+                    result = json.load(response)
+                    self.assertTrue(result['projection_enabled'])
+                    self.assertEqual(result['projection_calibration'], synthetic_calibration())
                 for suffix, code in (
                     (query.replace('seq=3', 'seq=2'), 409),
                     (query.replace(state.session_id, 'old-session'), 409),

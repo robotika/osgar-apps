@@ -10,12 +10,40 @@ body{background:#161b22;color:#eee;font:16px system-ui;margin:20px;max-width:110
 <div id="frame"><img id="photo" alt="Waiting for an RGB snapshot"><span id="mark"></span></div>
 <p id="photoAge"></p><small id="photoInfo"></small>
 <p id="preview">Click a snapshot to inspect its source pixel. Ground preview requires camera calibration.</p>
+<fieldset><legend>Ground-point annotations</legend>
+<label>Tile / note <input id="note" maxlength="200" placeholder="e.g. tile corner A"></label>
+<label>Measured forward (m) <input id="measuredX" type="number" step="any"></label>
+<label>Measured left (m) <input id="measuredY" type="number" step="any"></label>
+<p><button id="download">Download annotations</button> <span id="annotationStatus"></span></p>
+<small>Each click is saved in this browser, including the displayed JPEG and source pixel. Download the JSON to keep or share it. Measurements are optional.</small>
+</fieldset>
 <h2>Recorded telemetry</h2><pre id="telemetry">Waiting for log data…</pre>
 <p class="muted">SSH/link loss does not stop the robot. Source ages use log receipt time, not camera capture time. Ground preview assumes flat ground and fixed camera mounting; it does not check obstacles or calculate a drivable path.</p>
 <script>
 'use strict';
 let state=null,received=0,lastSuccess=0,photoURL=null,photo=null,lastAttempt=0,loading=false,selection=0;
 const $=id=>document.getElementById(id),fmt=a=>a==null?'unknown':`${a.toFixed(1)} s`;
+const storageKey='matty-ground-annotations-v1';
+let annotations={schema:'matty-ground-annotations-v1',frames:{},clicks:[]};
+try{
+ const saved=JSON.parse(localStorage.getItem(storageKey));
+ if(saved?.schema===annotations.schema&&saved.frames&&Array.isArray(saved.clicks))annotations=saved;
+}catch(error){/* Browser storage may be disabled. */}
+function saveAnnotations(){
+ let message=`${annotations.clicks.length} click(s) saved in this browser.`;
+ try{localStorage.setItem(storageKey,JSON.stringify(annotations));}
+ catch(error){message=`${annotations.clicks.length} click(s) kept in this tab only; browser storage failed. Download now.`;}
+ $('annotationStatus').textContent=message;
+ $('download').disabled=!annotations.clicks.length;
+}
+saveAnnotations();
+$('download').addEventListener('click',()=>{
+ const blob=new Blob([JSON.stringify(annotations,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);
+ const link=document.createElement('a');link.href=url;
+ link.download=`matty-clicks-${new Date().toISOString().replace(/[:.]/g,'-')}.json`;
+ link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+function measuredValue(id){const value=$(id).value;return value!==''&&Number.isFinite(Number(value))?Number(value):null;}
 function clearPhoto(){
  selection++;photo=null;$('photo').removeAttribute('src');$('mark').style.display='none';
  $('preview').textContent='Waiting for this recording’s snapshot.';
@@ -40,37 +68,49 @@ async function snapshot(){
  if(loading||!state||state.catching_up||!state.rgb_seq||(photo&&photo.seq===state.rgb_seq&&photo.session===state.session_id)||performance.now()-lastAttempt<2000)return;
  loading=true;lastAttempt=performance.now();
  const seq=state.rgb_seq,session=state.session_id,size=state.rgb_size,stamp=state.rgb_age_s,requested=performance.now();
+ const source={file:state.file,recording_start_utc:state.start_utc,stream:'oak.color',
+  log_time_s:state.rgb_log_time_s,packet_end_offset:state.rgb_packet_end_offset};
+ const calibration=state.projection_calibration;
  try{
   const response=await fetch('/rgb',{cache:'no-store',signal:AbortSignal.timeout(3000)});
   if(!response.ok||response.headers.get('ETag')!==`"${session}:${seq}"`)return;
   const blob=await response.blob();if(state.session_id!==session)return;
+  const jpeg=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
   const nextURL=URL.createObjectURL(blob),image=new Image();image.src=nextURL;
   try{await image.decode();}catch(error){URL.revokeObjectURL(nextURL);return;}
   if(state.session_id!==session){URL.revokeObjectURL(nextURL);return;}
   if(photoURL)URL.revokeObjectURL(photoURL);photoURL=nextURL;
-  photo={seq,session,size,age:stamp+(performance.now()-requested)/1000,received:performance.now()};
+  photo=null;selection++;$('photo').src=photoURL;await $('photo').decode();
+  if(state.session_id!==session)return;
+  photo={seq,session,size,source,calibration,jpeg,preview_size:[image.naturalWidth,image.naturalHeight],age:stamp+(performance.now()-requested)/1000,received:performance.now()};
   selection++;$('mark').style.display='none';$('preview').textContent='Click this snapshot for an offline target preview. No motion will be sent.';
-  $('photo').src=photoURL;
  }catch(error){/* Retain visibly aged snapshot. */}finally{loading=false;}
 }
 $('photo').addEventListener('click',async event=>{
  if(!photo||!photo.size)return;
  const rect=$('photo').getBoundingClientRect(),px=(event.clientX-rect.left)/rect.width,py=(event.clientY-rect.top)/rect.height;
  const x=Math.min(photo.size[0]-1,Math.max(0,px*photo.size[0])),y=Math.min(photo.size[1]-1,Math.max(0,py*photo.size[1]));
- const token=++selection,chosen=photo;
+ const token=++selection,chosen=photo,frameID=`${photo.session}:${photo.seq}`;
+ if(!annotations.frames[frameID])annotations.frames[frameID]={source:chosen.source,
+  session_id:chosen.session,rgb_seq:chosen.seq,source_size:chosen.size,
+  preview_size:chosen.preview_size,jpeg_data_url:chosen.jpeg,calibration:chosen.calibration};
+ const annotation={frame_id:frameID,click_utc:new Date().toISOString(),pixel_xy:[x,y],
+  image_age_s:chosen.age+(performance.now()-chosen.received)/1000,
+  note:$('note').value,measured_robot_xy_m:[measuredValue('measuredX'),measuredValue('measuredY')],
+  projection:{status:chosen.calibration?'pending':'disabled'}};
+ annotations.clicks.push(annotation);saveAnnotations();
  $('mark').style.cssText=`display:block;left:${px*100}%;top:${py*100}%`;
  const label=`Source pixel (${x.toFixed(1)}, ${y.toFixed(1)}) in ${photo.size.join(' × ')} · snapshot ${photo.seq}. `;
  $('preview').textContent=label+(state.projection_enabled?'Calculating offline ground preview…':'Ground preview unavailable without calibration.');
- if(!state.projection_enabled)return;
+ if(!chosen.calibration)return;
  try{
   const query=new URLSearchParams({x,y,session:chosen.session,seq:chosen.seq});
   const response=await fetch('/project?'+query,{signal:AbortSignal.timeout(3000),cache:'no-store'});
-  if(token!==selection)return;
-  if(!response.ok){$('preview').textContent=label+(response.status===409?'Snapshot changed; click the current image.':response.status===400?'No valid ground intersection: check horizon, range and calibration dimensions.':'Preview unavailable.');return;}
-  const result=await response.json();if(token!==selection)return;
+  if(!response.ok){annotation.projection={status:'rejected',http_status:response.status};saveAnnotations();if(token!==selection)return;$('preview').textContent=label+(response.status===409?'Snapshot changed; click the current image.':response.status===400?'No valid ground intersection: check horizon, range and calibration dimensions.':'Preview unavailable.');return;}
+  const result=await response.json();annotation.projection={status:'projected',target_robot_m:result.target_robot_m};saveAnnotations();if(token!==selection)return;
   const [forward,left]=result.target_robot_m;
   $('preview').textContent=label+`Flat-ground point: ${forward.toFixed(2)} m forward, ${left.toFixed(2)} m left of the robot at this image. Preview only; no motion sent.`;
- }catch(error){if(token===selection)$('preview').textContent=label+'Preview connection unavailable.';}
+ }catch(error){annotation.projection={status:'connection_error'};saveAnnotations();if(token===selection)$('preview').textContent=label+'Preview connection unavailable; click is saved.';}
 });
 async function poll(){
  let delay=500;const requested=performance.now();
